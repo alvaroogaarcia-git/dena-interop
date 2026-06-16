@@ -1,0 +1,597 @@
+# Guia completa de instalacion
+
+Esta guia reconstruye el estado validado hasta Fase 6 de `dena-interop` sobre un nodo unico DietPi x86_64 con k3s y Helm.
+
+El objetivo es que una persona con conocimientos minimos de Linux, Kubernetes y terminal pueda repetir la instalacion sin depender de pasos implicitos.
+
+## 0. Supuestos del entorno
+
+Valores usados en el laboratorio validado:
+
+| Elemento | Valor |
+| --- | --- |
+| Servidor DietPi | `root@192.168.56.15` |
+| Alias SSH | `dena` |
+| Nodo k3s | `dietpi` |
+| Kubeconfig local | `~/.kube/dena-config` |
+| Workspace | `/home/dietpi/dena-interop` |
+| Gateway APISIX | `http://192.168.56.15:30080` |
+| Namespace auth | `auth` |
+| Namespace gateway | `gateway` |
+
+Convencion de comandos:
+
+- `Servidor`: comando ejecutado dentro de la VM DietPi.
+- `Local`: comando ejecutado en la maquina de operador.
+- En este laboratorio, Codex opera desde `/home/dietpi`, que actua como maquina de operador local contra el API server de k3s.
+
+## 1. Requisitos previos
+
+Necesitas:
+
+- Acceso SSH al servidor DietPi.
+- Permisos para instalar paquetes en DietPi.
+- `kubectl`, `helm` y `terraform` en la maquina de operador.
+- Acceso al repositorio del proyecto.
+- Red capaz de resolver GitHub, Broadcom/Bitnami y Apache GitHub Pages.
+
+La red corporativa validada hace inspeccion SSL/TLS. En este entorno se han aplicado estas reglas:
+
+- Usar `GODEBUG=http2client=0` en operaciones Helm contra repos externos.
+- Registrar `bitnami` contra `https://repo.broadcom.com/bitnami-files`.
+- Registrar `apiseven` contra `https://apache.github.io/apisix-helm-chart`.
+- Evitar charts Bitnami modernos que descargan desde OCI/Docker Hub cuando el proxy bloquea tokens anonimos.
+
+## 2. Secretos locales
+
+No guardes secretos en Git.
+
+En `Local`, dentro del repo:
+
+```bash
+cd /home/dietpi/dena-interop
+mkdir -p .local
+chmod 700 .local
+
+cat > .local/fase4-6.env <<EOF
+TF_VAR_postgres_password='$(openssl rand -base64 24)'
+TF_VAR_postgres_replication_password='$(openssl rand -base64 24)'
+TF_VAR_keycloak_admin_password='$(openssl rand -base64 24)'
+TF_VAR_apisix_admin_key='edd1c9f034335f136f87ad84b625c8f1'
+EOF
+
+chmod 600 .local/fase4-6.env
+set -a
+. .local/fase4-6.env
+set +a
+```
+
+Comprueba que `.gitignore` contiene `.local/`.
+
+## 3. Fase 0 - Preparar DietPi
+
+En `Servidor`:
+
+```bash
+ssh dena "dietpi-update"
+ssh dena "apt-get install -y curl wget git open-iscsi nfs-common iptables"
+ssh dena "swapoff -a && sed -i '/swap/d' /etc/fstab"
+```
+
+Persistir modulos requeridos por k3s:
+
+```bash
+ssh dena "cat >/etc/modules-load.d/k3s.conf <<'EOF'
+overlay
+br_netfilter
+EOF"
+
+ssh dena "modprobe overlay && modprobe br_netfilter"
+```
+
+Persistir sysctl:
+
+```bash
+ssh dena "cat >/etc/sysctl.d/99-k3s.conf <<'EOF'
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward = 1
+EOF"
+
+ssh dena "sysctl --system"
+```
+
+Verificacion:
+
+```bash
+ssh dena "lsmod | grep -E 'overlay|br_netfilter'"
+ssh dena "sysctl net.bridge.bridge-nf-call-iptables net.ipv4.ip_forward"
+ssh dena "swapon --show"
+```
+
+Resultado esperado:
+
+- `overlay` y `br_netfilter` aparecen cargados.
+- `net.bridge.bridge-nf-call-iptables = 1`.
+- `net.ipv4.ip_forward = 1`.
+- `swapon --show` no muestra swap activo.
+
+## 4. Fase 1 - Instalar k3s con DietPi
+
+En `Servidor`, configurar k3s como server y desactivar Traefik/servicelb:
+
+```bash
+ssh dena "grep -q '^SOFTWARE_K3S_EXEC=' /boot/dietpi.txt \
+  && sed -i 's/^SOFTWARE_K3S_EXEC=.*/SOFTWARE_K3S_EXEC=server/' /boot/dietpi.txt \
+  || echo 'SOFTWARE_K3S_EXEC=server' >> /boot/dietpi.txt"
+```
+
+Crear configuracion k3s:
+
+```bash
+ssh dena "cat >/boot/dietpi-k3s.yaml <<'EOF'
+write-kubeconfig-mode: \"0644\"
+disable:
+  - traefik
+  - servicelb
+tls-san:
+  - \"192.168.56.15\"
+EOF"
+```
+
+Instalar k3s con DietPi. En DietPi v10+ el ID correcto de k3s es `193`:
+
+```bash
+ssh dena "/boot/dietpi/dietpi-software install 193"
+```
+
+Si k3s ya existia, asegurate de que `/etc/rancher/k3s/config.yaml` coincide:
+
+```bash
+ssh dena "cat >/etc/rancher/k3s/config.yaml <<'EOF'
+write-kubeconfig-mode: \"0644\"
+disable:
+  - traefik
+  - servicelb
+tls-san:
+  - \"192.168.56.15\"
+EOF"
+
+ssh dena "systemctl restart k3s"
+```
+
+Verificacion:
+
+```bash
+ssh dena "KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl wait --for=condition=Ready node --all --timeout=120s"
+ssh dena "KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl get nodes -o wide"
+ssh dena "KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl get all -n kube-system"
+```
+
+Resultado esperado:
+
+- Un nodo `Ready`.
+- No hay pods ni servicios de Traefik.
+- No hay `servicelb`.
+
+Si Traefik aparece como HelmChart de k3s, eliminarlo:
+
+```bash
+ssh dena "KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl delete helmcharts.helm.cattle.io traefik traefik-crd -n kube-system --ignore-not-found"
+```
+
+## 5. Fase 2 - Tooling local y kubeconfig
+
+En `Local`, copiar kubeconfig:
+
+```bash
+mkdir -p ~/.kube
+scp dena:/etc/rancher/k3s/k3s.yaml ~/.kube/dena-config
+chmod 600 ~/.kube/dena-config
+sed -i 's|https://127.0.0.1:6443|https://192.168.56.15:6443|' ~/.kube/dena-config
+
+grep -q 'KUBECONFIG=.*/dena-config' ~/.bashrc \
+  || echo 'export KUBECONFIG=~/.kube/dena-config' >> ~/.bashrc
+
+export KUBECONFIG=~/.kube/dena-config
+```
+
+Verificar herramientas:
+
+```bash
+kubectl version --client
+helm version
+terraform version
+kubectl get nodes -o wide
+```
+
+Registrar repos Helm:
+
+```bash
+GODEBUG=http2client=0 helm repo add bitnami https://repo.broadcom.com/bitnami-files --force-update --insecure-skip-tls-verify
+GODEBUG=http2client=0 helm repo add apiseven https://apache.github.io/apisix-helm-chart --force-update --insecure-skip-tls-verify
+GODEBUG=http2client=0 helm repo add grafana https://grafana.github.io/helm-charts --force-update --insecure-skip-tls-verify
+GODEBUG=http2client=0 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts --force-update --insecure-skip-tls-verify
+GODEBUG=http2client=0 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts --force-update --insecure-skip-tls-verify
+
+GODEBUG=http2client=0 helm repo update
+helm repo list
+```
+
+Resultado esperado:
+
+- `bitnami`
+- `apiseven`
+- `grafana`
+- `prometheus-community`
+- `open-telemetry`
+
+Nota: `helm repo update` no tiene flag `--insecure-skip-tls-verify` para repositorios; el flag existente aplica al API server de Kubernetes.
+
+## 6. Fase 3 - Namespaces
+
+En `Local`:
+
+```bash
+for ns in auth gateway app monitoring datalake verticales; do
+  kubectl create namespace "$ns" --dry-run=client -o yaml | kubectl apply -f -
+done
+```
+
+Verificacion:
+
+```bash
+kubectl get ns
+```
+
+Resultado esperado:
+
+- `auth`
+- `gateway`
+- `app`
+- `monitoring`
+- `datalake`
+- `verticales`
+
+No usar `apps` en plural para esta guia. El namespace correcto hasta Fase 6 es `app`.
+
+## 7. Fase 4 - PostgreSQL para Keycloak
+
+### 7.1 Cargar secretos en shell
+
+En `Local`:
+
+```bash
+cd /home/dietpi/dena-interop
+set -a
+. .local/fase4-6.env
+set +a
+```
+
+### 7.2 Crear Secret de PostgreSQL
+
+```bash
+kubectl create secret generic postgresql-auth -n auth \
+  --from-literal=postgres-password="$TF_VAR_postgres_password" \
+  --from-literal=password="$TF_VAR_postgres_password" \
+  --from-literal=replication-password="$TF_VAR_postgres_replication_password"
+```
+
+Si el secreto ya existe y quieres recrearlo:
+
+```bash
+kubectl delete secret postgresql-auth -n auth --ignore-not-found
+```
+
+Despues repite el comando `kubectl create secret`.
+
+### 7.3 Descargar chart PostgreSQL validado
+
+El chart Bitnami actual descarga desde OCI/Docker Hub y en esta red falla con `403 Forbidden`.
+
+Usar la version validada `16.2.1`, que descarga como paquete `.tgz` clasico:
+
+```bash
+curl -kL --http1.1 --fail \
+  --output /tmp/postgresql-16.2.1.tgz \
+  https://charts.bitnami.com/bitnami/postgresql-16.2.1.tgz
+```
+
+Validar paquete:
+
+```bash
+tar -tzf /tmp/postgresql-16.2.1.tgz | head
+```
+
+### 7.4 Instalar PostgreSQL
+
+```bash
+helm install postgresql /tmp/postgresql-16.2.1.tgz \
+  -n auth \
+  --values helm-values/postgresql-values.yaml
+```
+
+Esperar readiness:
+
+```bash
+kubectl wait --for=condition=ready pod \
+  -l app.kubernetes.io/name=postgresql \
+  -n auth \
+  --timeout=180s
+```
+
+Validar SQL:
+
+```bash
+kubectl exec -n auth postgresql-0 -- \
+  env PGPASSWORD="$TF_VAR_postgres_password" \
+  psql -U keycloak -d keycloak -c 'select 1;'
+```
+
+Resultado esperado:
+
+```text
+?column?
+----------
+1
+```
+
+## 8. Fase 5 - Keycloak
+
+### 8.1 Crear Secret de Keycloak
+
+```bash
+kubectl create secret generic keycloak-secret -n auth \
+  --from-literal=db-password="$TF_VAR_postgres_password" \
+  --from-literal=admin-password="$TF_VAR_keycloak_admin_password"
+```
+
+### 8.2 Aplicar manifiesto
+
+```bash
+kubectl apply -f k8s-manifests/keycloak-deployment.yaml
+```
+
+Esperar readiness:
+
+```bash
+kubectl wait --for=condition=ready pod \
+  -l app=keycloak \
+  -n auth \
+  --timeout=360s
+```
+
+Validar login admin:
+
+```bash
+kubectl exec -n auth deploy/keycloak -- \
+  /opt/keycloak/bin/kcadm.sh config credentials \
+  --server http://localhost:8080 \
+  --realm master \
+  --user admin \
+  --password "$TF_VAR_keycloak_admin_password"
+```
+
+Resultado esperado:
+
+```text
+Logging into http://localhost:8080 as user admin of realm master
+```
+
+## 9. Fase 6 - APISIX + etcd
+
+### 9.1 Descargar chart APISIX validado
+
+```bash
+GODEBUG=http2client=0 helm pull apiseven/apisix \
+  --version 2.14.1 \
+  --insecure-skip-tls-verify \
+  --destination /tmp
+```
+
+Validar que el paquete contiene etcd:
+
+```bash
+tar -tzf /tmp/apisix-2.14.1.tgz | grep '^apisix/charts/etcd/' | head
+```
+
+### 9.2 Instalar APISIX
+
+```bash
+helm install apisix /tmp/apisix-2.14.1.tgz \
+  -n gateway \
+  --values helm-values/apisix-values.yaml
+```
+
+Esperar etcd:
+
+```bash
+kubectl wait --for=condition=ready pod \
+  -l app.kubernetes.io/name=etcd \
+  -n gateway \
+  --timeout=240s
+```
+
+Esperar APISIX:
+
+```bash
+kubectl wait --for=condition=ready pod \
+  -l app.kubernetes.io/name=apisix \
+  -n gateway \
+  --timeout=240s
+```
+
+Ver servicios:
+
+```bash
+kubectl get pods,svc,pvc -n gateway -o wide
+```
+
+Resultado esperado para el gateway:
+
+```text
+service/apisix-gateway   NodePort   ...   80:30080/TCP
+```
+
+### 9.3 Validar Gateway
+
+```bash
+curl -i --max-time 10 http://192.168.56.15:30080
+```
+
+Resultado esperado:
+
+```text
+HTTP/1.1 404 Not Found
+Server: APISIX/3.16.0
+{"error_msg":"404 Route Not Found"}
+```
+
+Este resultado es correcto en Fase 6: APISIX esta levantado, pero todavia no hay rutas configuradas.
+
+### 9.4 Validar Admin API
+
+```bash
+kubectl run apisix-admin-check \
+  --rm -i \
+  --restart=Never \
+  --image=nginx:alpine \
+  -n gateway \
+  -- wget -qO- \
+  --header="X-API-KEY: $TF_VAR_apisix_admin_key" \
+  http://apisix-admin.gateway.svc.cluster.local:9180/apisix/admin/routes
+```
+
+Resultado esperado:
+
+```json
+{"list":[],"total":0}
+```
+
+## 10. Comprobacion final
+
+```bash
+kubectl get nodes -o wide
+kubectl get ns
+kubectl get pods,svc,pvc -n auth -o wide
+kubectl get pods,svc,pvc -n gateway -o wide
+helm list -A
+curl -i http://192.168.56.15:30080
+```
+
+Estado esperado:
+
+- Nodo `dietpi` en `Ready`.
+- Release Helm `postgresql` en namespace `auth`.
+- Release Helm `apisix` en namespace `gateway`.
+- Pods `postgresql-0`, `keycloak`, `apisix` y `apisix-etcd-0` en `Running`.
+- PVCs `data-postgresql-0` y `data-apisix-etcd-0` en `Bound`.
+- APISIX responde `404 Route Not Found` en `:30080`.
+
+## 11. Reinstalacion controlada de Fases 4-6
+
+Usar solo si quieres volver a instalar desde cero estas fases.
+
+```bash
+helm uninstall apisix -n gateway --ignore-not-found
+kubectl delete -f k8s-manifests/keycloak-deployment.yaml --ignore-not-found
+helm uninstall postgresql -n auth --ignore-not-found
+
+kubectl delete secret keycloak-secret postgresql-auth -n auth --ignore-not-found
+```
+
+Si quieres borrar tambien datos persistentes:
+
+```bash
+kubectl delete pvc data-apisix-etcd-0 -n gateway --ignore-not-found
+kubectl delete pvc data-postgresql-0 -n auth --ignore-not-found
+```
+
+Aviso: borrar PVCs elimina datos locales de PostgreSQL y etcd.
+
+## 12. Troubleshooting
+
+### Helm repo update funciona, pero Bitnami latest falla
+
+Sintoma:
+
+```text
+failed to fetch anonymous token ... auth.docker.io ... 403 Forbidden
+```
+
+Causa:
+
+- El indice Bitnami moderno publica charts por OCI.
+- La red corporativa bloquea el token anonimo de Docker Hub.
+
+Solucion validada:
+
+- Usar `postgresql-16.2.1.tgz`.
+- Instalar desde paquete local.
+- Sustituir imagen por `bitnamilegacy/postgresql`, ya configurado en `helm-values/postgresql-values.yaml`.
+
+### charts.apiseven.com corta la conexion
+
+Sintoma:
+
+```text
+connection reset by peer
+```
+
+Solucion validada:
+
+```bash
+GODEBUG=http2client=0 helm repo add apiseven https://apache.github.io/apisix-helm-chart --force-update --insecure-skip-tls-verify
+```
+
+### Keycloak no arranca
+
+Comandos utiles:
+
+```bash
+kubectl get pods -n auth
+kubectl logs -n auth deploy/keycloak --tail=120
+kubectl describe pod -n auth -l app=keycloak
+```
+
+Puntos a revisar:
+
+- `postgresql-0` esta `Ready`.
+- `keycloak-secret` existe.
+- `KC_DB_PASSWORD` coincide con el password del usuario `keycloak`.
+- La base `keycloak` existe.
+
+### APISIX no queda Ready
+
+Comandos utiles:
+
+```bash
+kubectl get pods -n gateway
+kubectl logs -n gateway statefulset/apisix-etcd --tail=120
+kubectl logs -n gateway deploy/apisix --tail=120
+kubectl describe pod -n gateway -l app.kubernetes.io/name=apisix
+```
+
+Puntos a revisar:
+
+- `apisix-etcd-0` esta `Ready`.
+- El init container `wait-etcd` puede resolver `apisix-etcd.gateway.svc.cluster.local`.
+- El servicio `apisix-gateway` mantiene `80:30080/TCP`.
+
+## 13. Politica de commits
+
+Recomendacion para seguimiento:
+
+- Un commit por fase completada.
+- Un commit por cambio de infraestructura estable.
+- Un commit por bloque documental relevante.
+- No mezclar secretos, kubeconfigs privados ni tokens en commits.
+
+Formato recomendado:
+
+```text
+fase-N: descripcion corta del cambio
+docs: actualizar guia de instalacion
+infra: ajustar values de apisix
+```
+
