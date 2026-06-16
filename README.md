@@ -15,6 +15,7 @@ El entorno esta validado hasta Fase 6 de la guia de instalacion:
 | 4 | PostgreSQL para Keycloak | Desplegado |
 | 5 | Keycloak con imagen oficial | Desplegado |
 | 6 | APISIX + etcd | Desplegado |
+| 7 | Observabilidad local | Desplegado |
 
 ## Que hay desplegado
 
@@ -25,6 +26,11 @@ El entorno esta validado hasta Fase 6 de la guia de instalacion:
   - APISIX `3.16.0` mediante chart `apisix-2.14.1`.
   - etcd embebido del chart APISIX.
   - Gateway HTTP publicado en `NodePort 30080`.
+- Namespace `monitoring`
+  - Prometheus Operator mediante `kube-prometheus-stack`.
+  - Grafana publicado en `NodePort 31803`.
+  - Loki `3.6.7` en modo SingleBinary.
+  - Tempo `2.9.0` con OTLP `4317/4318`.
 - Namespaces preparados para fases posteriores:
   - `app`
   - `monitoring`
@@ -42,8 +48,10 @@ export KUBECONFIG=/home/dietpi/.kube/dena-config
 kubectl get nodes -o wide
 kubectl get pods,svc,pvc -n auth -o wide
 kubectl get pods,svc,pvc -n gateway -o wide
+kubectl get pods,svc,pvc -n monitoring -o wide
 helm list -A
 curl -i http://192.168.56.15:30080
+curl -i http://192.168.56.15:31803/login
 ```
 
 Resultado esperado del gateway en Fase 6:
@@ -59,6 +67,7 @@ Ese `404` es correcto: APISIX esta vivo, pero todavia no hay rutas configuradas.
 ## Documentacion principal
 
 - [Guia completa de instalacion](docs/guia-instalacion.md)
+- [Estado validado Fases 0-7](docs/estado-fases-0-7.md)
 - [Estado validado Fases 0-6](docs/estado-fases-0-6.md)
 - [Estado validado Fases 0-3](docs/estado-fases-0-3.md)
 
@@ -78,4 +87,3 @@ terraform/      Terraform de fases posteriores
 Los secretos locales no se versionan. El archivo `.local/fase4-6.env` queda ignorado por Git y debe generarse en cada entorno.
 
 Nunca guardes tokens de GitHub, passwords o kubeconfigs privados dentro del repositorio.
-

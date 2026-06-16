@@ -488,28 +488,172 @@ Estado esperado:
 - PVCs `data-postgresql-0` y `data-apisix-etcd-0` en `Bound`.
 - APISIX responde `404 Route Not Found` en `:30080`.
 
-## 11. Reinstalacion controlada de Fases 4-6
+## 11. Fase 7 - Observabilidad local
+
+Esta fase instala Prometheus/Grafana, Loki y Tempo en el namespace `monitoring`.
+
+Versiones validadas:
+
+| Release | Chart | App |
+| --- | --- | --- |
+| `monitoring` | `kube-prometheus-stack-86.2.3` | `v0.91.0` |
+| `loki` | `loki-7.0.0` | `3.6.7` |
+| `tempo` | `tempo-1.24.4` | `2.9.0` |
+
+### 11.1 Secret de Grafana
+
+No guardes la password de Grafana en Git.
+
+```bash
+cd /home/dietpi/dena-interop
+
+cat > .local/fase7.env <<EOF
+TF_VAR_grafana_admin_password='$(openssl rand -base64 24)'
+EOF
+
+chmod 600 .local/fase7.env
+set -a
+. .local/fase7.env
+set +a
+```
+
+Crear el Secret:
+
+```bash
+kubectl create secret generic grafana-admin -n monitoring \
+  --from-literal=admin-user=admin \
+  --from-literal=admin-password="$TF_VAR_grafana_admin_password"
+```
+
+### 11.2 Instalar kube-prometheus-stack
+
+```bash
+GODEBUG=http2client=0 helm install monitoring prometheus-community/kube-prometheus-stack \
+  -n monitoring \
+  --version 86.2.3 \
+  --values helm-values/monitoring-values.yaml \
+  --insecure-skip-tls-verify \
+  --wait \
+  --timeout 10m
+```
+
+Notas:
+
+- Grafana queda publicado en `NodePort 31803`.
+- Alertmanager queda desactivado para reducir consumo local.
+- Prometheus usa `emptyDir`, retencion `7d` y sin `retentionSize`.
+- Para produccion, define `retentionSize` y un PVC acotado.
+
+### 11.3 Instalar Loki v7
+
+```bash
+GODEBUG=http2client=0 helm install loki grafana/loki \
+  -n monitoring \
+  --version 7.0.0 \
+  --values helm-values/loki-values.yaml \
+  --insecure-skip-tls-verify \
+  --wait \
+  --timeout 10m
+```
+
+Configuracion validada:
+
+- `deploymentMode: SingleBinary`
+- `singleBinary.replicas: 1`
+- `read.replicas: 0`
+- `write.replicas: 0`
+- `backend.replicas: 0`
+- `chunksCache.enabled: false`
+- `resultsCache.enabled: false`
+- PVC local-path `4Gi`.
+
+### 11.4 Instalar Tempo
+
+```bash
+GODEBUG=http2client=0 helm install tempo grafana/tempo \
+  -n monitoring \
+  --version 1.24.4 \
+  --values helm-values/tempo-values.yaml \
+  --insecure-skip-tls-verify \
+  --wait \
+  --timeout 10m
+```
+
+Configuracion validada:
+
+- Tempo local sin PVC.
+- OTLP gRPC `4317`.
+- OTLP HTTP `4318`.
+- Readiness HTTP en `3200`.
+
+### 11.5 Verificacion de Fase 7
+
+```bash
+kubectl get pods,svc,pvc -n monitoring -o wide
+helm list -n monitoring
+curl -i http://192.168.56.15:31803/login
+```
+
+Validar endpoints internos:
+
+```bash
+kubectl run loki-check --rm -i --restart=Never --image=nginx:alpine -n monitoring -- \
+  wget -qO- http://loki.monitoring.svc.cluster.local:3100/ready
+
+kubectl run tempo-check --rm -i --restart=Never --image=nginx:alpine -n monitoring -- \
+  wget -qO- http://tempo.monitoring.svc.cluster.local:3200/ready
+
+kubectl run prometheus-check --rm -i --restart=Never --image=nginx:alpine -n monitoring -- \
+  wget -qO- http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090/-/ready
+```
+
+Resultados esperados:
+
+- Grafana `/login` devuelve `HTTP/1.1 200 OK`.
+- Loki devuelve `ready`.
+- Tempo devuelve `ready`.
+- Prometheus devuelve `Prometheus Server is Ready.`
+
+Validar datasources de Grafana:
+
+```bash
+curl -s -u "admin:$TF_VAR_grafana_admin_password" \
+  http://192.168.56.15:31803/api/datasources
+```
+
+Datasources esperados:
+
+- `Prometheus`
+- `Loki`
+- `Tempo`
+
+## 12. Reinstalacion controlada de Fases 4-7
 
 Usar solo si quieres volver a instalar desde cero estas fases.
 
 ```bash
+helm uninstall tempo -n monitoring --ignore-not-found
+helm uninstall loki -n monitoring --ignore-not-found
+helm uninstall monitoring -n monitoring --ignore-not-found
 helm uninstall apisix -n gateway --ignore-not-found
 kubectl delete -f k8s-manifests/keycloak-deployment.yaml --ignore-not-found
 helm uninstall postgresql -n auth --ignore-not-found
 
+kubectl delete secret grafana-admin -n monitoring --ignore-not-found
 kubectl delete secret keycloak-secret postgresql-auth -n auth --ignore-not-found
 ```
 
 Si quieres borrar tambien datos persistentes:
 
 ```bash
+kubectl delete pvc storage-loki-0 -n monitoring --ignore-not-found
 kubectl delete pvc data-apisix-etcd-0 -n gateway --ignore-not-found
 kubectl delete pvc data-postgresql-0 -n auth --ignore-not-found
 ```
 
-Aviso: borrar PVCs elimina datos locales de PostgreSQL y etcd.
+Aviso: borrar PVCs elimina datos locales de PostgreSQL, etcd y Loki.
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 ### Helm repo update funciona, pero Bitnami latest falla
 
@@ -578,7 +722,7 @@ Puntos a revisar:
 - El init container `wait-etcd` puede resolver `apisix-etcd.gateway.svc.cluster.local`.
 - El servicio `apisix-gateway` mantiene `80:30080/TCP`.
 
-## 13. Politica de commits
+## 14. Politica de commits
 
 Recomendacion para seguimiento:
 
@@ -594,4 +738,3 @@ fase-N: descripcion corta del cambio
 docs: actualizar guia de instalacion
 infra: ajustar values de apisix
 ```
-
