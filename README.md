@@ -70,6 +70,7 @@ Ese `404` es correcto: APISIX esta vivo, pero todavia no hay rutas configuradas.
 - [Estado validado Fases 0-7](docs/estado-fases-0-7.md)
 - [Estado validado Fases 0-6](docs/estado-fases-0-6.md)
 - [Estado validado Fases 0-3](docs/estado-fases-0-3.md)
+- [Preparacion de Fase 8](docs/fase8-preparacion.md)
 
 ## Estructura
 

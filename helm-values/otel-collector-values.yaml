@@ -1,0 +1,289 @@
+mode: daemonset
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+
+presets:
+  logsCollection:
+    enabled: false
+  hostMetrics:
+    enabled: false
+  kubernetesAttributes:
+    enabled: false
+  kubeletMetrics:
+    enabled: false
+  clusterMetrics:
+    enabled: false
+
+clusterRole:
+  create: true
+  rules:
+    - apiGroups: ["coordination.k8s.io"]
+      resources: ["leases"]
+      verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+    - apiGroups: [""]
+      resources: ["pods", "namespaces"]
+      verbs: ["get", "watch", "list"]
+    - apiGroups: ["apps"]
+      resources: ["replicasets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["extensions"]
+      resources: ["replicasets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: [""]
+      resources: ["events", "namespaces", "namespaces/status", "nodes", "nodes/spec", "pods", "pods/status", "replicationcontrollers", "replicationcontrollers/status", "resourcequotas", "services"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["apps"]
+      resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["extensions"]
+      resources: ["daemonsets", "deployments", "replicasets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["batch"]
+      resources: ["jobs", "cronjobs"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["autoscaling"]
+      resources: ["horizontalpodautoscalers"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: [""]
+      resources: ["nodes/stats"]
+      verbs: ["get", "watch", "list"]
+
+extraVolumes:
+  - name: varlogpods
+    hostPath:
+      path: /var/log/pods
+  - name: varlibdockercontainers
+    hostPath:
+      path: /var/lib/docker/containers
+  - name: hostfs
+    hostPath:
+      path: /
+
+extraVolumeMounts:
+  - name: varlogpods
+    mountPath: /var/log/pods
+    readOnly: true
+  - name: varlibdockercontainers
+    mountPath: /var/lib/docker/containers
+    readOnly: true
+  - name: hostfs
+    mountPath: /hostfs
+    readOnly: true
+
+extraEnvs:
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: K8S_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+
+service:
+  enabled: true
+  type: ClusterIP
+
+ports:
+  metrics:
+    enabled: true
+    containerPort: 8889
+    servicePort: 8889
+    protocol: TCP
+
+serviceMonitor:
+  enabled: true
+  extraLabels:
+    release: monitoring
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+alternateConfig:
+  receivers:
+    file_log:
+      include:
+        - /var/log/pods/*/*/*.log
+      exclude:
+        - /var/log/pods/monitoring_otel-collector-opentelemetry-collector*_*/opentelemetry-collector/*.log
+      include_file_name: false
+      include_file_path: true
+      start_at: end
+      retry_on_failure:
+        enabled: true
+      operators:
+        - id: container-parser
+          type: container
+          max_log_size: 102400
+    host_metrics:
+      collection_interval: 10s
+      root_path: /hostfs
+      scrapers:
+        cpu: {}
+        load: {}
+        memory: {}
+        disk: {}
+        filesystem:
+          exclude_fs_types:
+            match_type: strict
+            fs_types:
+              - autofs
+              - binfmt_misc
+              - bpf
+              - cgroup2
+              - configfs
+              - debugfs
+              - devpts
+              - devtmpfs
+              - fusectl
+              - hugetlbfs
+              - iso9660
+              - mqueue
+              - nsfs
+              - overlay
+              - proc
+              - procfs
+              - pstore
+              - rpc_pipefs
+              - securityfs
+              - selinuxfs
+              - squashfs
+              - sysfs
+              - tracefs
+          exclude_mount_points:
+            match_type: regexp
+            mount_points:
+              - ^/dev($|/)
+              - ^/proc($|/)
+              - ^/sys($|/)
+              - ^/run/k3s/containerd($|/)
+              - ^/var/lib/docker($|/)
+              - ^/var/lib/kubelet($|/)
+              - ^/snap($|/)
+        network: {}
+    kubelet_stats:
+      auth_type: serviceAccount
+      collection_interval: 20s
+      endpoint: ${env:K8S_NODE_IP}:10250
+    k8s_cluster:
+      collection_interval: 10s
+      k8s_leader_elector: k8s_leader_elector/k8s_cluster
+    otlp:
+      protocols:
+        grpc:
+          endpoint: ${env:MY_POD_IP}:4317
+        http:
+          endpoint: ${env:MY_POD_IP}:4318
+  processors:
+    memory_limiter:
+      check_interval: 5s
+      limit_percentage: 80
+      spike_limit_percentage: 25
+    batch: {}
+    k8s_attributes:
+      passthrough: false
+      filter:
+        node_from_env_var: K8S_NODE_NAME
+      extract:
+        metadata:
+          - k8s.namespace.name
+          - k8s.pod.name
+          - k8s.pod.uid
+          - k8s.node.name
+          - k8s.pod.start_time
+          - k8s.deployment.name
+          - k8s.replicaset.name
+          - k8s.replicaset.uid
+          - k8s.daemonset.name
+          - k8s.daemonset.uid
+          - k8s.job.name
+          - k8s.job.uid
+          - k8s.container.name
+          - k8s.cronjob.name
+          - k8s.statefulset.name
+          - k8s.statefulset.uid
+          - container.image.tag
+          - container.image.name
+          - k8s.cluster.uid
+          - service.namespace
+          - service.name
+          - service.version
+          - service.instance.id
+        otel_annotations: true
+      pod_association:
+        - sources:
+            - from: resource_attribute
+              name: k8s.pod.ip
+        - sources:
+            - from: resource_attribute
+              name: k8s.pod.uid
+        - sources:
+            - from: connection
+  exporters:
+    debug: {}
+    prometheus:
+      endpoint: ${env:MY_POD_IP}:8889
+    otlp_http/tempo:
+      endpoint: http://tempo.monitoring.svc.cluster.local:4318
+      tls:
+        insecure: true
+    otlp_http/loki:
+      endpoint: http://loki.monitoring.svc.cluster.local:3100/otlp
+      tls:
+        insecure: true
+  extensions:
+    health_check:
+      endpoint: ${env:MY_POD_IP}:13133
+    k8s_leader_elector/k8s_cluster:
+      auth_type: serviceAccount
+      lease_name: k8s.cluster.receiver.opentelemetry.io
+      lease_namespace: monitoring
+  service:
+    extensions:
+      - health_check
+      - k8s_leader_elector/k8s_cluster
+    telemetry:
+      metrics:
+        readers:
+          - pull:
+              exporter:
+                prometheus:
+                  host: ${env:MY_POD_IP}
+                  port: 8888
+    pipelines:
+      logs:
+        receivers:
+          - file_log
+          - otlp
+        processors:
+          - memory_limiter
+          - k8s_attributes
+          - batch
+        exporters:
+          - otlp_http/loki
+      metrics:
+        receivers:
+          - host_metrics
+          - kubelet_stats
+          - k8s_cluster
+          - otlp
+        processors:
+          - memory_limiter
+          - k8s_attributes
+          - batch
+        exporters:
+          - prometheus
+      traces:
+        receivers:
+          - otlp
+        processors:
+          - memory_limiter
+          - k8s_attributes
+          - batch
+        exporters:
+          - otlp_http/tempo
