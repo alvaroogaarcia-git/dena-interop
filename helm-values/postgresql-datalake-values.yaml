@@ -1,0 +1,29 @@
+image:
+  registry: docker.io
+  repository: bitnamilegacy/postgresql
+  tag: 17.1.0-debian-12-r0
+  pullPolicy: IfNotPresent
+
+architecture: standalone
+
+auth:
+  enablePostgresUser: true
+  username: datalake
+  database: datalake
+
+primary:
+  persistence:
+    enabled: true
+    size: 4Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+
+readReplicas:
+  replicaCount: 0
+
+metrics:
+  enabled: false
