@@ -1,6 +1,6 @@
 # Guia completa de instalacion
 
-Esta guia reconstruye el estado validado hasta Fase 10 de `dena-interop` sobre un nodo unico DietPi x86_64 con k3s y Helm.
+Esta guia reconstruye el estado validado hasta Fase 11 de `dena-interop` sobre un nodo unico DietPi x86_64 con k3s y Helm.
 
 El objetivo es que una persona con conocimientos minimos de Linux, Kubernetes y terminal pueda repetir la instalacion sin depender de pasos implicitos.
 
@@ -738,3 +738,84 @@ fase-N: descripcion corta del cambio
 docs: actualizar guia de instalacion
 infra: ajustar values de apisix
 ```
+
+## 15. Fase 11 - Apache NiFi 2.9
+
+ADR-007: NiFi 2.x arranca seguro por defecto con HTTPS y single-user. En este laboratorio se valida una sola replica en `datalake`, con `strategy: Recreate`, `NodePort 30821`, probes HTTPS con `Host: localhost:8443`, heap JVM `256m` y un PVC persistente para `extensions/`.
+
+### 15.1 Secret de single-user
+
+En `Local`:
+
+```bash
+NIFI_SINGLE_USER_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=' | cut -c1-20)"
+
+kubectl create secret generic nifi-secret -n datalake \
+  --from-literal=single-user-username=admin \
+  --from-literal=single-user-password="$NIFI_SINGLE_USER_PASSWORD" \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+### 15.2 Despliegue
+
+Opcional pero recomendado, pre-descargar la imagen en el nodo:
+
+```bash
+ssh dena "k3s crictl pull docker.io/apache/nifi:2.9.0"
+```
+
+Aplicar el manifiesto versionado:
+
+```bash
+kubectl apply -f k8s-manifests/nifi-deployment.yaml
+kubectl wait --for=condition=available deployment/nifi -n datalake --timeout=300s
+```
+
+Recursos validados en este nodo:
+
+- `requests.cpu: 100m`
+- `requests.memory: 384Mi`
+- `limits.memory: 1Gi`
+- `NIFI_JVM_HEAP_INIT=256m`
+- `NIFI_JVM_HEAP_MAX=256m`
+
+### 15.3 Verificacion de Fase 11
+
+```bash
+bash scripts/verify-fase11.sh
+kubectl get pods,svc,pvc -n datalake -o wide
+```
+
+Resultados esperados:
+
+- `deployment/nifi` en `Available`
+- `service/nifi` publicado en `8443:30821/TCP`
+- `pvc/nifi-extensions` en `Bound`
+- el endpoint HTTPS interno devuelve `HTTP/1.1 200 OK`
+
+### 15.4 Acceso de operador
+
+El acceso validado para esta fase es por port-forward:
+
+```bash
+kubectl port-forward -n datalake svc/nifi 8443:8443
+```
+
+Abrir:
+
+```text
+https://localhost:8443/nifi
+```
+
+Recuperar la password:
+
+```bash
+kubectl get secret -n datalake nifi-secret -o jsonpath='{.data.single-user-password}' | base64 -d
+```
+
+Notas:
+
+- El certificado es autofirmado.
+- El NodePort directo `30821` no es la ruta de acceso validada en esta fase.
+- En este nodo de `4 GiB`, NiFi se ha validado sin `startupProbe`; las sondas efectivas son `readiness` y `liveness` con tiempos amplios.
+- El driver JDBC de PostgreSQL y el flujo NiFi quedan fuera de esta fase; pertenecen a la Fase 11b.
