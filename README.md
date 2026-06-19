@@ -4,7 +4,7 @@ Stack local de interoperabilidad desplegado sobre un nodo unico DietPi x86_64 co
 
 ## Estado actual
 
-El entorno esta validado hasta Fase 6 de la guia de instalacion:
+El entorno esta validado hasta Fase 10 de la guia de instalacion:
 
 | Fase | Componente | Estado |
 | --- | --- | --- |
@@ -15,7 +15,10 @@ El entorno esta validado hasta Fase 6 de la guia de instalacion:
 | 4 | PostgreSQL para Keycloak | Desplegado |
 | 5 | Keycloak con imagen oficial | Desplegado |
 | 6 | APISIX + etcd | Desplegado |
-| 7 | Observabilidad local | Desplegado |
+| 7 | Observabilidad local | Validado |
+| 8 | OTel Collector | Validado |
+| 9 | PostgreSQL del datalake | Validado |
+| 10 | PostgREST | Validado |
 
 ## Que hay desplegado
 
@@ -31,11 +34,20 @@ El entorno esta validado hasta Fase 6 de la guia de instalacion:
   - Grafana publicado en `NodePort 31803`.
   - Loki `3.6.7` en modo SingleBinary.
   - Tempo `2.9.0` con OTLP `4317/4318`.
-- Namespaces preparados para fases posteriores:
-  - `app`
-  - `monitoring`
-  - `datalake`
+- OTel Collector
+  - Release `otel-collector` en `monitoring`.
+  - DaemonSet operativo exportando a Loki y Tempo.
+- Namespace `datalake`
+  - PostgreSQL `18.4.0` mediante chart `postgresql-18.7.5`.
+  - PostgREST `13.0.4` publicado como `ClusterIP` interno en `:3000`.
+  - Roles `anon` y `postgrest` validados en la base `datalake`.
+- Pendiente a partir de Fase 11:
   - `verticales`
+  - NiFi
+  - Mathesar
+  - Terraform
+  - rutas APISIX
+  - SQL DENA
 
 ## Verificacion rapida
 
@@ -49,9 +61,11 @@ kubectl get nodes -o wide
 kubectl get pods,svc,pvc -n auth -o wide
 kubectl get pods,svc,pvc -n gateway -o wide
 kubectl get pods,svc,pvc -n monitoring -o wide
+kubectl get pods,svc,pvc -n datalake -o wide
 helm list -A
 curl -i http://192.168.56.15:30080
 curl -i http://192.168.56.15:31803/login
+bash scripts/verify-fase10.sh
 ```
 
 Resultado esperado del gateway en Fase 6:
@@ -64,10 +78,18 @@ Server: APISIX/3.16.0
 
 Ese `404` es correcto: APISIX esta vivo, pero todavia no hay rutas configuradas.
 
+Resultado esperado de `scripts/verify-fase10.sh`:
+
+- `postgresql-datalake` y `postgrest` en `Running`.
+- `postgrest-secret` apunta a `postgresql-datalake.datalake.svc.cluster.local`.
+- Roles `anon` y `postgrest` existen y `postgrest` puede asumir `anon`.
+- `GET /` sobre el servicio `postgrest` devuelve `HTTP/1.1 200 OK` con el documento OpenAPI.
+
 ## Documentacion principal
 
 - [Guia completa de instalacion](docs/guia-instalacion.md)
 - [Estado validado Fases 0-7](docs/estado-fases-0-7.md)
+- [Estado validado Fases 0-10](docs/estado-fases-0-10.md)
 - [Estado validado Fases 0-6](docs/estado-fases-0-6.md)
 - [Estado validado Fases 0-3](docs/estado-fases-0-3.md)
 - [Preparacion de Fase 8](docs/fase8-preparacion.md)

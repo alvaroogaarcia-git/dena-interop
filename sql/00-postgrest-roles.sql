@@ -1,3 +1,9 @@
+\if :{?postgrest_db_password}
+\else
+\echo 'Falta la variable postgrest_db_password. Usa: psql -v postgrest_db_password=... -f sql/00-postgrest-roles.sql'
+\quit 3
+\endif
+
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
@@ -9,9 +15,15 @@ $$;
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'postgrest') THEN
-    CREATE ROLE postgrest LOGIN PASSWORD 'contrasena';
+    EXECUTE format(
+      'CREATE ROLE postgrest LOGIN PASSWORD %L',
+      :'postgrest_db_password'
+    );
   ELSE
-    ALTER ROLE postgrest LOGIN PASSWORD 'contrasena';
+    EXECUTE format(
+      'ALTER ROLE postgrest LOGIN PASSWORD %L',
+      :'postgrest_db_password'
+    );
   END IF;
 END
 $$;

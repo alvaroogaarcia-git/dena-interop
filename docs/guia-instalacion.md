@@ -1,6 +1,6 @@
 # Guia completa de instalacion
 
-Esta guia reconstruye el estado validado hasta Fase 6 de `dena-interop` sobre un nodo unico DietPi x86_64 con k3s y Helm.
+Esta guia reconstruye el estado validado hasta Fase 10 de `dena-interop` sobre un nodo unico DietPi x86_64 con k3s y Helm.
 
 El objetivo es que una persona con conocimientos minimos de Linux, Kubernetes y terminal pueda repetir la instalacion sin depender de pasos implicitos.
 
