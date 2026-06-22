@@ -11,7 +11,7 @@ El cluster queda validado hasta Fase 11b:
 
 Pendiente a partir de aqui:
 
-- flujo NiFi cargado en el canvas
+- Fase 12 cargada y validada en el canvas de NiFi
 - rutas APISIX
 - esquema DENA de Fase 15
 - Terraform de fases posteriores
@@ -72,7 +72,7 @@ Notas operativas:
 - El primer arranque de Mathesar requiere crear el usuario admin desde la UI.
 - Dentro de Mathesar hay que anadir la conexion a `expedientes` usando `postgres`.
 - El NodePort directo de NiFi `30821` sigue devolviendo `400`; el acceso validado continua siendo por port-forward.
-- El flujo NiFi JDBC no queda versionado en este repositorio todavia; esta fase deja preparado el origen, el driver y la conectividad.
+- La Fase 12 versiona el flujo NiFi JDBC incremental; Fase 11b deja preparado el origen, el driver y la conectividad.
 - En este nodo de `4 GiB`, Mathesar queda reducido a `128Mi` de request y `256Mi` de limit para poder programarse.
 
 ## Comandos de cierre
@@ -95,4 +95,4 @@ Estado esperado:
 
 ## Siguiente fase
 
-La siguiente fase operativa del laboratorio es cargar y validar el flujo JDBC incremental en NiFi sobre esta fuente.
+La siguiente fase operativa del laboratorio es la Fase 12: el flujo JDBC incremental en NiFi sobre esta fuente. El procedimiento detallado queda en `docs/fase12-nifi-jdbc.md`.

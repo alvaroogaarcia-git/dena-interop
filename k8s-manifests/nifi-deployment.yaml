@@ -86,12 +86,31 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 384Mi
+              memory: 256Mi
             limits:
-              memory: 1Gi
+              memory: 768Mi
           volumeMounts:
             - name: extensions
               mountPath: /opt/nifi/nifi-current/extensions
+              subPath: extensions
+            - name: extensions
+              mountPath: /opt/nifi/nifi-current/flowfile_repository
+              subPath: flowfile_repository
+            - name: extensions
+              mountPath: /opt/nifi/nifi-current/content_repository
+              subPath: content_repository
+            - name: extensions
+              mountPath: /opt/nifi/nifi-current/provenance_repository
+              subPath: provenance_repository
+            - name: extensions
+              mountPath: /opt/nifi/nifi-current/database_repository
+              subPath: database_repository
+            - name: extensions
+              mountPath: /opt/nifi/nifi-current/state
+              subPath: state
+            - name: extensions
+              mountPath: /opt/nifi/nifi-current/logs
+              subPath: logs
       volumes:
         - name: extensions
           persistentVolumeClaim:

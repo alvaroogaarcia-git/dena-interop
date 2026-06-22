@@ -939,3 +939,64 @@ Y la UI:
 ```text
 https://localhost:8443/nifi
 ```
+
+## 17. Fase 12 - NiFi JDBC incremental
+
+ADR-009: el laboratorio pasa de dejar preparado el origen a materializar un flujo NiFi incremental contra `expedientes.admin_file`. El flujo queda versionado en este repositorio y usa el driver PostgreSQL persistido en el PVC de NiFi.
+
+### 17.1 Estructura del flujo
+
+- Grupo de proceso: `Fase 12 - JDBC incremental`
+- Fuente: `QueryDatabaseTableRecord`
+- Conexion JDBC: `Verticales DBCP`
+- Writer: `JSON Record Writer`
+- Nombres de fichero: `Stamp Output Filename`
+- Destino: `Persist Fase 12 Output`
+
+### 17.2 Provisionamiento
+
+```bash
+bash scripts/dena/provision-fase12-nifi.sh
+```
+
+El script:
+
+1. obtiene token de NiFi con el usuario single-user
+2. comprueba el grupo de proceso `Fase 12 - JDBC incremental`
+3. crea el `DBCPConnectionPool` de PostgreSQL
+4. crea el `JsonRecordSetWriter`
+5. crea `QueryDatabaseTableRecord` con `updated_at,id`
+6. crea `UpdateAttribute` para fijar el nombre del archivo
+7. crea `PutFile` sobre el directorio persistente
+8. conecta y arranca el flujo
+
+### 17.3 Verificacion
+
+```bash
+bash scripts/verify-fase12.sh
+```
+
+La verificacion comprueba:
+
+- grupo de proceso presente
+- procesadores presentes
+- directorio de salida accesible
+- driver JDBC presente en `extensions/`
+
+### 17.4 Prueba incremental
+
+Actualizar una fila de `expedientes.admin_file` y comprobar que aparece un nuevo JSON en la salida del flujo:
+
+```bash
+export KUBECONFIG=/home/dietpi/.kube/dena-config
+PG_PASS="$(kubectl get secret -n verticales postgresql-verticales -o jsonpath='{.data.postgres-password}' | base64 -d)"
+kubectl exec -n verticales postgresql-verticales-0 -- \
+  env PGPASSWORD="$PG_PASS" \
+  psql -U postgres -d expedientes -c "update expedientes.admin_file set status = 'archivado', updated_at = now() where id = 1;"
+```
+
+### 17.5 Notas operativas
+
+- Si el NodePort directo no responde, usar `kubectl port-forward -n datalake svc/nifi 8443:8443`.
+- El flujo escribe en `/opt/nifi/nifi-current/extensions/fase12-output`.
+- El directorio de salida vive dentro del PVC de NiFi, junto al driver JDBC.
