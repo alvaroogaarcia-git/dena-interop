@@ -9,6 +9,7 @@ architecture: standalone
 auth:
   enablePostgresUser: true
   database: expedientes
+  postgresPassword: pyZN2eJRnVfArOgFltoTlotN
 
 primary:
   persistence:

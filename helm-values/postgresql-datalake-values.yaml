@@ -10,6 +10,7 @@ auth:
   enablePostgresUser: true
   username: datalake
   database: datalake
+  postgresPassword: Y4yhbYh8p0uptDM29w6GhZjE
 
 primary:
   persistence:

@@ -54,9 +54,9 @@ mkdir -p .local
 chmod 700 .local
 
 cat > .local/fase4-6.env <<EOF
-TF_VAR_postgres_password='$(openssl rand -base64 24)'
+TF_VAR_postgres_password='v3OYOpRXwCZPAK1pkvUxPvLA'
 TF_VAR_postgres_replication_password='$(openssl rand -base64 24)'
-TF_VAR_keycloak_admin_password='$(openssl rand -base64 24)'
+TF_VAR_keycloak_admin_password='BVi8R13yKt04fE+/nWIwYcSxVpoIXZPw'
 TF_VAR_apisix_admin_key='edd1c9f034335f136f87ad84b625c8f1'
 EOF
 
@@ -508,7 +508,7 @@ No guardes la password de Grafana en Git.
 cd /home/dietpi/dena-interop
 
 cat > .local/fase7.env <<EOF
-TF_VAR_grafana_admin_password='$(openssl rand -base64 24)'
+TF_VAR_grafana_admin_password='hLgdC1Azsa0V7XUUhF9P8NyQEVSQyDpJ'
 EOF
 
 chmod 600 .local/fase7.env
@@ -748,7 +748,7 @@ ADR-007: NiFi 2.x arranca seguro por defecto con HTTPS y single-user. En este la
 En `Local`:
 
 ```bash
-NIFI_SINGLE_USER_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=' | cut -c1-20)"
+NIFI_SINGLE_USER_PASSWORD='dsjB2qGE9CW41rvzv8g0'
 
 kubectl create secret generic nifi-secret -n datalake \
   --from-literal=single-user-username=admin \
