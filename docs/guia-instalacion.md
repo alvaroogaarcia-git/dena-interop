@@ -819,3 +819,123 @@ Notas:
 - El NodePort directo `30821` no es la ruta de acceso validada en esta fase.
 - En este nodo de `4 GiB`, NiFi se ha validado sin `startupProbe`; las sondas efectivas son `readiness` y `liveness` con tiempos amplios.
 - El driver JDBC de PostgreSQL y el flujo NiFi quedan fuera de esta fase; pertenecen a la Fase 11b.
+
+## 16. Fase 11b - Verticales: PostgreSQL origen + Mathesar Local
+
+ADR-008: la fuente del vertical deja de ser CSV/GetFile y pasa a ser PostgreSQL. La tabla `expedientes.admin_file` queda como fuente de verdad editable; Mathesar la expone por web y NiFi queda preparado para sincronizacion incremental usando `updated_at`.
+
+### 16.1 Driver JDBC de PostgreSQL en NiFi
+
+El driver JDBC no viene en la imagen oficial de NiFi 2.9. Se copia al PVC persistente de `extensions/`:
+
+```bash
+bash scripts/dena/install-nifi-postgresql-driver.sh
+```
+
+Equivalente manual:
+
+```bash
+POD="$(kubectl get pod -n datalake -l app=nifi -o jsonpath='{.items[0].metadata.name}')"
+curl -fsSLO https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar
+kubectl cp postgresql-42.7.4.jar datalake/"$POD":/opt/nifi/nifi-current/extensions/postgresql-42.7.4.jar -c nifi
+```
+
+### 16.2 PostgreSQL de `verticales`
+
+Desplegar un PostgreSQL dedicado al origen:
+
+```bash
+helm upgrade --install postgresql-verticales bitnami/postgresql --namespace verticales \
+  --version 18.7.5 \
+  -f helm-values/postgresql-verticales-values.yaml
+
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql -n verticales --timeout=180s
+```
+
+### 16.3 Esquema origen + base interna de Mathesar
+
+Crear la base interna de Mathesar, el esquema origen y la carga inicial:
+
+```bash
+PGV="$(kubectl get secret -n verticales postgresql-verticales -o jsonpath='{.data.postgres-password}' | base64 -d)"
+
+kubectl exec -i -n verticales postgresql-verticales-0 -- \
+  env PGPASSWORD="$PGV" \
+  psql -U postgres -d postgres -c "SELECT 'CREATE DATABASE mathesar_django' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mathesar_django')\\gexec"
+
+kubectl exec -i -n verticales postgresql-verticales-0 -- \
+  env PGPASSWORD="$PGV" \
+  psql -U postgres -d expedientes < sql/verticales/01-expedientes-source.sql
+
+kubectl exec -i -n verticales postgresql-verticales-0 -- \
+  env PGPASSWORD="$PGV" \
+  psql -U postgres -d expedientes < sql/verticales/02-state-check.sql
+
+bash scripts/dena/load-expedientes.sh
+```
+
+Estado esperado tras la carga:
+
+- `expedientes.admin_file` contiene `50` filas
+- existe indice por `updated_at`
+- el `CHECK` de `status` queda aplicado
+
+### 16.4 Mathesar local
+
+Crear el secret y desplegar Mathesar:
+
+```bash
+kubectl create secret generic mathesar-secret -n verticales \
+  --from-literal=db-password="$PGV" \
+  --from-literal=secret-key="$(openssl rand -base64 50)" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+ssh dena "k3s crictl pull docker.io/mathesar/mathesar:0.11.0"
+kubectl apply -f k8s-manifests/mathesar-deployment.yaml
+kubectl rollout status deployment/mathesar -n verticales --timeout=240s
+```
+
+Acceso de operador:
+
+```text
+http://192.168.56.15:30900
+```
+
+Notas:
+
+- En el primer arranque hay que crear el usuario admin desde la UI.
+- Dentro de Mathesar hay que anadir una conexion a `expedientes` usando:
+  - host `postgresql-verticales.verticales.svc.cluster.local`
+  - base `expedientes`
+  - usuario `postgres`
+- En esta imagen, `/healthz/ready/` no resulta estable en este entorno; las probes quedan por TCP sobre `:8000`.
+- En este nodo de `4 GiB`, Mathesar queda ajustado a `WEB_CONCURRENCY=1` y `128Mi/256Mi` para poder convivir con NiFi.
+
+### 16.5 Verificacion de Fase 11b
+
+```bash
+bash scripts/verify-fase11b.sh
+kubectl get pods,svc,pvc -n verticales -o wide
+```
+
+Resultados esperados:
+
+- `statefulset/postgresql-verticales` en `Ready`
+- `deployment/mathesar` en `Available`
+- `service/mathesar` publicado en `8000:30900/TCP`
+- `expedientes.admin_file` con `50` filas
+- `postgresql-42.7.4.jar` presente en `extensions/` de NiFi
+
+### 16.6 Nota de acceso a NiFi 2.x
+
+NiFi 2.x sigue rechazando acceso directo por NodePort cuando el `Host` no coincide con la interfaz local del pod o `localhost`. El acceso validado continua siendo:
+
+```bash
+kubectl port-forward -n datalake svc/nifi 8443:8443
+```
+
+Y la UI:
+
+```text
+https://localhost:8443/nifi
+```
