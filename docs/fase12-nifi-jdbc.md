@@ -27,8 +27,8 @@ La lectura incremental se apoya en:
 ## Requisitos previos
 
 - `k3s` activo
-- NiFi accesible por `kubectl port-forward -n datalake svc/nifi 8443:8443`
-- driver `postgresql-42.7.4.jar` ya copiado a `extensions/`
+- NiFi en `Running/Ready`
+- driver `postgresql-42.7.4.jar` copiado a `extensions/` con `bash scripts/dena/install-nifi-postgresql-driver.sh`
 - secret `nifi-secret` operativo
 - PostgreSQL de `verticales` en `Running`
 
@@ -42,14 +42,14 @@ bash scripts/dena/provision-fase12-nifi.sh
 
 El script:
 
-1. Obtiene token de NiFi con el usuario single-user.
-2. Crea el grupo de proceso si no existe.
-3. Crea el `DBCPConnectionPool` contra `postgresql-verticales.verticales.svc.cluster.local`.
-4. Crea `JsonRecordSetWriter`.
-5. Crea `QueryDatabaseTableRecord` con `Maximum-value Columns = updated_at,id`.
-6. Crea `UpdateAttribute` para dar nombre estable al fichero de salida.
-7. Crea `PutFile` apuntando al directorio persistente del PVC.
-8. Conecta y arranca los procesadores.
+1. Abre y cierra automaticamente un `port-forward` local a NiFi.
+2. Lee usuario y password desde `nifi-secret` y obtiene un token.
+3. Crea o reutiliza el grupo y sus componentes.
+4. Reconfigura DBCP con las claves de propiedades de NiFi 2.9.
+5. Reconcilia propiedades y conexiones sin duplicar componentes.
+6. Habilita servicios y arranca los procesadores.
+
+El aprovisionamiento es idempotente: puede repetirse para reparar o reconciliar el flujo.
 
 ## Verificacion
 
@@ -60,9 +60,26 @@ bash scripts/verify-fase12.sh
 La verificacion comprueba:
 
 - presencia del grupo de proceso
-- presencia de los tres procesadores
+- los tres procesadores en `VALID/RUNNING`
+- DBCP y Record Writer en `VALID/ENABLED`
 - disponibilidad del directorio de salida
 - presencia del driver JDBC en NiFi
+
+La validacion realizada genero un fichero `fase12-*.json` en el PVC.
+
+## Persistencia
+
+El deployment configura `nifi.flow.configuration.file` sobre `/persistent/conf/flow.json.gz`, dentro de `nifi-extensions`. La clave `nifi.sensitive.props.key` se obtiene de `nifi-secret`, por lo que las propiedades JDBC cifradas se pueden leer despues de recrear el pod.
+
+Prueba validada:
+
+```bash
+kubectl rollout restart deployment/nifi -n datalake
+kubectl rollout status deployment/nifi -n datalake --timeout=15m
+bash scripts/verify-fase12.sh
+```
+
+El grupo mantuvo el mismo identificador y todos los componentes continuaron operativos sin reprovisionar.
 
 ## Prueba de incremental
 

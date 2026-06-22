@@ -29,9 +29,9 @@ singleBinary:
   resources:
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 128Mi
     limits:
-      memory: 768Mi
+      memory: 384Mi
 
 read:
   replicas: 0
@@ -60,4 +60,3 @@ test:
 monitoring:
   serviceMonitor:
     enabled: true
-

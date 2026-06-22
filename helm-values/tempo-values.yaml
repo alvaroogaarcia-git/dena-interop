@@ -4,10 +4,10 @@ tempo:
   retention: 24h
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 25m
+      memory: 64Mi
     limits:
-      memory: 512Mi
+      memory: 192Mi
   storage:
     trace:
       backend: local
@@ -28,4 +28,3 @@ serviceMonitor:
 
 persistence:
   enabled: false
-

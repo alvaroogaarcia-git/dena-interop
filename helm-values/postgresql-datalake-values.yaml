@@ -18,10 +18,10 @@ primary:
     size: 4Gi
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 50m
+      memory: 64Mi
     limits:
-      memory: 512Mi
+      memory: 256Mi
 
 readReplicas:
   replicaCount: 0

@@ -35,6 +35,15 @@ spec:
         - name: nifi
           image: docker.io/apache/nifi:2.9.0
           imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+          args:
+            - >-
+              mkdir -p /persistent/conf &&
+              sed -i 's#^nifi.flow.configuration.file=.*#nifi.flow.configuration.file=/persistent/conf/flow.json.gz#'
+              /opt/nifi/nifi-current/conf/nifi.properties &&
+              exec /opt/nifi/scripts/start.sh
           env:
             - name: NIFI_WEB_HTTPS_PORT
               value: "8443"
@@ -48,6 +57,11 @@ spec:
                   name: nifi-secret
                   key: single-user-username
             - name: SINGLE_USER_CREDENTIALS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nifi-secret
+                  key: single-user-password
+            - name: NIFI_SENSITIVE_PROPS_KEY
               valueFrom:
                 secretKeyRef:
                   name: nifi-secret
@@ -86,7 +100,7 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 640Mi
             limits:
               memory: 768Mi
           volumeMounts:
@@ -111,6 +125,8 @@ spec:
             - name: extensions
               mountPath: /opt/nifi/nifi-current/logs
               subPath: logs
+            - name: extensions
+              mountPath: /persistent
       volumes:
         - name: extensions
           persistentVolumeClaim:

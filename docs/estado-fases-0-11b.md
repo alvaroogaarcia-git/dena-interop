@@ -1,17 +1,17 @@
-# Estado Fases 0-11b
+# Estado Fases 0-12
 
 Fecha: 2026-06-22
 
 ## Resumen
 
-El cluster queda validado hasta Fase 11b:
+El cluster queda validado hasta Fase 12:
 
 - Fases 0-11: ver `docs/estado-fases-0-11.md`.
 - Fase 11b: origen PostgreSQL en `verticales`, Mathesar local y driver JDBC de PostgreSQL persistido en NiFi.
+- Fase 12: flujo JDBC incremental NiFi operativo, idempotente y persistente tras reinicio.
 
 Pendiente a partir de aqui:
 
-- Fase 12 cargada y validada en el canvas de NiFi
 - rutas APISIX
 - esquema DENA de Fase 15
 - Terraform de fases posteriores
@@ -93,6 +93,13 @@ Estado esperado:
 - `expedientes.admin_file` con `50` filas
 - `postgresql-42.7.4.jar` presente en `extensions/` de NiFi
 
-## Siguiente fase
+## Fase 12 validada
 
-La siguiente fase operativa del laboratorio es la Fase 12: el flujo JDBC incremental en NiFi sobre esta fuente. El procedimiento detallado queda en `docs/fase12-nifi-jdbc.md`.
+- Grupo `Fase 12 - JDBC incremental` presente.
+- Tres procesadores en `VALID/RUNNING`.
+- `Verticales DBCP` y `JSON Record Writer` en `VALID/ENABLED`.
+- JSON de salida generado en el PVC.
+- Flujo conservado tras `kubectl rollout restart deployment/nifi -n datalake`.
+
+Procedimiento: `docs/fase12-nifi-jdbc.md`.
+Optimizacion del nodo: `docs/optimizacion-k3s-4gb.md`.

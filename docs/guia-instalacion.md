@@ -956,19 +956,19 @@ ADR-009: el laboratorio pasa de dejar preparado el origen a materializar un fluj
 ### 17.2 Provisionamiento
 
 ```bash
+bash scripts/dena/install-nifi-postgresql-driver.sh
 bash scripts/dena/provision-fase12-nifi.sh
 ```
 
 El script:
 
-1. obtiene token de NiFi con el usuario single-user
-2. comprueba el grupo de proceso `Fase 12 - JDBC incremental`
-3. crea el `DBCPConnectionPool` de PostgreSQL
-4. crea el `JsonRecordSetWriter`
-5. crea `QueryDatabaseTableRecord` con `updated_at,id`
-6. crea `UpdateAttribute` para fijar el nombre del archivo
-7. crea `PutFile` sobre el directorio persistente
-8. conecta y arranca el flujo
+1. abre automaticamente el `port-forward` de NiFi
+2. obtiene credenciales desde `nifi-secret`
+3. crea o reutiliza el grupo y los controller services
+4. reconcilia propiedades con la API de NiFi 2.9
+5. crea o reutiliza los tres procesadores
+6. evita conexiones duplicadas
+7. habilita y arranca el flujo
 
 ### 17.3 Verificacion
 
@@ -979,7 +979,8 @@ bash scripts/verify-fase12.sh
 La verificacion comprueba:
 
 - grupo de proceso presente
-- procesadores presentes
+- procesadores en `VALID/RUNNING`
+- controller services en `VALID/ENABLED`
 - directorio de salida accesible
 - driver JDBC presente en `extensions/`
 
@@ -1000,3 +1001,6 @@ kubectl exec -n verticales postgresql-verticales-0 -- \
 - Si el NodePort directo no responde, usar `kubectl port-forward -n datalake svc/nifi 8443:8443`.
 - El flujo escribe en `/opt/nifi/nifi-current/extensions/fase12-output`.
 - El directorio de salida vive dentro del PVC de NiFi, junto al driver JDBC.
+- `flow.json.gz` vive en `/persistent/conf/flow.json.gz` dentro del mismo PVC.
+- `NIFI_SENSITIVE_PROPS_KEY` usa el secreto de NiFi para conservar propiedades cifradas tras reinicios.
+- El procedimiento de optimizacion y recuperacion de k3s queda en `docs/optimizacion-k3s-4gb.md`.

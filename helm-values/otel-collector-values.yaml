@@ -99,10 +99,10 @@ serviceMonitor:
 
 resources:
   requests:
-    cpu: 100m
-    memory: 256Mi
+    cpu: 50m
+    memory: 128Mi
   limits:
-    memory: 512Mi
+    memory: 256Mi
 
 alternateConfig:
   receivers:
@@ -121,7 +121,7 @@ alternateConfig:
           type: container
           max_log_size: 102400
     host_metrics:
-      collection_interval: 10s
+      collection_interval: 30s
       root_path: /hostfs
       scrapers:
         cpu: {}
