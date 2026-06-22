@@ -48,9 +48,15 @@ spec:
               value: "true"
             - name: KC_HOSTNAME_STRICT
               value: "false"
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_METRICS_ENABLED
+              value: "true"
           ports:
             - name: http
               containerPort: 8080
+            - name: management
+              containerPort: 9000
           startupProbe:
             tcpSocket:
               port: 8080
@@ -89,3 +95,6 @@ spec:
     - name: http
       port: 8080
       targetPort: http
+    - name: management
+      port: 9000
+      targetPort: management

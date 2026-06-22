@@ -108,6 +108,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Estado validado Fases 0-6](docs/estado-fases-0-6.md)
 - [Estado validado Fases 0-3](docs/estado-fases-0-3.md)
 - [Preparacion de Fase 8](docs/fase8-preparacion.md)
+- [Observabilidad y Grafana](docs/grafana-observabilidad.md)
 
 ## Estructura
 
