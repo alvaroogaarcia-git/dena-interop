@@ -4,7 +4,7 @@ Stack local de interoperabilidad desplegado sobre un nodo unico DietPi x86_64 co
 
 ## Estado actual
 
-El entorno esta validado hasta Fase 11b de la guia de instalacion:
+El entorno esta validado hasta Fase 13 de la guia de instalacion:
 
 | Fase | Componente | Estado |
 | --- | --- | --- |
@@ -21,6 +21,8 @@ El entorno esta validado hasta Fase 11b de la guia de instalacion:
 | 10 | PostgREST | Validado |
 | 11 | Apache NiFi 2.9 | Validado |
 | 11b | Verticales + Mathesar local | Validado |
+| 12 | Flujo NiFi JDBC incremental | Validado |
+| 13 | Ruta APISIX para PostgREST | Validado |
 
 ## Que hay desplegado
 
@@ -31,6 +33,7 @@ El entorno esta validado hasta Fase 11b de la guia de instalacion:
   - APISIX `3.16.0` mediante chart `apisix-2.14.1`.
   - etcd embebido del chart APISIX.
   - Gateway HTTP publicado en `NodePort 30080`.
+  - PostgREST publicado en `/api` mediante una ruta APISIX de solo lectura.
 - Namespace `monitoring`
   - Prometheus Operator mediante `kube-prometheus-stack`.
   - Grafana publicado en `NodePort 31803`.
@@ -51,10 +54,8 @@ El entorno esta validado hasta Fase 11b de la guia de instalacion:
   - PostgreSQL origen `17.1.0` mediante chart `postgresql-18.7.5`.
   - Base `expedientes` con tabla `expedientes.admin_file`.
   - Mathesar `0.11.0` publicado en `NodePort 30900`.
-- Pendiente a partir de Fase 11b:
-  - flujo NiFi JDBC en el canvas
+- Pendiente a partir de Fase 13:
   - Terraform
-  - rutas APISIX
   - SQL DENA
 
 ## Verificacion rapida
@@ -72,22 +73,24 @@ kubectl get pods,svc,pvc -n monitoring -o wide
 kubectl get pods,svc,pvc -n datalake -o wide
 kubectl get pods,svc,pvc -n verticales -o wide
 helm list -A
-curl -i http://192.168.56.15:30080
+curl -i http://192.168.56.15:30080/api
 curl -i http://192.168.56.15:31803/login
 bash scripts/verify-fase10.sh
 bash scripts/verify-fase11.sh
 bash scripts/verify-fase11b.sh
+bash scripts/verify-fase12.sh
+bash scripts/verify-fase13.sh
 ```
 
-Resultado esperado del gateway en Fase 6:
+Resultado esperado del gateway desde Fase 13:
 
 ```text
-HTTP/1.1 404 Not Found
+HTTP/1.1 200 OK
 Server: APISIX/3.16.0
-{"error_msg":"404 Route Not Found"}
+{"swagger":"2.0", ...}
 ```
 
-Ese `404` es correcto: APISIX esta vivo, pero todavia no hay rutas configuradas.
+La ruta `/api` publica el documento OpenAPI de PostgREST. La raiz `/` continua sin ruta.
 
 Resultado esperado de `scripts/verify-fase10.sh`:
 
@@ -105,6 +108,8 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Estado validado Fases 0-10](docs/estado-fases-0-10.md)
 - [Estado validado Fases 0-11](docs/estado-fases-0-11.md)
 - [Estado validado Fases 0-11b](docs/estado-fases-0-11b.md)
+- [Estado validado Fases 0-13](docs/estado-fases-0-13.md)
+- [Flujo NiFi JDBC de Fase 12](docs/fase12-nifi-jdbc.md)
 - [Estado validado Fases 0-6](docs/estado-fases-0-6.md)
 - [Estado validado Fases 0-3](docs/estado-fases-0-3.md)
 - [Preparacion de Fase 8](docs/fase8-preparacion.md)

@@ -1,6 +1,6 @@
 # Guia completa de instalacion
 
-Esta guia reconstruye el estado validado hasta Fase 11 de `dena-interop` sobre un nodo unico DietPi x86_64 con k3s y Helm.
+Esta guia reconstruye el estado validado hasta Fase 13 de `dena-interop` sobre un nodo unico DietPi x86_64 con k3s y Helm.
 
 El objetivo es que una persona con conocimientos minimos de Linux, Kubernetes y terminal pueda repetir la instalacion sin depender de pasos implicitos.
 
@@ -1004,3 +1004,36 @@ kubectl exec -n verticales postgresql-verticales-0 -- \
 - `flow.json.gz` vive en `/persistent/conf/flow.json.gz` dentro del mismo PVC.
 - `NIFI_SENSITIVE_PROPS_KEY` usa el secreto de NiFi para conservar propiedades cifradas tras reinicios.
 - El procedimiento de optimizacion y recuperacion de k3s queda en `docs/optimizacion-k3s-4gb.md`.
+
+## 18. Fase 13 - Publicar PostgREST mediante APISIX
+
+ADR-010: PostgREST permanece como `ClusterIP` y su entrada externa se centraliza en APISIX. La ruta usa un identificador estable para permitir reconciliacion idempotente y limita la exposicion inicial a metodos de lectura.
+
+### 18.1 Provisionamiento
+
+```bash
+bash scripts/dena/provision-fase13-apisix.sh
+```
+
+La definicion versionada en `apisix/routes/fase13-postgrest.json` crea estas rutas:
+
+```text
+/api
+/api/*
+```
+
+El prefijo `/api` se elimina antes de enviar la peticion a `postgrest.datalake.svc.cluster.local:3000`.
+
+### 18.2 Verificacion
+
+```bash
+bash scripts/verify-fase13.sh
+```
+
+La verificacion comprueba la configuracion persistida en APISIX y realiza un `GET /api` completo a traves del servicio del gateway. El resultado debe ser `HTTP 200` con el documento OpenAPI de PostgREST y la cabecera `Server: APISIX/3.16.0`.
+
+Acceso desde la red del nodo:
+
+```text
+http://192.168.56.15:30080/api
+```

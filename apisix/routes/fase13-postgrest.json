@@ -1,0 +1,27 @@
+{
+  "name": "fase13-postgrest",
+  "uris": [
+    "/api",
+    "/api/*"
+  ],
+  "methods": [
+    "GET",
+    "HEAD",
+    "OPTIONS"
+  ],
+  "plugins": {
+    "proxy-rewrite": {
+      "regex_uri": [
+        "^/api/?(.*)",
+        "/$1"
+      ]
+    }
+  },
+  "upstream": {
+    "type": "roundrobin",
+    "scheme": "http",
+    "nodes": {
+      "postgrest.datalake.svc.cluster.local:3000": 1
+    }
+  }
+}
