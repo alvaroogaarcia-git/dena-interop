@@ -4,54 +4,73 @@ Fecha: 2026-06-24
 
 ## Resumen
 
-El cluster queda validado hasta Fase 13:
+El alcance consolidado queda validado hasta Fase 13:
 
-- Fases 0-12: ver `docs/estado-fases-0-11b.md` y `docs/fase12-nifi-jdbc.md`.
-- Fase 13: APISIX publica PostgREST bajo `/api` mediante una ruta reproducible e idempotente.
+- Fases 0-11b: plataforma, seguridad, gateway, observabilidad, datalake, NiFi y verticales.
+- Extension 11c: flujo JDBC incremental de NiFi, conservando nombres internos históricos de Fase 12.
+- Fase 12: realm, clientes, roles y usuario piloto gestionados por Terraform.
+- Fase 13: rutas APISIX, OIDC obligatorio y endpoint DENA funcional.
 
-Pendiente a partir de aqui:
+## Fase 12 - Terraform y Keycloak
 
-- esquema DENA de Fase 15
-- Terraform de fases posteriores
+Estado validado:
 
-## Fase 13 - API de datalake mediante APISIX
+- provider `keycloak/keycloak` 5.8.0 bloqueado en `.terraform.lock.hcl`
+- realm `dena`
+- cliente publico `react-frontend` con PKCE S256
+- cliente confidencial `apisix-gateway`
+- roles `dena-reader`, `dena-writer` y `dena-admin`
+- usuario `testuser` con roles reader y writer
+- Secret Kubernetes `gateway/apisix-oidc`
+- discovery OIDC operativo
+- emision e introspeccion de access token comprobadas
 
-La ruta `fase13-postgrest` acepta `GET`, `HEAD` y `OPTIONS` sobre `/api` y `/api/*`. El plugin `proxy-rewrite` elimina el prefijo `/api` antes de enviar la peticion al servicio interno:
+Los secretos y el estado Terraform permanecen fuera de Git.
+
+## Fase 13 - APISIX y DENA
+
+Upstreams:
 
 ```text
-APISIX /api/* -> postgrest.datalake.svc.cluster.local:3000/*
+1 -> postgrest.datalake.svc.cluster.local:3000
+2 -> keycloak.auth.svc.cluster.local:8080
 ```
 
-Los metodos de escritura no se publican en esta fase. La ruta queda limitada a la API anonima de lectura que expone PostgREST.
+Rutas publicas:
 
-Recursos versionados:
+- `/realms/*`
+- `/admin/*`
+- `/resources/*`
 
-- Ruta: `apisix/routes/fase13-postgrest.json`
-- Provisionamiento: `scripts/dena/provision-fase13-apisix.sh`
-- Verificacion: `scripts/verify-fase13.sh`
+Rutas protegidas mediante `openid-connect` en modo `bearer_only`:
 
-## Provisionamiento y verificacion
+- `GET /api` y `/api/*`
+- `POST /dena/admin-files` -> `/rpc/dena_data_retrieve`
+
+La API DENA incluye:
+
+- esquema `dena`
+- tabla `dena.admin_file`
+- 50 expedientes sincronizados desde `verticales`
+- funcion `public.dena_data_retrieve`
+- permisos minimos para el rol PostgREST `anon`
+
+## Verificacion reproducible
 
 ```bash
-cd /home/dietpi/dena-interop
 export KUBECONFIG=/home/dietpi/.kube/dena-config
 
-bash scripts/dena/provision-fase13-apisix.sh
+bash scripts/dena/apply-fase12-keycloak.sh
+bash scripts/verify-fase12-keycloak.sh
+bash scripts/dena/apply-dena-api.sh
+bash scripts/dena/apply-route.sh
 bash scripts/verify-fase13.sh
 ```
 
-El provisionamiento usa `PUT` sobre un identificador estable, por lo que puede ejecutarse varias veces sin duplicar rutas.
+La validacion final confirma:
 
-Acceso desde la red del nodo:
-
-```text
-http://192.168.56.15:30080/api
-```
-
-Estado esperado:
-
-- ruta `fase13-postgrest` presente en APISIX
-- upstream `postgrest.datalake.svc.cluster.local:3000`
-- `GET /api` devuelve `HTTP 200`
-- cabecera `Server: APISIX/3.16.0`
-- cuerpo con el documento OpenAPI de PostgREST
+- `401` al acceder a `/api` sin token
+- token valido para `testuser`
+- OpenAPI de PostgREST accesible con token
+- `POST /dena/admin-files` devuelve expedientes reales
+- todos los workloads del cluster en `Running/Ready`

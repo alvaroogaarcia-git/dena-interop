@@ -21,19 +21,23 @@ El entorno esta validado hasta Fase 13 de la guia de instalacion:
 | 10 | PostgREST | Validado |
 | 11 | Apache NiFi 2.9 | Validado |
 | 11b | Verticales + Mathesar local | Validado |
-| 12 | Flujo NiFi JDBC incremental | Validado |
-| 13 | Ruta APISIX para PostgREST | Validado |
+| 11c | Flujo NiFi JDBC incremental | Validado |
+| 12 | Terraform: realm, clientes, roles y testuser en Keycloak | Validado |
+| 13 | APISIX: OIDC, rutas Keycloak y API DENA | Validado |
 
 ## Que hay desplegado
 
 - Namespace `auth`
   - PostgreSQL `17.1.0` mediante chart `postgresql-16.2.1`.
   - Keycloak `26.0` conectado a PostgreSQL.
+  - Realm `dena`, clientes `react-frontend` y `apisix-gateway`, roles y `testuser` gestionados por Terraform.
 - Namespace `gateway`
   - APISIX `3.16.0` mediante chart `apisix-2.14.1`.
   - etcd embebido del chart APISIX.
   - Gateway HTTP publicado en `NodePort 30080`.
-  - PostgREST publicado en `/api` mediante una ruta APISIX de solo lectura.
+  - Keycloak publicado en `/realms/*`, `/admin/*` y `/resources/*`.
+  - PostgREST publicado con OIDC obligatorio en `/api`.
+  - Interoperabilidad DENA publicada en `POST /dena/admin-files`.
 - Namespace `monitoring`
   - Prometheus Operator mediante `kube-prometheus-stack`.
   - Grafana publicado en `NodePort 31803`.
@@ -46,6 +50,7 @@ El entorno esta validado hasta Fase 13 de la guia de instalacion:
   - PostgreSQL `18.4.0` mediante chart `postgresql-18.7.5`.
   - PostgREST `13.0.4` publicado como `ClusterIP` interno en `:3000`.
   - Roles `anon` y `postgrest` validados en la base `datalake`.
+  - Esquema `dena`, 50 expedientes sincronizados y RPC `dena_data_retrieve`.
 - Apache NiFi
   - Deployment `nifi` en `datalake`.
   - HTTPS en `NodePort 30821`.
@@ -54,9 +59,7 @@ El entorno esta validado hasta Fase 13 de la guia de instalacion:
   - PostgreSQL origen `17.1.0` mediante chart `postgresql-18.7.5`.
   - Base `expedientes` con tabla `expedientes.admin_file`.
   - Mathesar `0.11.0` publicado en `NodePort 30900`.
-- Pendiente a partir de Fase 13:
-  - Terraform
-  - SQL DENA
+- El alcance definido hasta Fase 13 esta completado.
 
 ## Verificacion rapida
 
@@ -78,19 +81,19 @@ curl -i http://192.168.56.15:31803/login
 bash scripts/verify-fase10.sh
 bash scripts/verify-fase11.sh
 bash scripts/verify-fase11b.sh
-bash scripts/verify-fase12.sh
+bash scripts/verify-fase12.sh              # flujo NiFi, nombre legado
+bash scripts/verify-fase12-keycloak.sh     # Fase 12 del plan consolidado
 bash scripts/verify-fase13.sh
 ```
 
 Resultado esperado del gateway desde Fase 13:
 
 ```text
-HTTP/1.1 200 OK
+HTTP/1.1 401 Unauthorized
 Server: APISIX/3.16.0
-{"swagger":"2.0", ...}
 ```
 
-La ruta `/api` publica el documento OpenAPI de PostgREST. La raiz `/` continua sin ruta.
+La ruta `/api` exige un bearer token valido del realm `dena`. `scripts/verify-fase13.sh` comprueba el rechazo sin token, obtiene un token de `testuser` y valida `/api` y `/dena/admin-files`.
 
 Resultado esperado de `scripts/verify-fase10.sh`:
 
@@ -109,7 +112,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Estado validado Fases 0-11](docs/estado-fases-0-11.md)
 - [Estado validado Fases 0-11b](docs/estado-fases-0-11b.md)
 - [Estado validado Fases 0-13](docs/estado-fases-0-13.md)
-- [Flujo NiFi JDBC de Fase 12](docs/fase12-nifi-jdbc.md)
+- [Flujo NiFi JDBC incremental (extension 11c)](docs/fase12-nifi-jdbc.md)
 - [Estado validado Fases 0-6](docs/estado-fases-0-6.md)
 - [Estado validado Fases 0-3](docs/estado-fases-0-3.md)
 - [Preparacion de Fase 8](docs/fase8-preparacion.md)
@@ -121,9 +124,9 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 docs/           Documentacion operativa y estado validado
 helm-values/    Values Helm versionados
 k8s-manifests/  Manifiestos Kubernetes versionados
-scripts/        Scripts auxiliares futuros
-sql/            SQL de fases posteriores
-terraform/      Terraform de fases posteriores
+scripts/        Provisionamiento y verificaciones reproducibles
+sql/            SQL de verticales y API DENA
+terraform/      Realm, clientes, roles y usuario piloto de Keycloak
 ```
 
 ## Secretos

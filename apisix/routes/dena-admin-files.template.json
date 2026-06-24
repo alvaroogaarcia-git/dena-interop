@@ -1,0 +1,25 @@
+{
+  "name": "dena-admin-files-oidc",
+  "uri": "/dena/admin-files",
+  "methods": ["POST"],
+  "upstream_id": "1",
+  "plugins": {
+    "openid-connect": {
+      "client_id": "apisix-gateway",
+      "client_secret": "__OIDC_CLIENT_SECRET__",
+      "discovery": "http://192.168.56.15:30080/realms/dena/.well-known/openid-configuration",
+      "introspection_endpoint": "http://192.168.56.15:30080/realms/dena/protocol/openid-connect/token/introspect",
+      "introspection_endpoint_auth_method": "client_secret_basic",
+      "bearer_only": true,
+      "realm": "dena",
+      "ssl_verify": false,
+      "timeout": 10
+    },
+    "proxy-rewrite": {
+      "uri": "/rpc/dena_data_retrieve",
+      "headers": {
+        "remove": ["Authorization"]
+      }
+    }
+  }
+}

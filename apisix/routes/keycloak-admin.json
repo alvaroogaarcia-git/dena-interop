@@ -1,0 +1,17 @@
+{
+  "name": "keycloak-admin",
+  "uri": "/admin/*",
+  "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  "upstream_id": "2",
+  "plugins": {
+    "proxy-rewrite": {
+      "headers": {
+        "set": {
+          "X-Forwarded-Host": "192.168.56.15",
+          "X-Forwarded-Port": "30080",
+          "X-Forwarded-Proto": "http"
+        }
+      }
+    }
+  }
+}

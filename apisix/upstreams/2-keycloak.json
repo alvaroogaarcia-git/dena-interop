@@ -1,0 +1,8 @@
+{
+  "name": "keycloak-auth",
+  "type": "roundrobin",
+  "scheme": "http",
+  "nodes": {
+    "keycloak.auth.svc.cluster.local:8080": 1
+  }
+}

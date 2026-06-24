@@ -1,0 +1,8 @@
+{
+  "name": "postgrest-datalake",
+  "type": "roundrobin",
+  "scheme": "http",
+  "nodes": {
+    "postgrest.datalake.svc.cluster.local:3000": 1
+  }
+}

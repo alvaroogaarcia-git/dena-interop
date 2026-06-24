@@ -940,7 +940,7 @@ Y la UI:
 https://localhost:8443/nifi
 ```
 
-## 17. Fase 12 - NiFi JDBC incremental
+## 17. Extension 11c - NiFi JDBC incremental
 
 ADR-009: el laboratorio pasa de dejar preparado el origen a materializar un flujo NiFi incremental contra `expedientes.admin_file`. El flujo queda versionado en este repositorio y usa el driver PostgreSQL persistido en el PVC de NiFi.
 
@@ -1005,35 +1005,50 @@ kubectl exec -n verticales postgresql-verticales-0 -- \
 - `NIFI_SENSITIVE_PROPS_KEY` usa el secreto de NiFi para conservar propiedades cifradas tras reinicios.
 - El procedimiento de optimizacion y recuperacion de k3s queda en `docs/optimizacion-k3s-4gb.md`.
 
-## 18. Fase 13 - Publicar PostgREST mediante APISIX
+## 18. Fase 12 - Terraform y Keycloak
 
-ADR-010: PostgREST permanece como `ClusterIP` y su entrada externa se centraliza en APISIX. La ruta usa un identificador estable para permitir reconciliacion idempotente y limita la exposicion inicial a metodos de lectura.
+ADR-010: el realm piloto y sus identidades se gestionan con el provider oficial `keycloak/keycloak`. Terraform se conecta al servicio mediante un port-forward local y el estado, que contiene valores sensibles, queda excluido de Git.
 
-### 18.1 Provisionamiento
+Recursos gestionados:
+
+- realm `dena`
+- cliente publico `react-frontend` con Authorization Code y PKCE S256
+- cliente confidencial `apisix-gateway`
+- roles `dena-reader`, `dena-writer` y `dena-admin`
+- usuario piloto `testuser`
+
+Aplicacion y verificacion:
 
 ```bash
-bash scripts/dena/provision-fase13-apisix.sh
+bash scripts/dena/apply-fase12-keycloak.sh
+bash scripts/verify-fase12-keycloak.sh
 ```
 
-La definicion versionada en `apisix/routes/fase13-postgrest.json` crea estas rutas:
+El password de `testuser` se genera en `.local/fase12-keycloak.env`. El secreto del cliente confidencial se copia al Secret `gateway/apisix-oidc` sin versionarlo.
 
-```text
-/api
-/api/*
+## 19. Fase 13 - APISIX OIDC e interoperabilidad DENA
+
+ADR-011: APISIX es la unica entrada HTTP. Keycloak conserva URL publica fija `http://192.168.56.15:30080`, PostgREST sigue como `ClusterIP` y las rutas de datos requieren un bearer token validado mediante introspeccion OIDC.
+
+Antes de crear las rutas se aplica la funcion SQL y se sincronizan los 50 expedientes actuales:
+
+```bash
+bash scripts/dena/apply-dena-api.sh
+bash scripts/dena/apply-route.sh
 ```
 
-El prefijo `/api` se elimina antes de enviar la peticion a `postgrest.datalake.svc.cluster.local:3000`.
+Recursos APISIX:
 
-### 18.2 Verificacion
+- upstream `1`: PostgREST en `postgrest.datalake.svc.cluster.local:3000`
+- upstream `2`: Keycloak en `keycloak.auth.svc.cluster.local:8080`
+- rutas publicas `/realms/*`, `/admin/*` y `/resources/*`
+- ruta protegida `/api` y `/api/*`, con eliminacion del prefijo
+- ruta protegida `POST /dena/admin-files`, reescrita a `/rpc/dena_data_retrieve`
+
+Verificacion completa:
 
 ```bash
 bash scripts/verify-fase13.sh
 ```
 
-La verificacion comprueba la configuracion persistida en APISIX y realiza un `GET /api` completo a traves del servicio del gateway. El resultado debe ser `HTTP 200` con el documento OpenAPI de PostgREST y la cabecera `Server: APISIX/3.16.0`.
-
-Acceso desde la red del nodo:
-
-```text
-http://192.168.56.15:30080/api
-```
+La prueba valida discovery publico, rechazo `401` sin token, emision de token para `testuser`, acceso autorizado a `/api` y respuesta con expedientes reales desde `POST /dena/admin-files`.

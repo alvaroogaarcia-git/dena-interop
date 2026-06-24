@@ -7,6 +7,8 @@ metadata:
     app: keycloak
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: keycloak
@@ -48,6 +50,10 @@ spec:
               value: "true"
             - name: KC_HOSTNAME_STRICT
               value: "false"
+            - name: KC_HOSTNAME
+              value: http://192.168.56.15:30080
+            - name: KC_PROXY_HEADERS
+              value: xforwarded
             - name: KC_HEALTH_ENABLED
               value: "true"
             - name: KC_METRICS_ENABLED

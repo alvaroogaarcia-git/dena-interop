@@ -1,4 +1,6 @@
-# Fase 12 - NiFi JDBC incremental
+# Extension 11c - NiFi JDBC incremental
+
+Nota de numeracion: este flujo se implemento originalmente con el nombre interno `Fase 12`. En el plan consolidado queda como extension 11c; la Fase 12 corresponde a Terraform y Keycloak. Se conservan nombres de scripts y del grupo NiFi por compatibilidad.
 
 Esta fase deja preparado un flujo NiFi reproducible para leer incrementalmente `expedientes.admin_file` y persistir la salida en disco dentro del PVC de NiFi.
 
