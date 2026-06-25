@@ -1,0 +1,24 @@
+name: Operacion o mantenimiento
+description: Tareas operativas, CI/CD, runbooks y mantenimiento del stack.
+title: "[Operacion] "
+labels:
+  - "area: operacion"
+  - "estado: pendiente"
+body:
+  - type: textarea
+    id: task
+    attributes:
+      label: Tarea
+      description: Que hay que cambiar o validar.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validacion
+      value: |
+        - [ ] Cambio versionado.
+        - [ ] GitHub Actions actualizado si aplica.
+        - [ ] Issue actualizada o cerrada.
+    validations:
+      required: true

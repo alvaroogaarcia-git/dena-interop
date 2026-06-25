@@ -11,7 +11,9 @@ LOCAL_ENV="$REPO_ROOT/.local/fase12-keycloak.env"
 PF_PID=""
 
 cleanup() {
-  [[ -n "$PF_PID" ]] && kill "$PF_PID" 2>/dev/null || true
+  if [[ -n "$PF_PID" ]]; then
+    kill "$PF_PID" 2>/dev/null || true
+  fi
 }
 trap cleanup EXIT
 
@@ -40,6 +42,7 @@ set -a
 # shellcheck disable=SC1090
 . "$LOCAL_ENV"
 set +a
+: "${TF_VAR_testuser_password:?Falta TF_VAR_testuser_password en $LOCAL_ENV}"
 
 client_secret="$(kubectl get secret apisix-oidc -n gateway -o jsonpath='{.data.client-secret}' | base64 -d)"
 

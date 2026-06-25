@@ -1,0 +1,58 @@
+name: Fase del plan
+description: Trabajo planificado por fase de dena-interop.
+title: "[Fase N] "
+labels:
+  - fase
+  - "estado: pendiente"
+body:
+  - type: input
+    id: phase
+    attributes:
+      label: Fase
+      description: Numero o identificador de fase.
+      placeholder: "14"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - sistema
+        - autenticacion
+        - gateway
+        - observabilidad
+        - datalake
+        - verticales
+        - operacion
+        - ci
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Alcance
+      description: Que debe quedar desplegado, versionado o documentado.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validacion esperada
+      description: Scripts, comandos o workflow de GitHub Actions que deben pasar.
+      value: |
+        - [ ] Script local de verificacion actualizado o creado.
+        - [ ] GitHub Actions actualizado para esta fase.
+        - [ ] Documentacion actualizada.
+    validations:
+      required: true
+  - type: textarea
+    id: closure
+    attributes:
+      label: Cierre
+      description: Checklist para cerrar la fase.
+      value: |
+        - [ ] Commit de fase creado.
+        - [ ] Workflow de CI en verde.
+        - [ ] Issue etiquetada como `estado: completada`.
+        - [ ] Issue cerrada con resumen de validacion.

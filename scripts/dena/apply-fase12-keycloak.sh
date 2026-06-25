@@ -12,7 +12,9 @@ LOCAL_ENV="$REPO_ROOT/.local/fase12-keycloak.env"
 PF_PID=""
 
 cleanup() {
-  [[ -n "$PF_PID" ]] && kill "$PF_PID" 2>/dev/null || true
+  if [[ -n "$PF_PID" ]]; then
+    kill "$PF_PID" 2>/dev/null || true
+  fi
 }
 trap cleanup EXIT
 

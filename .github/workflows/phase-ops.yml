@@ -1,0 +1,138 @@
+name: Phase Ops
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Operation to run against the local stack.
+        required: true
+        default: verify-all
+        type: choice
+        options:
+          - verify-all
+          - verify-fase10
+          - verify-fase11
+          - verify-fase11b
+          - verify-fase12-nifi
+          - verify-fase12-keycloak
+          - verify-fase13
+          - apply-fase12-keycloak
+          - provision-fase12-nifi
+          - load-expedientes
+          - apply-dena-api
+          - apply-fase13-apisix
+          - preflight-fase8
+          - recover-fase7
+      runner_labels_json:
+        description: JSON array for runs-on labels.
+        required: true
+        default: '["self-hosted"]'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase-ops-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  phase-ops:
+    name: Run phase operation
+    runs-on: ${{ fromJSON(inputs.runner_labels_json) }}
+
+    env:
+      KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+      FASE12_KEYCLOAK_ENV_B64: ${{ secrets.FASE12_KEYCLOAK_ENV_B64 }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore local kubeconfig
+        if: env.KUBECONFIG_B64 != ''
+        run: |
+          KUBECONFIG_PATH="$GITHUB_WORKSPACE/.github/tmp/dena-config"
+          mkdir -p "$(dirname "$KUBECONFIG_PATH")"
+          printf '%s' "$KUBECONFIG_B64" | base64 -d > "$KUBECONFIG_PATH"
+          chmod 600 "$KUBECONFIG_PATH"
+          echo "KUBECONFIG=$KUBECONFIG_PATH" >> "$GITHUB_ENV"
+
+      - name: Restore Keycloak phase env
+        if: env.FASE12_KEYCLOAK_ENV_B64 != ''
+        run: |
+          mkdir -p .local
+          printf '%s' "$FASE12_KEYCLOAK_ENV_B64" | base64 -d > .local/fase12-keycloak.env
+          chmod 600 .local/fase12-keycloak.env
+
+      - name: Check required tools
+        run: |
+          for bin in bash kubectl curl helm terraform; do
+            command -v "$bin" >/dev/null 2>&1 || {
+              echo "Missing required binary: $bin" >&2
+              exit 1
+            }
+          done
+          kubectl version --client=true
+          helm version --short
+          terraform version
+
+      - name: Run operation
+        run: |
+          case "${{ inputs.operation }}" in
+            verify-all)
+              bash scripts/verify-fase10.sh
+              bash scripts/verify-fase11.sh
+              bash scripts/verify-fase11b.sh
+              bash scripts/verify-fase12.sh
+              bash scripts/verify-fase12-keycloak.sh
+              bash scripts/verify-fase13.sh
+              ;;
+            verify-fase10)
+              bash scripts/verify-fase10.sh
+              ;;
+            verify-fase11)
+              bash scripts/verify-fase11.sh
+              ;;
+            verify-fase11b)
+              bash scripts/verify-fase11b.sh
+              ;;
+            verify-fase12-nifi)
+              bash scripts/verify-fase12.sh
+              ;;
+            verify-fase12-keycloak)
+              bash scripts/verify-fase12-keycloak.sh
+              ;;
+            verify-fase13)
+              bash scripts/verify-fase13.sh
+              ;;
+            apply-fase12-keycloak)
+              bash scripts/dena/apply-fase12-keycloak.sh
+              bash scripts/verify-fase12-keycloak.sh
+              ;;
+            provision-fase12-nifi)
+              bash scripts/dena/provision-fase12-nifi.sh
+              bash scripts/verify-fase12.sh
+              ;;
+            load-expedientes)
+              bash scripts/dena/load-expedientes.sh
+              ;;
+            apply-dena-api)
+              bash scripts/dena/apply-dena-api.sh
+              bash scripts/verify-fase13.sh
+              ;;
+            apply-fase13-apisix)
+              bash scripts/dena/apply-route.sh
+              bash scripts/verify-fase13.sh
+              ;;
+            preflight-fase8)
+              bash scripts/preflight-fase8.sh
+              ;;
+            recover-fase7)
+              bash scripts/recover-fase7.sh
+              bash scripts/preflight-fase8.sh
+              ;;
+            *)
+              echo "Unsupported operation: ${{ inputs.operation }}" >&2
+              exit 1
+              ;;
+          esac

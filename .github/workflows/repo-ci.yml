@@ -30,13 +30,15 @@ jobs:
           find scripts -type f -name '*.sh' -print0 | xargs -0 -n1 bash -n
 
       - name: Run shellcheck
-        continue-on-error: true
         run: |
           find scripts -type f -name '*.sh' -print0 | xargs -0 shellcheck
 
       - name: Validate JSON assets
         run: |
           find apisix -type f -name '*.json' -print0 | xargs -0 -n1 jq empty
+
+      - name: Validate GitHub workflow syntax
+        uses: raven-actions/actionlint@v2
 
       - name: Lint YAML
         run: |
