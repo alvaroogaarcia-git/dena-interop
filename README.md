@@ -107,6 +107,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 ## Documentacion principal
 
 - [Guia completa de instalacion](docs/guia-instalacion.md)
+- [GitHub Actions](docs/github-actions.md)
 - [Estado validado Fases 0-7](docs/estado-fases-0-7.md)
 - [Estado validado Fases 0-10](docs/estado-fases-0-10.md)
 - [Estado validado Fases 0-11](docs/estado-fases-0-11.md)
