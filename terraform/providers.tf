@@ -5,3 +5,8 @@ provider "keycloak" {
   url       = var.keycloak_url
   realm     = "master"
 }
+
+provider "grafana" {
+  url  = var.grafana_url
+  auth = "${var.grafana_admin_username}:${var.grafana_admin_password}"
+}

@@ -39,7 +39,7 @@ base64 -w0 /home/dietpi/.kube/dena-config
 base64 -w0 .local/fase12-keycloak.env
 ```
 
-El input `phase` permite ejecutar todo (`all`) o una verificacion concreta: `fase10`, `fase11`, `fase11b`, `fase12-nifi`, `fase12-keycloak` o `fase13`.
+El input `phase` permite ejecutar todo (`all`) o una verificacion concreta: `fase10`, `fase11`, `fase11b`, `fase12-nifi`, `fase12-keycloak`, `fase13` o `fase14`.
 
 ## Phase Ops
 
@@ -47,6 +47,7 @@ El workflow `.github/workflows/phase-ops.yml` centraliza operaciones manuales so
 
 - verificaciones completas o por fase
 - `apply-fase12-keycloak`
+- `apply-fase14-grafana`
 - `provision-fase12-nifi`
 - `load-expedientes`
 - `apply-dena-api`

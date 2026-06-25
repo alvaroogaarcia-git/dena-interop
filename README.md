@@ -4,7 +4,7 @@ Stack local de interoperabilidad desplegado sobre un nodo unico DietPi x86_64 co
 
 ## Estado actual
 
-El entorno esta validado hasta Fase 13 de la guia de instalacion:
+El entorno esta validado hasta Fase 14 de la guia de instalacion:
 
 | Fase | Componente | Estado |
 | --- | --- | --- |
@@ -24,6 +24,7 @@ El entorno esta validado hasta Fase 13 de la guia de instalacion:
 | 11c | Flujo NiFi JDBC incremental | Validado |
 | 12 | Terraform: realm, clientes, roles y testuser en Keycloak | Validado |
 | 13 | APISIX: OIDC, rutas Keycloak y API DENA | Validado |
+| 14 | Terraform: datasources y dashboards de Grafana | Validado |
 
 ## Que hay desplegado
 
@@ -41,6 +42,7 @@ El entorno esta validado hasta Fase 13 de la guia de instalacion:
 - Namespace `monitoring`
   - Prometheus Operator mediante `kube-prometheus-stack`.
   - Grafana publicado en `NodePort 31803`.
+  - Datasources, carpeta `DENA` y dashboards gestionados por Terraform.
   - Loki `3.6.7` en modo SingleBinary.
   - Tempo `2.9.0` con OTLP `4317/4318`.
 - OTel Collector
@@ -59,7 +61,7 @@ El entorno esta validado hasta Fase 13 de la guia de instalacion:
   - PostgreSQL origen `17.1.0` mediante chart `postgresql-18.7.5`.
   - Base `expedientes` con tabla `expedientes.admin_file`.
   - Mathesar `0.11.0` publicado en `NodePort 30900`.
-- El alcance definido hasta Fase 13 esta completado.
+- El alcance definido hasta Fase 14 esta completado.
 
 ## Verificacion rapida
 
@@ -84,6 +86,7 @@ bash scripts/verify-fase11b.sh
 bash scripts/verify-fase12.sh              # flujo NiFi, nombre legado
 bash scripts/verify-fase12-keycloak.sh     # Fase 12 del plan consolidado
 bash scripts/verify-fase13.sh
+bash scripts/verify-fase14.sh
 ```
 
 Resultado esperado del gateway desde Fase 13:
@@ -113,6 +116,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Estado validado Fases 0-11](docs/estado-fases-0-11.md)
 - [Estado validado Fases 0-11b](docs/estado-fases-0-11b.md)
 - [Estado validado Fases 0-13](docs/estado-fases-0-13.md)
+- [Estado validado Fases 0-14](docs/estado-fases-0-14.md)
 - [Flujo NiFi JDBC incremental (extension 11c)](docs/fase12-nifi-jdbc.md)
 - [Estado validado Fases 0-6](docs/estado-fases-0-6.md)
 - [Estado validado Fases 0-3](docs/estado-fases-0-3.md)

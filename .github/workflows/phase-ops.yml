@@ -16,7 +16,9 @@ on:
           - verify-fase12-nifi
           - verify-fase12-keycloak
           - verify-fase13
+          - verify-fase14
           - apply-fase12-keycloak
+          - apply-fase14-grafana
           - provision-fase12-nifi
           - load-expedientes
           - apply-dena-api
@@ -86,6 +88,7 @@ jobs:
               bash scripts/verify-fase12.sh
               bash scripts/verify-fase12-keycloak.sh
               bash scripts/verify-fase13.sh
+              bash scripts/verify-fase14.sh
               ;;
             verify-fase10)
               bash scripts/verify-fase10.sh
@@ -105,9 +108,16 @@ jobs:
             verify-fase13)
               bash scripts/verify-fase13.sh
               ;;
+            verify-fase14)
+              bash scripts/verify-fase14.sh
+              ;;
             apply-fase12-keycloak)
               bash scripts/dena/apply-fase12-keycloak.sh
               bash scripts/verify-fase12-keycloak.sh
+              ;;
+            apply-fase14-grafana)
+              bash scripts/dena/apply-fase14-grafana.sh
+              bash scripts/verify-fase14.sh
               ;;
             provision-fase12-nifi)
               bash scripts/dena/provision-fase12-nifi.sh

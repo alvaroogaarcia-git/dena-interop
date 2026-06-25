@@ -27,3 +27,21 @@ variable "gateway_base_url" {
   type        = string
   default     = "http://192.168.56.15:30080"
 }
+
+variable "grafana_url" {
+  description = "URL local del port-forward de Grafana."
+  type        = string
+  default     = "http://127.0.0.1:13000"
+}
+
+variable "grafana_admin_username" {
+  description = "Usuario administrador de Grafana."
+  type        = string
+  default     = "admin"
+}
+
+variable "grafana_admin_password" {
+  description = "Password del administrador de Grafana."
+  type        = string
+  sensitive   = true
+}

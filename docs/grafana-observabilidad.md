@@ -95,6 +95,8 @@ Dashboards cargados y validados por API:
 - `DENA Stack Overview`
 - `DENA PostgreSQL Overview`
 
+Desde Fase 14, Terraform es la fuente de verdad de estos dashboards y de los datasources principales. Los JSON versionados estan en `terraform/dashboards/` y se aplican con `scripts/dena/apply-fase14-grafana.sh`.
+
 ## Pasos aplicados de verdad en el cluster
 
 Desde:

@@ -16,6 +16,7 @@ on:
           - fase12-nifi
           - fase12-keycloak
           - fase13
+          - fase14
       runner_labels_json:
         description: JSON array for runs-on labels.
         required: true
@@ -84,6 +85,7 @@ jobs:
               bash scripts/verify-fase12.sh
               bash scripts/verify-fase12-keycloak.sh
               bash scripts/verify-fase13.sh
+              bash scripts/verify-fase14.sh
               ;;
             fase10)
               bash scripts/verify-fase10.sh
@@ -102,6 +104,9 @@ jobs:
               ;;
             fase13)
               bash scripts/verify-fase13.sh
+              ;;
+            fase14)
+              bash scripts/verify-fase14.sh
               ;;
             *)
               echo "Unsupported phase: ${{ inputs.phase }}" >&2

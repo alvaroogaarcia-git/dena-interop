@@ -1052,3 +1052,22 @@ bash scripts/verify-fase13.sh
 ```
 
 La prueba valida discovery publico, rechazo `401` sin token, emision de token para `testuser`, acceso autorizado a `/api` y respuesta con expedientes reales desde `POST /dena/admin-files`.
+
+## 20. Fase 14 - Terraform y Grafana
+
+ADR-012: Grafana se mantiene desplegado por Helm, pero su configuracion funcional queda gestionada por Terraform mediante el provider oficial `grafana/grafana`. Terraform se conecta por port-forward local usando las credenciales del Secret `monitoring/grafana-admin`.
+
+Recursos gestionados:
+
+- datasources `Prometheus`, `Loki` y `Tempo`
+- carpeta `DENA`
+- dashboards `DENA Stack Overview` y `DENA PostgreSQL Overview`
+
+Aplicacion y verificacion:
+
+```bash
+bash scripts/dena/apply-fase14-grafana.sh
+bash scripts/verify-fase14.sh
+```
+
+El script actualiza primero el release `monitoring` para desactivar el provisioning read-only de datasources de Grafana. Despues Terraform crea o actualiza datasources, carpeta y dashboards por API. Los dashboards viven en `terraform/dashboards/` y no dependen del sidecar de ConfigMaps para quedar reproducidos.

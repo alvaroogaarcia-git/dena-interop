@@ -14,3 +14,14 @@ output "apisix_client_secret" {
 output "testuser_username" {
   value = keycloak_user.testuser.username
 }
+
+output "grafana_folder_uid" {
+  value = grafana_folder.dena.uid
+}
+
+output "grafana_dashboard_uids" {
+  value = [
+    "dena-stack-overview",
+    "dena-postgresql-overview"
+  ]
+}

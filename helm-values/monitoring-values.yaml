@@ -30,46 +30,9 @@ grafana:
       provider:
         allowUiUpdates: true
     datasources:
-      exemplarTraceIdDestinations:
-        datasourceUid: tempo
-        traceIdLabelName: trace_id
-        urlDisplayLabel: View trace
+      enabled: false
       alertmanager:
         enabled: false
-  additionalDataSources:
-    - name: Loki
-      uid: loki
-      type: loki
-      access: proxy
-      url: http://loki.monitoring.svc.cluster.local:3100
-      isDefault: false
-      jsonData:
-        maxLines: 1000
-    - name: Tempo
-      uid: tempo
-      type: tempo
-      access: proxy
-      url: http://tempo.monitoring.svc.cluster.local:3200
-      isDefault: false
-      jsonData:
-        serviceMap:
-          datasourceUid: prometheus
-        tracesToLogsV2:
-          datasourceUid: loki
-          spanStartTimeShift: "-15m"
-          spanEndTimeShift: "15m"
-          tags:
-            - key: service.name
-              value: service.name
-            - key: k8s.namespace.name
-              value: k8s.namespace.name
-            - key: k8s.pod.name
-              value: k8s.pod.name
-          filterByTraceID: false
-          filterBySpanID: false
-          customQuery: false
-        nodeGraph:
-          enabled: true
 
 kubeControllerManager:
   enabled: false
