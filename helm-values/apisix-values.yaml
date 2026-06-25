@@ -51,4 +51,3 @@ etcd:
 
 ingress-controller:
   enabled: false
-
