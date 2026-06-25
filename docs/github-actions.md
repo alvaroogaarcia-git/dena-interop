@@ -14,7 +14,7 @@ El workflow `.github/workflows/repo-ci.yml` ejecuta:
 - `shellcheck` sobre todos los scripts.
 - `jq empty` sobre los JSON de APISIX.
 - `actionlint` sobre workflows de GitHub Actions.
-- `yamllint` sobre workflows, values Helm y manifiestos Kubernetes.
+- `yamllint` sobre configuracion GitHub, values Helm y manifiestos Kubernetes.
 - `terraform fmt -check`, `terraform init -backend=false` y `terraform validate`.
 
 ## Cluster Verify
