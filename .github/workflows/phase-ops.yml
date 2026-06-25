@@ -82,64 +82,64 @@ jobs:
         run: |
           case "${{ inputs.operation }}" in
             verify-all)
-              bash scripts/verify-fase10.sh
-              bash scripts/verify-fase11.sh
-              bash scripts/verify-fase11b.sh
-              bash scripts/verify-fase12.sh
-              bash scripts/verify-fase12-keycloak.sh
-              bash scripts/verify-fase13.sh
-              bash scripts/verify-fase14.sh
+              bash scripts/verify-fase10.sh          # Verifica datalake y PostgREST.
+              bash scripts/verify-fase11.sh          # Verifica NiFi.
+              bash scripts/verify-fase11b.sh         # Verifica verticales y Mathesar.
+              bash scripts/verify-fase12.sh          # Verifica flujo incremental de NiFi.
+              bash scripts/verify-fase12-keycloak.sh # Verifica Keycloak.
+              bash scripts/verify-fase13.sh          # Verifica APISIX OIDC y API DENA.
+              bash scripts/verify-fase14.sh          # Verifica Grafana en Terraform.
               ;;
             verify-fase10)
-              bash scripts/verify-fase10.sh
+              bash scripts/verify-fase10.sh          # Comprueba datalake y PostgREST.
               ;;
             verify-fase11)
-              bash scripts/verify-fase11.sh
+              bash scripts/verify-fase11.sh          # Comprueba NiFi desplegado y accesible.
               ;;
             verify-fase11b)
-              bash scripts/verify-fase11b.sh
+              bash scripts/verify-fase11b.sh         # Comprueba verticales, Mathesar y JDBC.
               ;;
             verify-fase12-nifi)
-              bash scripts/verify-fase12.sh
+              bash scripts/verify-fase12.sh          # Comprueba el flujo incremental de NiFi.
               ;;
             verify-fase12-keycloak)
-              bash scripts/verify-fase12-keycloak.sh
+              bash scripts/verify-fase12-keycloak.sh # Comprueba configuracion y tokens de Keycloak.
               ;;
             verify-fase13)
-              bash scripts/verify-fase13.sh
+              bash scripts/verify-fase13.sh          # Comprueba OIDC en APISIX y endpoint DENA.
               ;;
             verify-fase14)
-              bash scripts/verify-fase14.sh
+              bash scripts/verify-fase14.sh          # Comprueba Grafana gestionado por Terraform.
               ;;
             apply-fase12-keycloak)
-              bash scripts/dena/apply-fase12-keycloak.sh
-              bash scripts/verify-fase12-keycloak.sh
+              bash scripts/dena/apply-fase12-keycloak.sh # Aplica recursos Terraform de Keycloak.
+              bash scripts/verify-fase12-keycloak.sh     # Verifica el resultado.
               ;;
             apply-fase14-grafana)
-              bash scripts/dena/apply-fase14-grafana.sh
-              bash scripts/verify-fase14.sh
+              bash scripts/dena/apply-fase14-grafana.sh # Ajusta Helm y aplica Terraform en Grafana.
+              bash scripts/verify-fase14.sh             # Verifica el resultado.
               ;;
             provision-fase12-nifi)
-              bash scripts/dena/provision-fase12-nifi.sh
-              bash scripts/verify-fase12.sh
+              bash scripts/dena/provision-fase12-nifi.sh # Crea el flujo incremental de NiFi.
+              bash scripts/verify-fase12.sh              # Verifica que quede operativo.
               ;;
             load-expedientes)
-              bash scripts/dena/load-expedientes.sh
+              bash scripts/dena/load-expedientes.sh      # Carga o refresca expedientes demo.
               ;;
             apply-dena-api)
-              bash scripts/dena/apply-dena-api.sh
-              bash scripts/verify-fase13.sh
+              bash scripts/dena/apply-dena-api.sh        # Aplica SQL y sincronizacion de API DENA.
+              bash scripts/verify-fase13.sh              # Verifica acceso por gateway.
               ;;
             apply-fase13-apisix)
-              bash scripts/dena/apply-route.sh
-              bash scripts/verify-fase13.sh
+              bash scripts/dena/apply-route.sh           # Publica rutas y upstreams de APISIX.
+              bash scripts/verify-fase13.sh              # Verifica el gateway.
               ;;
             preflight-fase8)
-              bash scripts/preflight-fase8.sh
+              bash scripts/preflight-fase8.sh            # Ejecuta comprobaciones previas.
               ;;
             recover-fase7)
-              bash scripts/recover-fase7.sh
-              bash scripts/preflight-fase8.sh
+              bash scripts/recover-fase7.sh              # Recupera observabilidad base.
+              bash scripts/preflight-fase8.sh            # Repite el preflight tras la recuperacion.
               ;;
             *)
               echo "Unsupported operation: ${{ inputs.operation }}" >&2

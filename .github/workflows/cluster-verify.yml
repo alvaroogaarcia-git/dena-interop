@@ -79,34 +79,34 @@ jobs:
         run: |
           case "${{ inputs.phase }}" in
             all)
-              bash scripts/verify-fase10.sh
-              bash scripts/verify-fase11.sh
-              bash scripts/verify-fase11b.sh
-              bash scripts/verify-fase12.sh
-              bash scripts/verify-fase12-keycloak.sh
-              bash scripts/verify-fase13.sh
-              bash scripts/verify-fase14.sh
+              bash scripts/verify-fase10.sh          # Verifica datalake y PostgREST.
+              bash scripts/verify-fase11.sh          # Verifica NiFi.
+              bash scripts/verify-fase11b.sh         # Verifica verticales y Mathesar.
+              bash scripts/verify-fase12.sh          # Verifica flujo incremental de NiFi.
+              bash scripts/verify-fase12-keycloak.sh # Verifica Keycloak.
+              bash scripts/verify-fase13.sh          # Verifica APISIX OIDC y API DENA.
+              bash scripts/verify-fase14.sh          # Verifica Grafana en Terraform.
               ;;
             fase10)
-              bash scripts/verify-fase10.sh
+              bash scripts/verify-fase10.sh          # Verifica PostgreSQL datalake y PostgREST.
               ;;
             fase11)
-              bash scripts/verify-fase11.sh
+              bash scripts/verify-fase11.sh          # Verifica despliegue y acceso de NiFi.
               ;;
             fase11b)
-              bash scripts/verify-fase11b.sh
+              bash scripts/verify-fase11b.sh         # Verifica verticales, Mathesar y JDBC.
               ;;
             fase12-nifi)
-              bash scripts/verify-fase12.sh
+              bash scripts/verify-fase12.sh          # Verifica el flujo incremental de NiFi.
               ;;
             fase12-keycloak)
-              bash scripts/verify-fase12-keycloak.sh
+              bash scripts/verify-fase12-keycloak.sh # Verifica realm, clientes y tokens.
               ;;
             fase13)
-              bash scripts/verify-fase13.sh
+              bash scripts/verify-fase13.sh          # Verifica OIDC en APISIX y API DENA.
               ;;
             fase14)
-              bash scripts/verify-fase14.sh
+              bash scripts/verify-fase14.sh          # Verifica datasources y dashboards de Grafana.
               ;;
             *)
               echo "Unsupported phase: ${{ inputs.phase }}" >&2
