@@ -66,8 +66,20 @@ require_bin kubectl
 require_bin curl
 require_bin python3
 
+get_nifi_pod() {
+  kubectl get pod -n datalake -l app=nifi \
+    --field-selector=status.phase=Running \
+    -o jsonpath='{.items[0].metadata.name}'
+}
+
 echo "Usando KUBECONFIG=$KUBECONFIG"
 start_port_forward
+
+nifi_pod="$(get_nifi_pod)"
+if [[ -z "$nifi_pod" ]]; then
+  echo "No se ha encontrado un pod Running de NiFi en datalake" >&2
+  exit 1
+fi
 
 TOKEN="$(
   curl -skf --max-time 30 \
@@ -141,10 +153,10 @@ if invalid:
 
 echo
 echo "[4/5] Servicio de salida"
-kubectl exec -n datalake "$(kubectl get pod -n datalake -l app=nifi -o jsonpath='{.items[0].metadata.name}')" -c nifi -- test -d "$OUTPUT_DIR"
-kubectl exec -n datalake "$(kubectl get pod -n datalake -l app=nifi -o jsonpath='{.items[0].metadata.name}')" -c nifi -- sh -c "find '$OUTPUT_DIR' -maxdepth 1 -type f | head -n 5"
+kubectl exec -n datalake "$nifi_pod" -c nifi -- test -d "$OUTPUT_DIR"
+kubectl exec -n datalake "$nifi_pod" -c nifi -- sh -c "find '$OUTPUT_DIR' -maxdepth 1 -type f | head -n 5"
 
 echo
 echo "[5/5] Driver JDBC"
-kubectl exec -n datalake "$(kubectl get pod -n datalake -l app=nifi -o jsonpath='{.items[0].metadata.name}')" -c nifi -- test -f /opt/nifi/nifi-current/extensions/postgresql-42.7.4.jar
+kubectl exec -n datalake "$nifi_pod" -c nifi -- test -f /opt/nifi/nifi-current/extensions/postgresql-42.7.4.jar
 echo "Driver JDBC presente."

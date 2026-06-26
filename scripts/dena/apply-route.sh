@@ -81,6 +81,8 @@ put_file upstreams 2 "$REPO_ROOT/apisix/upstreams/2-keycloak.json"
 put_file routes keycloak-realms "$REPO_ROOT/apisix/routes/keycloak-realms.json"
 put_file routes keycloak-resources "$REPO_ROOT/apisix/routes/keycloak-resources.json"
 put_file routes keycloak-admin "$REPO_ROOT/apisix/routes/keycloak-admin.json"
+put_file routes keycloak-auth-root "$REPO_ROOT/apisix/routes/keycloak-auth-root.json"
+put_file routes keycloak-auth-prefix "$REPO_ROOT/apisix/routes/keycloak-auth-prefix.json"
 put_template postgrest-api-oidc "$REPO_ROOT/apisix/routes/postgrest-api.template.json"
 put_template dena-admin-files-oidc "$REPO_ROOT/apisix/routes/dena-admin-files.template.json"
 

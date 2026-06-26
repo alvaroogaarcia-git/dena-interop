@@ -26,6 +26,8 @@ La lectura incremental se apoya en:
 - Processor `Stamp Output Filename`
 - Processor `Persist Fase 12 Output`
 
+En la raiz de NiFi se ve un solo bloque de grupo; al abrirlo aparecen los tres procesadores y los dos controller services de la fase.
+
 ## Requisitos previos
 
 - `k3s` activo

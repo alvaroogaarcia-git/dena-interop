@@ -20,11 +20,17 @@ require_bin() {
 require_bin kubectl
 require_bin curl
 
+get_nifi_pod() {
+  kubectl get pod -n datalake -l app=nifi \
+    --field-selector=status.phase=Running \
+    -o jsonpath='{.items[0].metadata.name}'
+}
+
 echo "Usando KUBECONFIG=$KUBECONFIG"
 
-pod_name="$(kubectl get pod -n datalake -l app=nifi -o jsonpath='{.items[0].metadata.name}')"
+pod_name="$(get_nifi_pod)"
 if [[ -z "$pod_name" ]]; then
-  echo "No se ha encontrado el pod de NiFi en datalake" >&2
+  echo "No se ha encontrado un pod Running de NiFi en datalake" >&2
   exit 1
 fi
 

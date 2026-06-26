@@ -37,7 +37,7 @@ Configuracion validada:
 
 - `NIFI_WEB_HTTPS_PORT=8443`
 - `NIFI_WEB_HTTPS_HOST=0.0.0.0`
-- `NIFI_WEB_PROXY_HOST=localhost:8443`
+- `NIFI_WEB_PROXY_HOST=localhost:8443,192.168.56.15:30821`
 - probes HTTPS con `Host: localhost:8443`
 - sin `startupProbe`; `readiness` y `liveness` relajadas para el arranque real del nodo
 - autenticacion single-user desde `nifi-secret`

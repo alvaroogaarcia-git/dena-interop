@@ -14,6 +14,12 @@ require_bin() {
 
 require_bin kubectl
 
+get_nifi_pod() {
+  kubectl get pod -n datalake -l app=nifi \
+    --field-selector=status.phase=Running \
+    -o jsonpath='{.items[0].metadata.name}'
+}
+
 echo "Usando KUBECONFIG=$KUBECONFIG"
 
 echo
@@ -67,7 +73,11 @@ grep -E "open|succeeded" <<<"$mathesar_output" >/dev/null
 
 echo
 echo "[5/5] Driver JDBC en NiFi"
-nifi_pod="$(kubectl get pod -n datalake -l app=nifi -o jsonpath='{.items[0].metadata.name}')"
+nifi_pod="$(get_nifi_pod)"
+if [[ -z "$nifi_pod" ]]; then
+  echo "No se ha encontrado un pod Running de NiFi en datalake" >&2
+  exit 1
+fi
 kubectl exec -n datalake "$nifi_pod" -c nifi -- test -f /opt/nifi/nifi-current/extensions/postgresql-42.7.4.jar
 echo "Driver JDBC presente en el PVC de extensiones de NiFi."
 echo "Mathesar expuesto en http://192.168.56.15:30900"

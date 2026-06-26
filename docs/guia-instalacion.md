@@ -928,7 +928,7 @@ Resultados esperados:
 
 ### 16.6 Nota de acceso a NiFi 2.x
 
-NiFi 2.x sigue rechazando acceso directo por NodePort cuando el `Host` no coincide con la interfaz local del pod o `localhost`. El acceso validado continua siendo:
+NiFi 2.x sigue requiriendo que el `Host` coincida con una entrada valida en `NIFI_WEB_PROXY_HOST`. En este laboratorio se valida el acceso por `kubectl port-forward` y tambien por NodePort con el host publicado en el deployment:
 
 ```bash
 kubectl port-forward -n datalake svc/nifi 8443:8443

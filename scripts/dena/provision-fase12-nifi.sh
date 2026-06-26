@@ -27,6 +27,12 @@ require_bin() {
   }
 }
 
+get_nifi_pod() {
+  kubectl get pod -n datalake -l app=nifi \
+    --field-selector=status.phase=Running \
+    -o jsonpath='{.items[0].metadata.name}'
+}
+
 PORT_FORWARD_PID=""
 
 cleanup() {
@@ -154,6 +160,12 @@ require_bin python3
 echo "Usando KUBECONFIG=$KUBECONFIG"
 start_port_forward
 
+nifi_pod="$(get_nifi_pod)"
+if [[ -z "$nifi_pod" ]]; then
+  echo "No se ha encontrado un pod Running de NiFi en datalake" >&2
+  exit 1
+fi
+
 TOKEN="$(
   curl -skf --max-time 30 \
     -X POST \
@@ -168,7 +180,7 @@ if [[ -z "$TOKEN" ]]; then
 fi
 
 kubectl get pod -n datalake -l app=nifi >/dev/null
-kubectl exec -n datalake "$(kubectl get pod -n datalake -l app=nifi -o jsonpath='{.items[0].metadata.name}')" -c nifi -- mkdir -p "$OUTPUT_DIR"
+kubectl exec -n datalake "$nifi_pod" -c nifi -- mkdir -p "$OUTPUT_DIR"
 
 group_id="$(
   curl -skf --max-time 30 \
