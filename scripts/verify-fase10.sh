@@ -13,6 +13,17 @@ require_bin() {
 }
 
 require_bin kubectl
+require_bin curl
+
+start_port_forward() {
+  local namespace="$1"
+  local target="$2"
+  local mapping="$3"
+  local log_file="$4"
+
+  kubectl port-forward -n "$namespace" "$target" "$mapping" >"$log_file" 2>&1 &
+  echo "$!"
+}
 
 echo "Usando KUBECONFIG=$KUBECONFIG"
 
@@ -22,7 +33,9 @@ kubectl get statefulset postgresql-datalake -n datalake >/dev/null
 kubectl get deployment postgrest -n datalake >/dev/null
 kubectl rollout status statefulset/postgresql-datalake -n datalake --timeout=180s >/dev/null
 kubectl rollout status deployment/postgrest -n datalake --timeout=180s >/dev/null
-kubectl get pods,svc -n datalake -o wide
+kubectl get pod -n datalake -l app.kubernetes.io/instance=postgresql-datalake -o wide
+kubectl get pod -n datalake -l app=postgrest -o wide
+kubectl get svc -n datalake postgresql-datalake postgrest -o wide
 
 echo
 echo "[2/5] Secret de conexion de PostgREST"
@@ -58,16 +71,21 @@ grep -Fx "postgrest->anon" <<<"$roles_output" >/dev/null
 
 echo
 echo "[4/5] Respuesta HTTP de PostgREST"
-openapi_output="$(
-  kubectl run postgrest-check \
-    --rm -i \
-    --restart=Never \
-    --image=nginx:alpine \
-    -n datalake \
-    -- wget -S -O- http://postgrest.datalake.svc.cluster.local:3000/ 2>&1
-)"
+pf_log="$(mktemp)"
+pf_pid="$(start_port_forward datalake svc/postgrest 13000:3000 "$pf_log")"
+trap 'kill "$pf_pid" >/dev/null 2>&1 || true; rm -f "$pf_log"' EXIT
+for _ in $(seq 1 20); do
+  if openapi_output="$(curl -fsS --max-time 5 http://127.0.0.1:13000/ 2>&1)"; then
+    break
+  fi
+  sleep 1
+done
+if [[ -z "${openapi_output:-}" ]]; then
+  cat "$pf_log" >&2
+  echo "PostgREST no respondio por port-forward local" >&2
+  exit 1
+fi
 printf '%s\n' "$openapi_output"
-grep -F "HTTP/1.1 200 OK" <<<"$openapi_output" >/dev/null
 grep -F '"swagger":"2.0"' <<<"$openapi_output" >/dev/null
 
 echo

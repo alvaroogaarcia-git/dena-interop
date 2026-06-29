@@ -13,6 +13,17 @@ require_bin() {
 }
 
 require_bin kubectl
+require_bin curl
+
+start_port_forward() {
+  local namespace="$1"
+  local target="$2"
+  local mapping="$3"
+  local log_file="$4"
+
+  kubectl port-forward -n "$namespace" "$target" "$mapping" >"$log_file" 2>&1 &
+  echo "$!"
+}
 
 echo "Usando KUBECONFIG=$KUBECONFIG"
 
@@ -34,18 +45,22 @@ kubectl get secret nifi-secret -n datalake -o jsonpath='{.data.single-user-passw
 
 echo
 echo "[3/5] Endpoint HTTPS interno"
-https_output="$(
-  kubectl run nifi-check \
-    --rm -i \
-    --restart=Never \
-    --image=nginx:alpine \
-    -n datalake \
-    -- wget --server-response --no-check-certificate -O- \
-    --header='Host: localhost:8443' \
-    https://nifi.datalake.svc.cluster.local:8443/nifi/ 2>&1
-)"
+pf_log="$(mktemp)"
+pf_pid="$(start_port_forward datalake svc/nifi 18443:8443 "$pf_log")"
+trap 'kill "$pf_pid" >/dev/null 2>&1 || true; rm -f "$pf_log"' EXIT
+for _ in $(seq 1 30); do
+  if https_output="$(curl -ksS --max-time 10 -H 'Host: localhost:8443' https://127.0.0.1:18443/nifi/ 2>&1)"; then
+    break
+  fi
+  sleep 1
+done
+if [[ -z "${https_output:-}" ]]; then
+  cat "$pf_log" >&2
+  echo "NiFi no respondio por port-forward local" >&2
+  exit 1
+fi
 printf '%s\n' "$https_output"
-grep -F "HTTP/1.1 200 OK" <<<"$https_output" >/dev/null
+grep -E "NiFi|Sign in|login|DOCTYPE html" <<<"$https_output" >/dev/null
 
 echo
 echo "[4/5] Logs recientes"

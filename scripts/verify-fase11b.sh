@@ -13,6 +13,17 @@ require_bin() {
 }
 
 require_bin kubectl
+require_bin curl
+
+start_port_forward() {
+  local namespace="$1"
+  local target="$2"
+  local mapping="$3"
+  local log_file="$4"
+
+  kubectl port-forward -n "$namespace" "$target" "$mapping" >"$log_file" 2>&1 &
+  echo "$!"
+}
 
 get_nifi_pod() {
   kubectl get pod -n datalake -l app=nifi \
@@ -28,7 +39,10 @@ kubectl get statefulset postgresql-verticales -n verticales >/dev/null
 kubectl get deployment mathesar -n verticales >/dev/null
 kubectl rollout status statefulset/postgresql-verticales -n verticales --timeout=180s >/dev/null
 kubectl rollout status deployment/mathesar -n verticales --timeout=240s >/dev/null
-kubectl get pods,svc,pvc -n verticales -o wide
+kubectl get pod -n verticales -l app.kubernetes.io/instance=postgresql-verticales -o wide
+kubectl get pod -n verticales -l app=mathesar -o wide
+kubectl get svc -n verticales postgresql-verticales mathesar -o wide
+kubectl get pvc -n verticales data-postgresql-verticales-0
 
 echo
 echo "[2/5] Secretos y exposicion"
@@ -60,16 +74,22 @@ grep -Fx "1" <<<"$source_output" >/dev/null
 
 echo
 echo "[4/5] Escucha interna de Mathesar"
-mathesar_output="$(
-  kubectl run mathesar-check \
-    --rm -i \
-    --restart=Never \
-    --image=busybox:1.36 \
-    -n verticales \
-    -- nc -zvw5 mathesar.verticales.svc.cluster.local 8000 2>&1
-)"
+pf_log="$(mktemp)"
+pf_pid="$(start_port_forward verticales svc/mathesar 18000:8000 "$pf_log")"
+trap 'kill "$pf_pid" >/dev/null 2>&1 || true; rm -f "$pf_log"' EXIT
+for _ in $(seq 1 20); do
+  if mathesar_output="$(curl -fsS --max-time 5 -H 'Host: localhost:8000' http://127.0.0.1:18000/ 2>&1)"; then
+    break
+  fi
+  sleep 1
+done
+if [[ -z "${mathesar_output:-}" ]]; then
+  cat "$pf_log" >&2
+  echo "Mathesar no respondio por port-forward local" >&2
+  exit 1
+fi
 printf '%s\n' "$mathesar_output"
-grep -E "open|succeeded" <<<"$mathesar_output" >/dev/null
+grep -E "Mathesar|DOCTYPE html|html" <<<"$mathesar_output" >/dev/null
 
 echo
 echo "[5/5] Driver JDBC en NiFi"

@@ -117,6 +117,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Estado validado Fases 0-11b](docs/estado-fases-0-11b.md)
 - [Estado validado Fases 0-13](docs/estado-fases-0-13.md)
 - [Estado validado Fases 0-14](docs/estado-fases-0-14.md)
+- [Fase 15 - SQL del datalake y carga local](docs/fase15-datalake.md)
 - [Flujo NiFi JDBC incremental (extension 11c)](docs/fase12-nifi-jdbc.md)
 - [Estado validado Fases 0-6](docs/estado-fases-0-6.md)
 - [Estado validado Fases 0-3](docs/estado-fases-0-3.md)
