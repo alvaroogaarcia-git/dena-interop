@@ -4,7 +4,7 @@ Stack local de interoperabilidad desplegado sobre un nodo unico DietPi x86_64 co
 
 ## Estado actual
 
-El entorno esta validado hasta Fase 14 de la guia de instalacion:
+El entorno esta validado hasta Fase 15 de la guia de instalacion:
 
 | Fase | Componente | Estado |
 | --- | --- | --- |
@@ -25,6 +25,7 @@ El entorno esta validado hasta Fase 14 de la guia de instalacion:
 | 12 | Terraform: realm, clientes, roles y testuser en Keycloak | Validado |
 | 13 | APISIX: OIDC, rutas Keycloak y API DENA | Validado |
 | 14 | Terraform: datasources y dashboards de Grafana | Validado |
+| 15 | SQL del datalake, staging y carga local | Validado |
 
 ## Que hay desplegado
 
@@ -53,6 +54,7 @@ El entorno esta validado hasta Fase 14 de la guia de instalacion:
   - PostgREST `13.0.4` publicado como `ClusterIP` interno en `:3000`.
   - Roles `anon` y `postgrest` validados en la base `datalake`.
   - Esquema `dena`, 50 expedientes sincronizados y RPC `dena_data_retrieve`.
+  - Staging `dena.admin_file_staging` y promocion `dena.dena_staging_to_main()` validadas.
 - Apache NiFi
   - Deployment `nifi` en `datalake`.
   - HTTPS en `NodePort 30821`.
@@ -61,7 +63,7 @@ El entorno esta validado hasta Fase 14 de la guia de instalacion:
   - PostgreSQL origen `17.1.0` mediante chart `postgresql-18.7.5`.
   - Base `expedientes` con tabla `expedientes.admin_file`.
   - Mathesar `0.11.0` publicado en `NodePort 30900`.
-- El alcance definido hasta Fase 14 esta completado.
+- El alcance definido hasta Fase 15 esta completado.
 
 ## Verificacion rapida
 
@@ -87,6 +89,7 @@ bash scripts/verify-fase12.sh              # flujo NiFi, nombre legado
 bash scripts/verify-fase12-keycloak.sh     # Fase 12 del plan consolidado
 bash scripts/verify-fase13.sh
 bash scripts/verify-fase14.sh
+bash scripts/verify-fase15.sh
 ```
 
 Resultado esperado del gateway desde Fase 13:
