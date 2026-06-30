@@ -29,6 +29,8 @@ Se han dejado versionados:
 - `Tempo.tracesToLogsV2 -> loki`
 - `Tempo.nodeGraph.enabled: true`
 - `Loki.jsonData.maxLines: 1000`
+- persistencia de Grafana activada sobre el PVC `monitoring-grafana` de 1Gi para conservar datasources y dashboards entre reinicios
+- sidecar de dashboards desactivado porque Terraform es la fuente de verdad
 - recursos de Grafana ajustados a nodo unico:
   - `requests.cpu: 25m`
   - `requests.memory: 64Mi`
@@ -94,6 +96,9 @@ Dashboards cargados y validados por API:
 
 - `DENA Stack Overview`
 - `DENA PostgreSQL Overview`
+- `Observability Prometheus`
+- `Observability Loki`
+- `Observability Tempo`
 
 Desde Fase 14, Terraform es la fuente de verdad de estos dashboards y de los datasources principales. Los JSON versionados estan en `terraform/dashboards/` y se aplican con `scripts/dena/apply-fase14-grafana.sh`.
 
@@ -164,6 +169,9 @@ Resultado esperado y observado:
 - dashboards presentes:
   - `DENA Stack Overview`
   - `DENA PostgreSQL Overview`
+  - `Observability Prometheus`
+  - `Observability Loki`
+  - `Observability Tempo`
 
 Acceso:
 

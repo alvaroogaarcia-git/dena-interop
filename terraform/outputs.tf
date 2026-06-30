@@ -22,6 +22,9 @@ output "grafana_folder_uid" {
 output "grafana_dashboard_uids" {
   value = [
     "dena-stack-overview",
-    "dena-postgresql-overview"
+    "dena-postgresql-overview",
+    "observability-prometheus",
+    "observability-loki",
+    "observability-tempo"
   ]
 }

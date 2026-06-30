@@ -86,3 +86,35 @@ resource "grafana_dashboard" "dena_postgresql_overview" {
     grafana_data_source.prometheus
   ]
 }
+
+resource "grafana_dashboard" "observability_prometheus" {
+  folder      = grafana_folder.dena.uid
+  config_json = file("${path.module}/dashboards/observability-prometheus.json")
+  overwrite   = true
+
+  depends_on = [
+    grafana_data_source.prometheus
+  ]
+}
+
+resource "grafana_dashboard" "observability_loki" {
+  folder      = grafana_folder.dena.uid
+  config_json = file("${path.module}/dashboards/observability-loki.json")
+  overwrite   = true
+
+  depends_on = [
+    grafana_data_source.prometheus,
+    grafana_data_source.loki
+  ]
+}
+
+resource "grafana_dashboard" "observability_tempo" {
+  folder      = grafana_folder.dena.uid
+  config_json = file("${path.module}/dashboards/observability-tempo.json")
+  overwrite   = true
+
+  depends_on = [
+    grafana_data_source.prometheus,
+    grafana_data_source.tempo
+  ]
+}

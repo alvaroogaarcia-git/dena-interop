@@ -50,7 +50,7 @@ folder="$(curl -fsS -u "$auth" http://127.0.0.1:13000/api/folders/dena)"
 grep -F '"uid":"dena"' <<<"$folder" >/dev/null
 
 echo "[4/4] Dashboards DENA"
-for uid in dena-stack-overview dena-postgresql-overview; do
+for uid in dena-stack-overview dena-postgresql-overview observability-prometheus observability-loki observability-tempo; do
   dashboard="$(curl -fsS -u "$auth" "http://127.0.0.1:13000/api/dashboards/uid/$uid")"
   grep -F "\"uid\":\"$uid\"" <<<"$dashboard" >/dev/null
 done
