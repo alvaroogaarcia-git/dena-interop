@@ -54,9 +54,9 @@ kubectl rollout status deployment/postgrest -n datalake --timeout=180s >/dev/nul
 echo "[2/5] Discovery publico de Keycloak"
 discovery="$(
   run_pod fase13-discovery-check curlimages/curl:8.12.1 \
-    curl -fsS http://apisix-gateway/realms/dena/.well-known/openid-configuration
+    curl -fsS http://apisix-gateway/realms/piloto/.well-known/openid-configuration
 )"
-grep -F '/realms/dena"' <<<"$discovery" >/dev/null
+grep -F '/realms/piloto"' <<<"$discovery" >/dev/null
 
 echo "[3/5] Rechazo sin token"
 unauthorized="$(
@@ -70,13 +70,13 @@ kubectl port-forward -n auth svc/keycloak 18080:8080 --address 127.0.0.1 \
   >/tmp/fase13-keycloak-port-forward.log 2>&1 &
 PF_PID=$!
 for _ in $(seq 1 60); do
-  curl -fsS http://127.0.0.1:18080/realms/dena/.well-known/openid-configuration \
+  curl -fsS http://127.0.0.1:18080/realms/piloto/.well-known/openid-configuration \
     >/dev/null 2>&1 && break
   sleep 1
 done
 token_json="$(curl -fsS -X POST \
   -H 'Host: 192.168.56.15:30080' \
-  http://127.0.0.1:18080/realms/dena/protocol/openid-connect/token \
+  http://127.0.0.1:18080/realms/piloto/protocol/openid-connect/token \
   --data-urlencode grant_type=password \
   --data-urlencode client_id=apisix-gateway \
   --data-urlencode client_secret="$client_secret" \

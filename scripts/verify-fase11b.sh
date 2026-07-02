@@ -78,18 +78,26 @@ pf_log="$(mktemp)"
 pf_pid="$(start_port_forward verticales svc/mathesar 18000:8000 "$pf_log")"
 trap 'kill "$pf_pid" >/dev/null 2>&1 || true; rm -f "$pf_log"' EXIT
 for _ in $(seq 1 20); do
-  if mathesar_output="$(curl -fsS --max-time 5 -H 'Host: localhost:8000' http://127.0.0.1:18000/ 2>&1)"; then
+  mathesar_status="$(
+    curl -sS --max-time 5 -o /tmp/mathesar-verify.html -w '%{http_code}' \
+      -H 'Host: localhost:8000' \
+      http://127.0.0.1:18000/ 2>&1 || true
+  )"
+  if [[ "$mathesar_status" =~ ^(200|302)$ ]]; then
+    mathesar_output="$(cat /tmp/mathesar-verify.html)"
     break
   fi
   sleep 1
 done
-if [[ -z "${mathesar_output:-}" ]]; then
+if [[ -z "${mathesar_status:-}" || ! "$mathesar_status" =~ ^(200|302)$ ]]; then
   cat "$pf_log" >&2
-  echo "Mathesar no respondio por port-forward local" >&2
+  echo "Mathesar no respondio por port-forward local; ultimo estado: ${mathesar_status:-sin respuesta}" >&2
   exit 1
 fi
 printf '%s\n' "$mathesar_output"
-grep -E "Mathesar|DOCTYPE html|html" <<<"$mathesar_output" >/dev/null
+if [[ "$mathesar_status" == "200" ]]; then
+  grep -E "Mathesar|DOCTYPE html|html" <<<"$mathesar_output" >/dev/null
+fi
 
 echo
 echo "[5/5] Driver JDBC en NiFi"

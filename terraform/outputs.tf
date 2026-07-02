@@ -1,18 +1,18 @@
 output "realm" {
-  value = keycloak_realm.dena.realm
+  value = keycloak_realm.piloto.realm
 }
 
 output "apisix_client_id" {
-  value = keycloak_openid_client.apisix_gateway.client_id
+  value = keycloak_openid_client.piloto_apisix_gateway.client_id
 }
 
 output "apisix_client_secret" {
-  value     = keycloak_openid_client.apisix_gateway.client_secret
+  value     = keycloak_openid_client.piloto_apisix_gateway.client_secret
   sensitive = true
 }
 
 output "testuser_username" {
-  value = keycloak_user.testuser.username
+  value = keycloak_user.piloto_testuser.username
 }
 
 output "grafana_folder_uid" {

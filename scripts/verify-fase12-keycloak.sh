@@ -34,13 +34,13 @@ kubectl port-forward -n auth svc/keycloak 18080:8080 --address 127.0.0.1 \
   >/tmp/fase12-keycloak-verify-port-forward.log 2>&1 &
 PF_PID=$!
 for _ in $(seq 1 60); do
-  curl -fsS http://127.0.0.1:18080/realms/dena/.well-known/openid-configuration \
+  curl -fsS http://127.0.0.1:18080/realms/piloto/.well-known/openid-configuration \
     >/dev/null 2>&1 && break
   sleep 1
 done
 
 token_response="$(curl -fsS -X POST \
-  http://127.0.0.1:18080/realms/dena/protocol/openid-connect/token \
+  http://127.0.0.1:18080/realms/piloto/protocol/openid-connect/token \
   --data-urlencode grant_type=password \
   --data-urlencode client_id=apisix-gateway \
   --data-urlencode client_secret="$client_secret" \

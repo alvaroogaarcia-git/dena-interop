@@ -27,7 +27,7 @@ done
 
 mkdir -p "$REPO_ROOT/.local"
 if [[ ! -f "$LOCAL_ENV" ]]; then
-  testuser_password="$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-24)"
+  testuser_password="${DENA_TESTUSER_PASSWORD:-Test1234!}"
   printf 'TF_VAR_testuser_password=%q\n' "$testuser_password" >"$LOCAL_ENV"
   chmod 600 "$LOCAL_ENV"
 fi
@@ -61,5 +61,5 @@ kubectl create secret generic apisix-oidc -n gateway \
   --from-literal=client-secret="$client_secret" \
   --dry-run=client -o yaml | kubectl apply -f - >/dev/null
 
-echo "Fase 12 aplicada: realm dena, clientes, roles y testuser gestionados por Terraform."
+echo "Fase 12 aplicada: realm piloto, clientes, roles y testuser gestionados por Terraform."
 echo "Password de testuser guardada localmente en .local/fase12-keycloak.env."
