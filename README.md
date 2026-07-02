@@ -4,7 +4,7 @@ Stack local de interoperabilidad desplegado sobre un nodo unico DietPi x86_64 co
 
 ## Estado actual
 
-El entorno esta validado hasta Fase 15 de la guia de instalacion:
+El entorno esta validado hasta Fase 17 de la guia de instalacion:
 
 | Fase | Componente | Estado |
 | --- | --- | --- |
@@ -26,13 +26,15 @@ El entorno esta validado hasta Fase 15 de la guia de instalacion:
 | 13 | APISIX: OIDC, rutas Keycloak y API DENA | Validado |
 | 14 | Terraform: datasources y dashboards de Grafana | Validado |
 | 15 | SQL del datalake, staging y carga local | Validado |
+| 16 | Cliente demo SPA servido por APISIX | Validado |
+| 17 | Portainer para inspeccion operativa | Validado |
 
 ## Que hay desplegado
 
 - Namespace `auth`
   - PostgreSQL `17.1.0` mediante chart `postgresql-16.2.1`.
   - Keycloak `26.0` conectado a PostgreSQL.
-  - Realm `dena`, clientes `react-frontend` y `apisix-gateway`, roles y `testuser` gestionados por Terraform.
+  - Realm `piloto`, clientes `react-frontend` y `apisix-gateway`, roles y `testuser` gestionados por Terraform.
 - Namespace `gateway`
   - APISIX `3.16.0` mediante chart `apisix-2.14.1`.
   - etcd embebido del chart APISIX.
@@ -40,6 +42,9 @@ El entorno esta validado hasta Fase 15 de la guia de instalacion:
   - Keycloak publicado en `/realms/*`, `/admin/*` y `/resources/*`.
   - PostgREST publicado con OIDC obligatorio en `/api`.
   - Interoperabilidad DENA publicada en `POST /dena/admin-files`.
+- Namespace `app`
+  - SPA cliente demo `dena-interop-spa` servida por NGINX.
+  - APISIX enruta `/*` como fallback hacia la SPA.
 - Namespace `monitoring`
   - Prometheus Operator mediante `kube-prometheus-stack`.
   - Grafana publicado en `NodePort 31803`.
@@ -63,7 +68,9 @@ El entorno esta validado hasta Fase 15 de la guia de instalacion:
   - PostgreSQL origen `17.1.0` mediante chart `postgresql-18.7.5`.
   - Base `expedientes` con tabla `expedientes.admin_file`.
   - Mathesar `0.11.0` publicado en `NodePort 30900`.
-- El alcance definido hasta Fase 15 esta completado.
+- Namespace `portainer`
+  - Portainer CE `2.39.3` publicado en HTTPS `NodePort 30779`.
+- El alcance definido hasta Fase 17 esta completado.
 
 ## Verificacion rapida
 
@@ -90,6 +97,8 @@ bash scripts/verify-fase12-keycloak.sh     # Fase 12 del plan consolidado
 bash scripts/verify-fase13.sh
 bash scripts/verify-fase14.sh
 bash scripts/verify-fase15.sh
+bash scripts/dena/test-curl.sh
+bash scripts/verify-stack.sh
 ```
 
 Resultado esperado del gateway desde Fase 13:
@@ -99,7 +108,7 @@ HTTP/1.1 401 Unauthorized
 Server: APISIX/3.16.0
 ```
 
-La ruta `/api` exige un bearer token valido del realm `dena`. `scripts/verify-fase13.sh` comprueba el rechazo sin token, obtiene un token de `testuser` y valida `/api` y `/dena/admin-files`.
+La ruta `/api` exige un bearer token valido del realm `piloto`. `scripts/verify-fase13.sh` comprueba el rechazo sin token, obtiene un token de `testuser` y valida `/api` y `/dena/admin-files`.
 
 Resultado esperado de `scripts/verify-fase10.sh`:
 
@@ -120,12 +129,16 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Estado validado Fases 0-11b](docs/estado-fases-0-11b.md)
 - [Estado validado Fases 0-13](docs/estado-fases-0-13.md)
 - [Estado validado Fases 0-14](docs/estado-fases-0-14.md)
+- [Estado validado Fases 0-15](docs/estado-fases-0-15.md)
+- [Estado validado Fases 0-17](docs/estado-fases-0-17.md)
 - [Fase 15 - SQL del datalake y carga local](docs/fase15-datalake.md)
 - [Flujo NiFi JDBC incremental (extension 11c)](docs/fase12-nifi-jdbc.md)
 - [Estado validado Fases 0-6](docs/estado-fases-0-6.md)
 - [Estado validado Fases 0-3](docs/estado-fases-0-3.md)
 - [Preparacion de Fase 8](docs/fase8-preparacion.md)
 - [Observabilidad y Grafana](docs/grafana-observabilidad.md)
+- [Runbook operativo](docs/runbook.md)
+- [Arquitectura](docs/arquitectura.md)
 
 ## Estructura
 

@@ -89,6 +89,7 @@ resource "keycloak_realm" "piloto" {
   display_name                  = "Piloto DENA Interoperabilidad"
   enabled                       = true
   ssl_required                  = "none"
+  default_signature_algorithm   = "RS256"
   login_with_email_allowed      = true
   duplicate_emails_allowed      = false
   reset_password_allowed        = false
@@ -107,6 +108,7 @@ resource "keycloak_openid_client" "piloto_react_frontend" {
   access_type                  = "PUBLIC"
   standard_flow_enabled        = true
   direct_access_grants_enabled = true
+  use_refresh_tokens           = true
   pkce_code_challenge_method   = "S256"
   valid_redirect_uris = [
     "${var.gateway_base_url}/*",
@@ -128,6 +130,7 @@ resource "keycloak_openid_client" "piloto_apisix_gateway" {
   direct_access_grants_enabled = true
   service_accounts_enabled     = true
   full_scope_allowed           = true
+  use_refresh_tokens           = true
 }
 
 resource "keycloak_role" "piloto_reader" {

@@ -17,8 +17,10 @@ on:
           - verify-fase12-keycloak
           - verify-fase13
           - verify-fase14
+          - verify-fase15
           - apply-fase12-keycloak
           - apply-fase14-grafana
+          - apply-fase15-datalake
           - provision-fase12-nifi
           - load-expedientes
           - apply-dena-api
@@ -89,6 +91,7 @@ jobs:
               bash scripts/verify-fase12-keycloak.sh # Verifica Keycloak.
               bash scripts/verify-fase13.sh          # Verifica APISIX OIDC y API DENA.
               bash scripts/verify-fase14.sh          # Verifica Grafana en Terraform.
+              bash scripts/verify-fase15.sh          # Verifica SQL DENA y staging del datalake.
               ;;
             verify-fase10)
               bash scripts/verify-fase10.sh          # Comprueba datalake y PostgREST.
@@ -111,6 +114,9 @@ jobs:
             verify-fase14)
               bash scripts/verify-fase14.sh          # Comprueba Grafana gestionado por Terraform.
               ;;
+            verify-fase15)
+              bash scripts/verify-fase15.sh          # Comprueba SQL DENA y staging del datalake.
+              ;;
             apply-fase12-keycloak)
               bash scripts/dena/apply-fase12-keycloak.sh # Aplica recursos Terraform de Keycloak.
               bash scripts/verify-fase12-keycloak.sh     # Verifica el resultado.
@@ -118,6 +124,10 @@ jobs:
             apply-fase14-grafana)
               bash scripts/dena/apply-fase14-grafana.sh # Ajusta Helm y aplica Terraform en Grafana.
               bash scripts/verify-fase14.sh             # Verifica el resultado.
+              ;;
+            apply-fase15-datalake)
+              bash scripts/dena/apply-fase15-datalake.sh # Aplica SQL DENA del datalake.
+              bash scripts/verify-fase15.sh              # Verifica el resultado.
               ;;
             provision-fase12-nifi)
               bash scripts/dena/provision-fase12-nifi.sh # Crea el flujo incremental de NiFi.

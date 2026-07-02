@@ -72,10 +72,10 @@ grep -Fx "postgrest->anon" <<<"$roles_output" >/dev/null
 echo
 echo "[4/5] Respuesta HTTP de PostgREST"
 pf_log="$(mktemp)"
-pf_pid="$(start_port_forward datalake svc/postgrest 13000:3000 "$pf_log")"
+pf_pid="$(start_port_forward datalake svc/postgrest 13010:3000 "$pf_log")"
 trap 'kill "$pf_pid" >/dev/null 2>&1 || true; rm -f "$pf_log"' EXIT
 for _ in $(seq 1 20); do
-  if openapi_output="$(curl -fsS --max-time 5 http://127.0.0.1:13000/ 2>&1)"; then
+  if openapi_output="$(curl -fsS --max-time 5 http://127.0.0.1:13010/ 2>&1)"; then
     break
   fi
   sleep 1

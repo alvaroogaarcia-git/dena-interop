@@ -1,0 +1,7 @@
+{
+  "name": "dena-interop-spa",
+  "type": "roundrobin",
+  "nodes": {
+    "dena-interop-spa.app.svc.cluster.local:80": 1
+  }
+}

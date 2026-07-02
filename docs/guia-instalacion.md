@@ -1011,7 +1011,7 @@ ADR-010: el realm piloto y sus identidades se gestionan con el provider oficial 
 
 Recursos gestionados:
 
-- realm `dena`
+- realm `piloto`
 - cliente publico `react-frontend` con Authorization Code y PKCE S256
 - cliente confidencial `apisix-gateway`
 - roles `dena-reader`, `dena-writer` y `dena-admin`
@@ -1024,7 +1024,7 @@ bash scripts/dena/apply-fase12-keycloak.sh
 bash scripts/verify-fase12-keycloak.sh
 ```
 
-El password de `testuser` se genera en `.local/fase12-keycloak.env`. El secreto del cliente confidencial se copia al Secret `gateway/apisix-oidc` sin versionarlo.
+El password demo de `testuser` es `Test1234!` salvo que se overridee con `DENA_TESTUSER_PASSWORD`. El secreto del cliente confidencial se copia al Secret `gateway/apisix-oidc` sin versionarlo.
 
 ## 19. Fase 13 - APISIX OIDC e interoperabilidad DENA
 
@@ -1071,3 +1071,101 @@ bash scripts/verify-fase14.sh
 ```
 
 El script actualiza primero el release `monitoring` para desactivar el provisioning read-only de datasources de Grafana. Despues Terraform crea o actualiza datasources, carpeta y dashboards por API. Los dashboards viven en `terraform/dashboards/` y no dependen del sidecar de ConfigMaps para quedar reproducidos.
+
+## 21. Fase 15 - SQL del datalake y carga local
+
+La Fase 15 consolida el esquema DENA del datalake y deja una carga reproducible hacia staging:
+
+- tabla principal `dena.admin_file`
+- vista camelCase `dena."adminFile"`
+- RPC `public.dena_data_retrieve`
+- staging `dena.admin_file_staging`
+- funcion de promocion `dena.dena_staging_to_main()`
+
+Aplicacion y verificacion:
+
+```bash
+bash scripts/dena/apply-fase15-datalake.sh
+bash scripts/verify-fase15.sh
+```
+
+La carga manual del CSV se hace con:
+
+```bash
+bash scripts/dena/load-csv.sh --file expedientes.csv --promote
+```
+
+El detalle operativo queda en `docs/fase15-datalake.md`.
+
+## 22. Fase 16 - Cliente demo SPA
+
+La SPA demo queda servida por NGINX en el namespace `app` y APISIX la publica como fallback de `/`.
+
+Aplicacion:
+
+```bash
+kubectl apply -f k8s-manifests/dena-interop-spa.yaml
+kubectl rollout status deployment/dena-interop-spa -n app --timeout=180s
+bash scripts/dena/apply-route.sh
+```
+
+Verificacion:
+
+```bash
+curl -i http://192.168.56.15:30080/
+bash scripts/dena/test-curl.sh
+```
+
+Resultado esperado:
+
+- `/` devuelve `HTTP 200` con el cliente demo.
+- El cliente obtiene token en `/realms/piloto` y consulta `POST /dena/admin-files`.
+
+## 23. Extra - Portainer
+
+Portainer corre dentro de k3s con ServiceAccount `cluster-admin`. Es util para inspeccion operativa, no para produccion sin hardening.
+
+Aplicacion:
+
+```bash
+kubectl apply -f k8s-manifests/portainer-deployment.yaml
+kubectl rollout status deployment/portainer -n portainer --timeout=180s
+bash scripts/dena/init-portainer.sh
+```
+
+Acceso:
+
+```text
+https://192.168.56.15:30779
+```
+
+El script deja inicializado `admin / T]8zJMh3U:ADu@L`. Si caduca el bootstrap antes de inicializar:
+
+```bash
+kubectl rollout restart deployment/portainer -n portainer
+```
+
+## 24. Verificacion end-to-end
+
+```bash
+bash scripts/wait-ready.sh
+bash scripts/verify-stack.sh
+```
+
+`verify-stack.sh` ejecuta las verificaciones por fase, prueba la SPA, Portainer y el flujo DENA OIDC completo.
+
+## 25. Operacion
+
+Arranque/revision:
+
+```bash
+bash scripts/wait-ready.sh
+```
+
+Apagado controlado:
+
+```bash
+ssh dena 'bash -s -- --poweroff' < scripts/stop-stack.sh
+```
+
+Detalle operativo: `docs/runbook.md`.

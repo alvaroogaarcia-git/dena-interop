@@ -1,0 +1,278 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dena-interop-spa
+  namespace: app
+data:
+  index.html: |
+    <!doctype html>
+    <html lang="es">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>DENA Interop · Cliente demo</title>
+        <style>
+          :root {
+            color-scheme: light;
+            --ink: #15221d;
+            --muted: #5d6b64;
+            --paper: #fffaf0;
+            --field: #fffefa;
+            --brand: #1d6b56;
+            --brand-dark: #13483b;
+            --line: #d9d0bd;
+            --ok: #0d6b3f;
+            --bad: #9f2f2f;
+          }
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--ink);
+            background:
+              radial-gradient(circle at 15% 10%, rgba(29, 107, 86, .18), transparent 28rem),
+              linear-gradient(135deg, #f5ead7 0%, #fffaf0 52%, #e7f0e9 100%);
+          }
+          main {
+            width: min(1080px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 52px 0;
+          }
+          .hero {
+            display: grid;
+            grid-template-columns: 1.1fr .9fr;
+            gap: 28px;
+            align-items: stretch;
+          }
+          h1 {
+            margin: 0 0 14px;
+            font-size: clamp(2.4rem, 7vw, 5.8rem);
+            line-height: .9;
+            letter-spacing: -.06em;
+          }
+          .lead {
+            max-width: 640px;
+            margin: 0;
+            color: var(--muted);
+            font-size: 1.18rem;
+            line-height: 1.55;
+          }
+          .panel {
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            background: rgba(255, 250, 240, .78);
+            box-shadow: 0 28px 80px rgba(37, 54, 45, .16);
+            padding: 24px;
+            backdrop-filter: blur(8px);
+          }
+          label {
+            display: block;
+            margin: 14px 0 6px;
+            color: var(--muted);
+            font-size: .92rem;
+          }
+          input, button {
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            font: inherit;
+            padding: 13px 14px;
+          }
+          input { background: var(--field); color: var(--ink); }
+          button {
+            margin-top: 18px;
+            border: 0;
+            background: var(--brand);
+            color: white;
+            cursor: pointer;
+            font-weight: 700;
+          }
+          button:hover { background: var(--brand-dark); }
+          .status {
+            margin-top: 14px;
+            min-height: 1.4em;
+            color: var(--muted);
+          }
+          .status.ok { color: var(--ok); }
+          .status.bad { color: var(--bad); }
+          .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 16px;
+            margin-top: 28px;
+          }
+          article {
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 18px;
+            background: rgba(255, 254, 250, .78);
+          }
+          article h2 {
+            margin: 0 0 8px;
+            font-size: 1.05rem;
+          }
+          article p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.45;
+          }
+          pre {
+            overflow: auto;
+            max-height: 420px;
+            margin: 24px 0 0;
+            padding: 18px;
+            border-radius: 18px;
+            background: #13221c;
+            color: #eef8ed;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: .9rem;
+          }
+          @media (max-width: 760px) {
+            .hero { grid-template-columns: 1fr; }
+            main { padding-top: 28px; }
+          }
+        </style>
+      </head>
+      <body>
+        <main>
+          <section class="hero">
+            <div class="panel">
+              <h1>DENA Interop</h1>
+              <p class="lead">Cliente demo servido por APISIX. Obtiene un token del realm piloto y consulta expedientes por <code>POST /dena/admin-files</code> en el mismo origen.</p>
+              <div class="cards">
+                <article>
+                  <h2>Identidad</h2>
+                  <p>Keycloak realm piloto emite el token OIDC.</p>
+                </article>
+                <article>
+                  <h2>Gateway</h2>
+                  <p>APISIX valida el bearer token antes de llegar a PostgREST.</p>
+                </article>
+                <article>
+                  <h2>Datalake</h2>
+                  <p>PostgREST ejecuta la RPC DENA y devuelve expedientes.</p>
+                </article>
+              </div>
+            </div>
+            <form class="panel" id="login">
+              <label for="username">Usuario</label>
+              <input id="username" name="username" value="testuser" autocomplete="username">
+              <label for="password">Password</label>
+              <input id="password" name="password" value="Test1234!" type="password" autocomplete="current-password">
+              <label for="limit">Expedientes a consultar</label>
+              <input id="limit" name="limit" value="5" type="number" min="1" max="50">
+              <button type="submit">Consultar expedientes</button>
+              <div class="status" id="status">Listo para autenticar.</div>
+            </form>
+          </section>
+          <pre id="output">Sin resultados todavia.</pre>
+        </main>
+        <script>
+          const statusEl = document.querySelector("#status");
+          const outputEl = document.querySelector("#output");
+          const form = document.querySelector("#login");
+
+          function setStatus(message, kind = "") {
+            statusEl.textContent = message;
+            statusEl.className = `status ${kind}`;
+          }
+
+          form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            setStatus("Solicitando token...");
+            outputEl.textContent = "Esperando respuesta...";
+            const data = new FormData(form);
+            try {
+              const tokenResponse = await fetch("/realms/piloto/protocol/openid-connect/token", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                  client_id: "react-frontend",
+                  grant_type: "password",
+                  username: data.get("username"),
+                  password: data.get("password"),
+                  scope: "openid"
+                })
+              });
+              if (!tokenResponse.ok) {
+                throw new Error(`Token HTTP ${tokenResponse.status}`);
+              }
+              const tokenJson = await tokenResponse.json();
+              setStatus("Token emitido. Consultando API...");
+              const apiResponse = await fetch("/dena/admin-files", {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${tokenJson.access_token}`,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ p_limit: Number(data.get("limit") || 5) })
+              });
+              if (!apiResponse.ok) {
+                throw new Error(`API HTTP ${apiResponse.status}`);
+              }
+              const payload = await apiResponse.json();
+              outputEl.textContent = JSON.stringify(payload, null, 2);
+              setStatus(`Consulta correcta: ${payload.length} expedientes.`, "ok");
+            } catch (error) {
+              outputEl.textContent = String(error);
+              setStatus("La consulta ha fallado.", "bad");
+            }
+          });
+        </script>
+      </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dena-interop-spa
+  namespace: app
+  labels:
+    app: dena-interop-spa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dena-interop-spa
+  template:
+    metadata:
+      labels:
+        app: dena-interop-spa
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: html
+          configMap:
+            name: dena-interop-spa
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dena-interop-spa
+  namespace: app
+  labels:
+    app: dena-interop-spa
+spec:
+  type: ClusterIP
+  selector:
+    app: dena-interop-spa
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

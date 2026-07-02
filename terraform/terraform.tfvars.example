@@ -1,0 +1,5 @@
+keycloak_admin_password = "REEMPLAZAR"
+testuser_password       = "Test1234!"
+grafana_admin_username  = "admin"
+grafana_admin_password  = "REEMPLAZAR"
+gateway_base_url        = "http://192.168.56.15:30080"

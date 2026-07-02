@@ -17,6 +17,7 @@ on:
           - fase12-keycloak
           - fase13
           - fase14
+          - fase15
       runner_labels_json:
         description: JSON array for runs-on labels.
         required: true
@@ -86,6 +87,7 @@ jobs:
               bash scripts/verify-fase12-keycloak.sh # Verifica Keycloak.
               bash scripts/verify-fase13.sh          # Verifica APISIX OIDC y API DENA.
               bash scripts/verify-fase14.sh          # Verifica Grafana en Terraform.
+              bash scripts/verify-fase15.sh          # Verifica SQL DENA y staging del datalake.
               ;;
             fase10)
               bash scripts/verify-fase10.sh          # Verifica PostgreSQL datalake y PostgREST.
@@ -107,6 +109,9 @@ jobs:
               ;;
             fase14)
               bash scripts/verify-fase14.sh          # Verifica datasources y dashboards de Grafana.
+              ;;
+            fase15)
+              bash scripts/verify-fase15.sh          # Verifica SQL DENA y staging del datalake.
               ;;
             *)
               echo "Unsupported phase: ${{ inputs.phase }}" >&2

@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: portainer
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: portainer
+  namespace: portainer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: portainer-cluster-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: portainer
+    namespace: portainer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: portainer-data
+  namespace: portainer
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portainer
+  namespace: portainer
+  labels:
+    app: portainer
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: portainer
+  template:
+    metadata:
+      labels:
+        app: portainer
+    spec:
+      serviceAccountName: portainer
+      containers:
+        - name: portainer
+          image: portainer/portainer-ce:2.39.3
+          ports:
+            - name: http
+              containerPort: 9000
+            - name: https
+              containerPort: 9443
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: portainer-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portainer
+  namespace: portainer
+  labels:
+    app: portainer
+spec:
+  type: NodePort
+  selector:
+    app: portainer
+  ports:
+    - name: http
+      port: 9000
+      targetPort: http
+      nodePort: 30777
+    - name: https
+      port: 9443
+      targetPort: https
+      nodePort: 30779

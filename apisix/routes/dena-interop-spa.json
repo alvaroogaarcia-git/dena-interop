@@ -1,0 +1,6 @@
+{
+  "name": "dena-interop-spa-fallback",
+  "uri": "/*",
+  "priority": -100,
+  "upstream_id": "3"
+}
