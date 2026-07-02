@@ -121,6 +121,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 
 ## Documentación principal
 
+- [Demo rápida en VM nueva](docs/demo-vm.md)
 - [Guía completa de instalación](docs/guia-instalacion.md)
 - [GitHub Actions](docs/github-actions.md)
 - [Estado validado Fases 0-7](docs/estado-fases-0-7.md)
