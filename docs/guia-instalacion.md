@@ -1,8 +1,10 @@
 # Guia completa de instalacion
 
-Esta guia reconstruye el estado validado hasta Fase 13 de `dena-interop` sobre un nodo unico DietPi x86_64 con k3s y Helm.
+Esta guia reconstruye el estado validado hasta Fase 17 de `dena-interop` sobre un nodo unico DietPi x86_64 con k3s, Helm y Terraform.
 
 El objetivo es que una persona con conocimientos minimos de Linux, Kubernetes y terminal pueda repetir la instalacion sin depender de pasos implicitos.
+
+Para entender que hace cada herramienta antes de instalarla, consulta `docs/herramientas/README.md`.
 
 ## 0. Supuestos del entorno
 
@@ -67,6 +69,40 @@ set +a
 ```
 
 Comprueba que `.gitignore` contiene `.local/`.
+
+Secretos demo usados por la plataforma validada:
+
+| Variable / secreto | Uso | Valor demo |
+| --- | --- | --- |
+| `TF_VAR_postgres_password` | PostgreSQL de Keycloak | `v3OYOpRXwCZPAK1pkvUxPvLA` |
+| `TF_VAR_keycloak_admin_password` | Admin de Keycloak | `BVi8R13yKt04fE+/nWIwYcSxVpoIXZPw` |
+| `TF_VAR_apisix_admin_key` | Admin API de APISIX | `edd1c9f034335f136f87ad84b625c8f1` |
+| `TF_VAR_grafana_admin_password` | Admin de Grafana | `hLgdC1Azsa0V7XUUhF9P8NyQEVSQyDpJ` |
+| `TF_VAR_postgrest_db_password` | Rol `postgrest` en datalake | usar el valor de `terraform/terraform.tfvars` o generar uno nuevo |
+| `VERTICALES_DB_PASSWORD` | PostgreSQL del namespace `verticales` | `pyZN2eJRnVfArOgFltoTlotN` |
+| `NIFI_SINGLE_USER_PASSWORD` | Usuario single-user de NiFi | `dsjB2qGE9CW41rvzv8g0` |
+| `DENA_TESTUSER_PASSWORD` | Usuario OIDC `testuser` | `Test1234!` |
+| `PORTAINER_ADMIN_PASSWORD` | Admin de Portainer | `T]8zJMh3U:ADu@L` |
+
+Recomendacion local:
+
+```bash
+cat > .local/demo.env <<'EOF'
+TF_VAR_postgres_password='v3OYOpRXwCZPAK1pkvUxPvLA'
+TF_VAR_postgres_replication_password='cambiar-en-cada-instalacion'
+TF_VAR_keycloak_admin_password='BVi8R13yKt04fE+/nWIwYcSxVpoIXZPw'
+TF_VAR_apisix_admin_key='edd1c9f034335f136f87ad84b625c8f1'
+TF_VAR_grafana_admin_password='hLgdC1Azsa0V7XUUhF9P8NyQEVSQyDpJ'
+TF_VAR_postgrest_db_password='cambiar-en-cada-instalacion'
+VERTICALES_DB_PASSWORD='pyZN2eJRnVfArOgFltoTlotN'
+NIFI_SINGLE_USER_PASSWORD='dsjB2qGE9CW41rvzv8g0'
+DENA_TESTUSER_PASSWORD='Test1234!'
+PORTAINER_ADMIN_PASSWORD='T]8zJMh3U:ADu@L'
+EOF
+chmod 600 .local/demo.env
+```
+
+Para una instalacion nueva que no sea demo, genera valores nuevos con `openssl rand -base64 24` y no reutilices las credenciales anteriores.
 
 ## 3. Fase 0 - Preparar DietPi
 
@@ -468,7 +504,7 @@ Resultado esperado:
 {"list":[],"total":0}
 ```
 
-## 10. Comprobacion final
+## 10. Comprobacion parcial de Fases 4-6
 
 ```bash
 kubectl get nodes -o wide
@@ -627,7 +663,152 @@ Datasources esperados:
 - `Loki`
 - `Tempo`
 
-## 12. Reinstalacion controlada de Fases 4-7
+## Fase 8 - OTel Collector
+
+La Fase 8 instala el OpenTelemetry Collector como `DaemonSet` en `monitoring`. Recoge senales del nodo y deja listas las pipelines de metricas, logs y trazas hacia Prometheus, Loki y Tempo.
+
+### Preflight
+
+```bash
+bash scripts/preflight-fase8.sh
+```
+
+Si el preflight indica workloads no listos, recupera primero la Fase 7:
+
+```bash
+bash scripts/recover-fase7.sh
+```
+
+### Instalacion
+
+```bash
+GODEBUG=http2client=0 helm upgrade --install otel-collector open-telemetry/opentelemetry-collector \
+  -n monitoring \
+  --version 0.158.2 \
+  --values helm-values/otel-collector-values.yaml \
+  --wait \
+  --timeout 10m
+```
+
+### Verificacion
+
+```bash
+kubectl rollout status daemonset/otel-collector-opentelemetry-collector-agent -n monitoring --timeout=240s
+kubectl get daemonset,svc,servicemonitor -n monitoring | grep otel
+kubectl logs -n monitoring daemonset/otel-collector-opentelemetry-collector-agent --tail=80
+```
+
+Resultado esperado:
+
+- DaemonSet `otel-collector-opentelemetry-collector-agent` con `1/1`.
+- Service `otel-collector-opentelemetry-collector`.
+- Pipeline de metricas expuesta para Prometheus.
+- Logs sin errores de exportacion hacia Loki/Tempo.
+
+## Fase 9 - PostgreSQL del datalake
+
+La Fase 9 despliega la base `datalake`, que es el destino consolidado de los datos sincronizados y la base que PostgREST expone como API interna.
+
+### Instalacion
+
+```bash
+helm upgrade --install postgresql-datalake bitnami/postgresql \
+  -n datalake \
+  --version 18.7.5 \
+  --values helm-values/postgresql-datalake-values.yaml \
+  --wait \
+  --timeout 10m
+```
+
+Si la red bloquea el chart remoto, descarga el `.tgz` previamente y usa la ruta local igual que en Fase 4.
+
+### Verificacion
+
+```bash
+kubectl rollout status statefulset/postgresql-datalake -n datalake --timeout=180s
+kubectl get pods,svc,pvc -n datalake -o wide
+
+PG="$(kubectl get secret -n datalake postgresql-datalake -o jsonpath='{.data.postgres-password}' | base64 -d)"
+kubectl exec -n datalake postgresql-datalake-0 -- \
+  env PGPASSWORD="$PG" \
+  psql -U postgres -d datalake -c 'select current_database();'
+```
+
+Resultado esperado:
+
+- `postgresql-datalake-0` en `Running`.
+- PVC `data-postgresql-datalake-0` en `Bound`.
+- La consulta devuelve `datalake`.
+
+## Fase 10 - PostgREST
+
+La Fase 10 instala PostgREST sobre PostgreSQL datalake. PostgREST no se expone directamente fuera del cluster; APISIX lo publicara despues bajo `/api/*` y `/dena/admin-files`.
+
+### Roles SQL
+
+Crear el rol autenticador `postgrest`, el rol anonimo `anon` y el permiso para asumirlo:
+
+```bash
+PG="$(kubectl get secret -n datalake postgresql-datalake -o jsonpath='{.data.postgres-password}' | base64 -d)"
+
+kubectl exec -i -n datalake postgresql-datalake-0 -- \
+  env PGPASSWORD="$PG" \
+  psql -U postgres -d datalake \
+  -v postgrest_db_password="$TF_VAR_postgrest_db_password" \
+  < sql/00-postgrest-roles.sql
+```
+
+Validacion esperada:
+
+```bash
+kubectl exec -n datalake postgresql-datalake-0 -- \
+  env PGPASSWORD="$PG" \
+  psql -U postgres -d datalake -Atc "
+    select rolname || '|' || case when rolcanlogin then 't' else 'f' end
+    from pg_roles
+    where rolname in ('anon', 'postgrest')
+    order by rolname;
+    select pg_get_userbyid(member) || '->' || pg_get_userbyid(roleid)
+    from pg_auth_members
+    where pg_get_userbyid(member) = 'postgrest'
+      and pg_get_userbyid(roleid) = 'anon';
+  "
+```
+
+Salida esperada:
+
+```text
+anon|f
+postgrest|t
+postgrest->anon
+```
+
+### Secret y deployment
+
+```bash
+kubectl create secret generic postgrest-secret -n datalake \
+  --from-literal=db-uri="postgres://postgrest:$TF_VAR_postgrest_db_password@postgresql-datalake.datalake.svc.cluster.local:5432/datalake" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl apply -f k8s-manifests/postgrest-deployment.yaml
+kubectl rollout status deployment/postgrest -n datalake --timeout=180s
+```
+
+### Verificacion
+
+```bash
+bash scripts/verify-fase10.sh
+```
+
+Resultado esperado:
+
+- `postgresql-datalake` y `postgrest` estan operativos.
+- `postgrest-secret` apunta a `postgresql-datalake.datalake.svc.cluster.local`.
+- Roles `anon` y `postgrest` existen.
+- `postgrest` puede asumir `anon`.
+- `GET /` sobre el servicio interno devuelve el documento OpenAPI.
+
+## Anexo A - Reinstalacion controlada de Fases 4-7
 
 Usar solo si quieres volver a instalar desde cero estas fases.
 
@@ -653,7 +834,7 @@ kubectl delete pvc data-postgresql-0 -n auth --ignore-not-found
 
 Aviso: borrar PVCs elimina datos locales de PostgreSQL, etcd y Loki.
 
-## 13. Troubleshooting
+## Anexo B - Troubleshooting
 
 ### Helm repo update funciona, pero Bitnami latest falla
 
@@ -722,7 +903,7 @@ Puntos a revisar:
 - El init container `wait-etcd` puede resolver `apisix-etcd.gateway.svc.cluster.local`.
 - El servicio `apisix-gateway` mantiene `80:30080/TCP`.
 
-## 14. Politica de commits
+## Anexo C - Politica de commits
 
 Recomendacion para seguimiento:
 
@@ -739,11 +920,11 @@ docs: actualizar guia de instalacion
 infra: ajustar values de apisix
 ```
 
-## 15. Fase 11 - Apache NiFi 2.9
+## Fase 11 - Apache NiFi 2.9
 
 ADR-007: NiFi 2.x arranca seguro por defecto con HTTPS y single-user. En este laboratorio se valida una sola replica en `datalake`, con `strategy: Recreate`, `NodePort 30821`, probes HTTPS con `Host: localhost:8443`, heap JVM `256m` y un PVC persistente para `extensions/`.
 
-### 15.1 Secret de single-user
+### 11.1 Secret de single-user
 
 En `Local`:
 
@@ -756,7 +937,7 @@ kubectl create secret generic nifi-secret -n datalake \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
 
-### 15.2 Despliegue
+### 11.2 Despliegue
 
 Opcional pero recomendado, pre-descargar la imagen en el nodo:
 
@@ -779,7 +960,7 @@ Recursos validados en este nodo:
 - `NIFI_JVM_HEAP_INIT=256m`
 - `NIFI_JVM_HEAP_MAX=256m`
 
-### 15.3 Verificacion de Fase 11
+### 11.3 Verificacion de Fase 11
 
 ```bash
 bash scripts/verify-fase11.sh
@@ -793,7 +974,7 @@ Resultados esperados:
 - `pvc/nifi-extensions` en `Bound`
 - el endpoint HTTPS interno devuelve `HTTP/1.1 200 OK`
 
-### 15.4 Acceso de operador
+### 11.4 Acceso de operador
 
 El acceso validado para esta fase es por port-forward:
 
@@ -820,11 +1001,11 @@ Notas:
 - En este nodo de `4 GiB`, NiFi se ha validado sin `startupProbe`; las sondas efectivas son `readiness` y `liveness` con tiempos amplios.
 - El driver JDBC de PostgreSQL y el flujo NiFi quedan fuera de esta fase; pertenecen a la Fase 11b.
 
-## 16. Fase 11b - Verticales: PostgreSQL origen + Mathesar Local
+## Fase 11b - Verticales: PostgreSQL origen + Mathesar
 
 ADR-008: la fuente del vertical deja de ser CSV/GetFile y pasa a ser PostgreSQL. La tabla `expedientes.admin_file` queda como fuente de verdad editable; Mathesar la expone por web y NiFi queda preparado para sincronizacion incremental usando `updated_at`.
 
-### 16.1 Driver JDBC de PostgreSQL en NiFi
+### 11b.1 Driver JDBC de PostgreSQL en NiFi
 
 El driver JDBC no viene en la imagen oficial de NiFi 2.9. Se copia al PVC persistente de `extensions/`:
 
@@ -840,7 +1021,7 @@ curl -fsSLO https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/post
 kubectl cp postgresql-42.7.4.jar datalake/"$POD":/opt/nifi/nifi-current/extensions/postgresql-42.7.4.jar -c nifi
 ```
 
-### 16.2 PostgreSQL de `verticales`
+### 11b.2 PostgreSQL de `verticales`
 
 Desplegar un PostgreSQL dedicado al origen:
 
@@ -852,7 +1033,7 @@ helm upgrade --install postgresql-verticales bitnami/postgresql --namespace vert
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql -n verticales --timeout=180s
 ```
 
-### 16.3 Esquema origen + base interna de Mathesar
+### 11b.3 Esquema origen + base interna de Mathesar
 
 Crear la base interna de Mathesar, el esquema origen y la carga inicial:
 
@@ -880,7 +1061,7 @@ Estado esperado tras la carga:
 - existe indice por `updated_at`
 - el `CHECK` de `status` queda aplicado
 
-### 16.4 Mathesar local
+### 11b.4 Mathesar local
 
 Crear el secret y desplegar Mathesar:
 
@@ -911,7 +1092,7 @@ Notas:
 - En esta imagen, `/healthz/ready/` no resulta estable en este entorno; las probes quedan por TCP sobre `:8000`.
 - En este nodo de `4 GiB`, Mathesar queda ajustado a `WEB_CONCURRENCY=1` y `128Mi/256Mi` para poder convivir con NiFi.
 
-### 16.5 Verificacion de Fase 11b
+### 11b.5 Verificacion de Fase 11b
 
 ```bash
 bash scripts/verify-fase11b.sh
@@ -926,7 +1107,7 @@ Resultados esperados:
 - `expedientes.admin_file` con `50` filas
 - `postgresql-42.7.4.jar` presente en `extensions/` de NiFi
 
-### 16.6 Nota de acceso a NiFi 2.x
+### 11b.6 Nota de acceso a NiFi 2.x
 
 NiFi 2.x sigue requiriendo que el `Host` coincida con una entrada valida en `NIFI_WEB_PROXY_HOST`. En este laboratorio se valida el acceso por `kubectl port-forward` y tambien por NodePort con el host publicado en el deployment:
 
@@ -940,11 +1121,11 @@ Y la UI:
 https://localhost:8443/nifi
 ```
 
-## 17. Extension 11c - NiFi JDBC incremental
+## Fase 12 - NiFi JDBC incremental
 
 ADR-009: el laboratorio pasa de dejar preparado el origen a materializar un flujo NiFi incremental contra `expedientes.admin_file`. El flujo queda versionado en este repositorio y usa el driver PostgreSQL persistido en el PVC de NiFi.
 
-### 17.1 Estructura del flujo
+### 12.1 Estructura del flujo
 
 - Grupo de proceso: `Fase 12 - JDBC incremental`
 - Fuente: `QueryDatabaseTableRecord`
@@ -953,7 +1134,7 @@ ADR-009: el laboratorio pasa de dejar preparado el origen a materializar un fluj
 - Nombres de fichero: `Stamp Output Filename`
 - Destino: `Persist Fase 12 Output`
 
-### 17.2 Provisionamiento
+### 12.2 Provisionamiento
 
 ```bash
 bash scripts/dena/install-nifi-postgresql-driver.sh
@@ -970,7 +1151,7 @@ El script:
 6. evita conexiones duplicadas
 7. habilita y arranca el flujo
 
-### 17.3 Verificacion
+### 12.3 Verificacion
 
 ```bash
 bash scripts/verify-fase12.sh
@@ -984,7 +1165,7 @@ La verificacion comprueba:
 - directorio de salida accesible
 - driver JDBC presente en `extensions/`
 
-### 17.4 Prueba incremental
+### 12.4 Prueba incremental
 
 Actualizar una fila de `expedientes.admin_file` y comprobar que aparece un nuevo JSON en la salida del flujo:
 
@@ -996,7 +1177,7 @@ kubectl exec -n verticales postgresql-verticales-0 -- \
   psql -U postgres -d expedientes -c "update expedientes.admin_file set status = 'archivado', updated_at = now() where id = 1;"
 ```
 
-### 17.5 Notas operativas
+### 12.5 Notas operativas
 
 - Si el NodePort directo no responde, usar `kubectl port-forward -n datalake svc/nifi 8443:8443`.
 - El flujo escribe en `/opt/nifi/nifi-current/extensions/fase12-output`.
@@ -1005,9 +1186,11 @@ kubectl exec -n verticales postgresql-verticales-0 -- \
 - `NIFI_SENSITIVE_PROPS_KEY` usa el secreto de NiFi para conservar propiedades cifradas tras reinicios.
 - El procedimiento de optimizacion y recuperacion de k3s queda en `docs/optimizacion-k3s-4gb.md`.
 
-## 18. Fase 12 - Terraform y Keycloak
+## Fase 13 - Terraform y Keycloak
 
 ADR-010: el realm piloto y sus identidades se gestionan con el provider oficial `keycloak/keycloak`. Terraform se conecta al servicio mediante un port-forward local y el estado, que contiene valores sensibles, queda excluido de Git.
+
+Nota: algunos scripts conservan nombres historicos (`apply-fase12-keycloak.sh`, `verify-fase13.sh`, `apply-fase14-grafana.sh`, `apply-fase15-datalake.sh`). La fase correcta es la indicada por esta guia; los nombres de script se mantienen para no romper automatizaciones existentes.
 
 Recursos gestionados:
 
@@ -1026,7 +1209,7 @@ bash scripts/verify-fase12-keycloak.sh
 
 El password demo de `testuser` es `Test1234!` salvo que se overridee con `DENA_TESTUSER_PASSWORD`. El secreto del cliente confidencial se copia al Secret `gateway/apisix-oidc` sin versionarlo.
 
-## 19. Fase 13 - APISIX OIDC e interoperabilidad DENA
+## Fase 14 - APISIX OIDC e interoperabilidad DENA
 
 ADR-011: APISIX es la unica entrada HTTP. Keycloak conserva URL publica fija `http://192.168.56.15:30080`, PostgREST sigue como `ClusterIP` y las rutas de datos requieren un bearer token validado mediante introspeccion OIDC.
 
@@ -1053,7 +1236,7 @@ bash scripts/verify-fase13.sh
 
 La prueba valida discovery publico, rechazo `401` sin token, emision de token para `testuser`, acceso autorizado a `/api` y respuesta con expedientes reales desde `POST /dena/admin-files`.
 
-## 20. Fase 14 - Terraform y Grafana
+## Fase 15 - Terraform y Grafana
 
 ADR-012: Grafana se mantiene desplegado por Helm, pero su configuracion funcional queda gestionada por Terraform mediante el provider oficial `grafana/grafana`. Terraform se conecta por port-forward local usando las credenciales del Secret `monitoring/grafana-admin`.
 
@@ -1072,9 +1255,9 @@ bash scripts/verify-fase14.sh
 
 El script actualiza primero el release `monitoring` para desactivar el provisioning read-only de datasources de Grafana. Despues Terraform crea o actualiza datasources, carpeta y dashboards por API. Los dashboards viven en `terraform/dashboards/` y no dependen del sidecar de ConfigMaps para quedar reproducidos.
 
-## 21. Fase 15 - SQL del datalake y carga local
+## Fase 16 - SQL del datalake y carga local
 
-La Fase 15 consolida el esquema DENA del datalake y deja una carga reproducible hacia staging:
+La Fase 16 consolida el esquema DENA del datalake y deja una carga reproducible hacia staging:
 
 - tabla principal `dena.admin_file`
 - vista camelCase `dena."adminFile"`
@@ -1097,7 +1280,7 @@ bash scripts/dena/load-csv.sh --file expedientes.csv --promote
 
 El detalle operativo queda en `docs/fase15-datalake.md`.
 
-## 22. Fase 16 - Cliente demo SPA
+## Fase 17 - Cliente demo SPA
 
 La SPA demo queda servida por NGINX en el namespace `app` y APISIX la publica como fallback de `/`.
 
@@ -1121,7 +1304,7 @@ Resultado esperado:
 - `/` devuelve `HTTP 200` con el cliente demo.
 - El cliente obtiene token en `/realms/piloto` y consulta `POST /dena/admin-files`.
 
-## 23. Extra - Portainer
+## Extra - Portainer
 
 Portainer corre dentro de k3s con ServiceAccount `cluster-admin`. Es util para inspeccion operativa, no para produccion sin hardening.
 
@@ -1147,7 +1330,7 @@ Si caduca el bootstrap antes de inicializar:
 kubectl rollout restart deployment/portainer -n portainer
 ```
 
-## 24. Verificacion end-to-end
+## Verificacion end-to-end
 
 ```bash
 bash scripts/wait-ready.sh
@@ -1156,7 +1339,7 @@ bash scripts/verify-stack.sh
 
 `verify-stack.sh` ejecuta las verificaciones por fase, prueba la SPA, Portainer y el flujo DENA OIDC completo.
 
-## 25. Operacion
+## Operacion
 
 Arranque/revision:
 
