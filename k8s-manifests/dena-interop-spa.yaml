@@ -317,6 +317,14 @@ data:
                   <option value="resuelto">Resuelto</option>
                   <option value="archivado">Archivado</option>
                 </select>
+                <label for="titleFilter">Título</label>
+                <input id="titleFilter" name="titleFilter" placeholder="Buscar en el título">
+                <label for="codeFilter">Número de expediente</label>
+                <input id="codeFilter" name="codeFilter" placeholder="Ej. EXP-0001">
+                <label for="dateFrom">Fecha desde</label>
+                <input id="dateFrom" name="dateFrom" type="date">
+                <label for="dateTo">Fecha hasta</label>
+                <input id="dateTo" name="dateTo" type="date">
                 <label for="limit">Expedientes a consultar</label>
                 <input id="limit" name="limit" value="10" type="number" min="1" max="50">
                 <button id="submitButton" type="submit">Consultar expedientes</button>
@@ -396,6 +404,40 @@ data:
             return `<span class="badge ${escapeHtml(value)}">${escapeHtml(label)}</span>`;
           }
 
+          function normalizeText(value) {
+            return String(value || "")
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .toLowerCase()
+              .trim();
+          }
+
+          function dateOnly(value) {
+            if (!value) return null;
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return null;
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          }
+
+          function applyLocalFilters(rows, filters) {
+            const title = normalizeText(filters.title);
+            const code = normalizeText(filters.code);
+            const from = filters.dateFrom ? new Date(`${filters.dateFrom}T00:00:00`) : null;
+            const to = filters.dateTo ? new Date(`${filters.dateTo}T23:59:59`) : null;
+
+            return rows.filter((row) => {
+              const rowTitle = normalizeText(row.title);
+              const rowCode = normalizeText(row.expediente_code || row.id);
+              const openedAt = dateOnly(row.opened_at);
+
+              if (title && !rowTitle.includes(title)) return false;
+              if (code && !rowCode.includes(code)) return false;
+              if (from && (!openedAt || openedAt < from)) return false;
+              if (to && (!openedAt || openedAt > to)) return false;
+              return true;
+            });
+          }
+
           function renderSummary(rows) {
             const totalAmount = rows.reduce((sum, row) => sum + Number(row.amount_eur || 0), 0);
             const latest = rows
@@ -449,8 +491,8 @@ data:
             `;
           }
 
-          function renderPayload(payload) {
-            const rows = Array.isArray(payload) ? payload : [];
+          function renderPayload(payload, filters = {}) {
+            const rows = Array.isArray(payload) ? applyLocalFilters(payload, filters) : [];
             renderSummary(rows);
             renderTable(rows);
             outputEl.textContent = JSON.stringify(payload, null, 2);
@@ -483,6 +525,12 @@ data:
               if (data.get("statusFilter")) {
                 requestBody.p_status = data.get("statusFilter");
               }
+              const localFilters = {
+                title: data.get("titleFilter"),
+                code: data.get("codeFilter"),
+                dateFrom: data.get("dateFrom"),
+                dateTo: data.get("dateTo")
+              };
               const apiResponse = await fetch("/dena/admin-files", {
                 method: "POST",
                 headers: {
@@ -492,11 +540,12 @@ data:
                 body: JSON.stringify(requestBody)
               });
               if (!apiResponse.ok) {
-                  throw new Error(`API HTTP ${apiResponse.status}`);
+                throw new Error(`API HTTP ${apiResponse.status}`);
               }
               const payload = await apiResponse.json();
-              renderPayload(payload);
-              setStatus(`Consulta correcta: ${Array.isArray(payload) ? payload.length : 0} expedientes.`, "ok");
+              renderPayload(payload, localFilters);
+              const filteredCount = Array.isArray(payload) ? applyLocalFilters(payload, localFilters).length : 0;
+              setStatus(`Consulta correcta: ${filteredCount} expedientes.`, "ok");
             } catch (error) {
               outputEl.textContent = String(error);
               tableWrap.innerHTML = `<div class="empty">${escapeHtml(error.message || error)}</div>`;
