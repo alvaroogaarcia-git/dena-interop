@@ -1139,7 +1139,9 @@ Acceso:
 https://192.168.56.15:30779
 ```
 
-El script deja inicializado `admin / T]8zJMh3U:ADu@L`. Si caduca el bootstrap antes de inicializar:
+El script deja inicializado `admin / T]8zJMh3U:ADu@L`, garantiza el environment Kubernetes `local` y valida que Portainer ve namespaces y deployments. En la UI entra en `Environments` y abre `local`.
+
+Si caduca el bootstrap antes de inicializar:
 
 ```bash
 kubectl rollout restart deployment/portainer -n portainer

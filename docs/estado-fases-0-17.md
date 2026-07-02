@@ -27,6 +27,7 @@ Estado versionado:
 
 - `k8s-manifests/portainer-deployment.yaml`: namespace, ServiceAccount, ClusterRoleBinding, PVC, Deployment y Service NodePort.
 - `scripts/dena/init-portainer.sh`: inicializa `admin / T]8zJMh3U:ADu@L` de forma idempotente.
+- El mismo script garantiza el environment Kubernetes `local`, lanza snapshot y comprueba que Portainer ve namespaces/deployments.
 
 Acceso:
 

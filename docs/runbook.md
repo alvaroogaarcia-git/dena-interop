@@ -39,6 +39,23 @@ kubectl delete pod -n <namespace> <pod>
 
 No borres PVCs salvo que quieras eliminar datos persistentes.
 
+## Portainer Vacio
+
+Si al entrar en Portainer no aparece ningun entorno:
+
+```bash
+bash scripts/dena/init-portainer.sh
+```
+
+El script debe terminar con una salida similar a:
+
+```text
+Environment Kubernetes local ya existe en Portainer (id=1).
+Portainer ve el cluster: namespaces=11 deployments=16.
+```
+
+En la UI abre `Environments` y selecciona `local`.
+
 ## Riesgos Operativos
 
 - R1: credenciales demo en claro. Solo valido para piloto.
