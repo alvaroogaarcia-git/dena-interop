@@ -14,72 +14,126 @@ data:
         <style>
           :root {
             color-scheme: light;
-            --ink: #15221d;
-            --muted: #5d6b64;
-            --paper: #fffaf0;
-            --field: #fffefa;
-            --brand: #1d6b56;
-            --brand-dark: #13483b;
-            --line: #d9d0bd;
-            --ok: #0d6b3f;
-            --bad: #9f2f2f;
+            --bg: #f4f6f8;
+            --surface: #ffffff;
+            --surface-soft: #f8fafc;
+            --ink: #17212b;
+            --muted: #5d6a76;
+            --line: #d9e0e7;
+            --brand: #12615f;
+            --brand-dark: #0b4646;
+            --brand-soft: #e4f2f1;
+            --ok: #137547;
+            --warn: #9a6700;
+            --closed: #4f5d75;
+            --bad: #a13d3d;
           }
           * { box-sizing: border-box; }
           body {
             margin: 0;
             min-height: 100vh;
-            font-family: Georgia, "Times New Roman", serif;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             color: var(--ink);
-            background:
-              radial-gradient(circle at 15% 10%, rgba(29, 107, 86, .18), transparent 28rem),
-              linear-gradient(135deg, #f5ead7 0%, #fffaf0 52%, #e7f0e9 100%);
+            background: var(--bg);
           }
           main {
-            width: min(1080px, calc(100% - 32px));
+            width: min(1180px, calc(100% - 32px));
             margin: 0 auto;
-            padding: 52px 0;
+            padding: 28px 0 42px;
           }
-          .hero {
+          .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+          }
+          .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+          }
+          .mark {
             display: grid;
-            grid-template-columns: 1.1fr .9fr;
-            gap: 28px;
-            align-items: stretch;
+            width: 42px;
+            height: 42px;
+            place-items: center;
+            border-radius: 8px;
+            background: var(--brand);
+            color: white;
+            font-weight: 800;
           }
           h1 {
-            margin: 0 0 14px;
-            font-size: clamp(2.4rem, 7vw, 5.8rem);
-            line-height: .9;
-            letter-spacing: -.06em;
-          }
-          .lead {
-            max-width: 640px;
             margin: 0;
+            font-size: 1.35rem;
+            line-height: 1.1;
+          }
+          .subtitle {
+            margin: 3px 0 0;
             color: var(--muted);
-            font-size: 1.18rem;
-            line-height: 1.55;
+            font-size: .92rem;
+          }
+          .status {
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 8px 12px;
+            background: var(--surface);
+            color: var(--muted);
+            font-size: .92rem;
+            white-space: nowrap;
+          }
+          .status.ok { color: var(--ok); border-color: #b8ddc8; background: #eef9f2; }
+          .status.bad { color: var(--bad); border-color: #ecc6c6; background: #fff1f1; }
+          .workspace {
+            display: grid;
+            grid-template-columns: 300px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
           }
           .panel {
             border: 1px solid var(--line);
-            border-radius: 28px;
-            background: rgba(255, 250, 240, .78);
-            box-shadow: 0 28px 80px rgba(37, 54, 45, .16);
-            padding: 24px;
-            backdrop-filter: blur(8px);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: 0 10px 28px rgba(18, 32, 44, .06);
+          }
+          .panel-head {
+            border-bottom: 1px solid var(--line);
+            padding: 16px 18px;
+          }
+          .panel-head h2 {
+            margin: 0;
+            font-size: 1rem;
+          }
+          .panel-head p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: .9rem;
+            line-height: 1.4;
+          }
+          form {
+            padding: 4px 18px 18px;
           }
           label {
             display: block;
             margin: 14px 0 6px;
             color: var(--muted);
-            font-size: .92rem;
+            font-size: .86rem;
+            font-weight: 650;
           }
-          input, button {
+          input, select, button {
             width: 100%;
-            border-radius: 14px;
+            min-height: 42px;
+            border-radius: 8px;
             border: 1px solid var(--line);
             font: inherit;
-            padding: 13px 14px;
+            padding: 10px 11px;
           }
-          input { background: var(--field); color: var(--ink); }
+          input, select { background: #fff; color: var(--ink); }
           button {
             margin-top: 18px;
             border: 0;
@@ -89,99 +143,324 @@ data:
             font-weight: 700;
           }
           button:hover { background: var(--brand-dark); }
-          .status {
-            margin-top: 14px;
-            min-height: 1.4em;
-            color: var(--muted);
+          button:disabled {
+            cursor: wait;
+            opacity: .7;
           }
-          .status.ok { color: var(--ok); }
-          .status.bad { color: var(--bad); }
-          .cards {
+          .flow {
+            padding: 0 18px 18px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 16px;
-            margin-top: 28px;
+            gap: 10px;
           }
-          article {
-            border: 1px solid var(--line);
-            border-radius: 20px;
-            padding: 18px;
-            background: rgba(255, 254, 250, .78);
-          }
-          article h2 {
-            margin: 0 0 8px;
-            font-size: 1.05rem;
-          }
-          article p {
-            margin: 0;
+          .flow-step {
+            display: grid;
+            grid-template-columns: 28px 1fr;
+            gap: 10px;
+            align-items: center;
             color: var(--muted);
-            line-height: 1.45;
+            font-size: .9rem;
+          }
+          .flow-step span {
+            display: grid;
+            width: 28px;
+            height: 28px;
+            place-items: center;
+            border-radius: 999px;
+            background: var(--brand-soft);
+            color: var(--brand);
+            font-weight: 800;
+            font-size: .8rem;
+          }
+          .results {
+            min-width: 0;
+          }
+          .summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+          }
+          .metric {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface);
+            padding: 14px;
+          }
+          .metric span {
+            display: block;
+            color: var(--muted);
+            font-size: .8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+          .metric strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 1.5rem;
+          }
+          .table-wrap {
+            overflow: auto;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 820px;
+          }
+          th, td {
+            border-bottom: 1px solid var(--line);
+            padding: 12px 14px;
+            text-align: left;
+            vertical-align: top;
+          }
+          th {
+            background: var(--surface-soft);
+            color: var(--muted);
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .02em;
+          }
+          tbody tr:hover {
+            background: #fbfdff;
+          }
+          .code {
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: .86rem;
+          }
+          .title-cell {
+            max-width: 320px;
+            font-weight: 700;
+          }
+          .title-cell small {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-weight: 500;
+          }
+          .badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            border-radius: 999px;
+            padding: 4px 9px;
+            background: #eef2f6;
+            color: var(--closed);
+            font-size: .78rem;
+            font-weight: 800;
+            white-space: nowrap;
+          }
+          .badge.abierto { background: #e8f6ef; color: var(--ok); }
+          .badge.en_tramitacion { background: #e6f0ff; color: #245ca8; }
+          .badge.pendiente_documentacion { background: #fff5d8; color: var(--warn); }
+          .badge.resuelto { background: #edf7e8; color: #4c7a1f; }
+          .empty {
+            padding: 42px 18px;
+            text-align: center;
+            color: var(--muted);
+          }
+          details {
+            border-top: 1px solid var(--line);
+          }
+          summary {
+            cursor: pointer;
+            padding: 14px 18px;
+            color: var(--muted);
+            font-weight: 700;
           }
           pre {
             overflow: auto;
-            max-height: 420px;
-            margin: 24px 0 0;
-            padding: 18px;
-            border-radius: 18px;
+            max-height: 320px;
+            margin: 0;
+            padding: 16px 18px 18px;
             background: #13221c;
             color: #eef8ed;
             font-family: "SFMono-Regular", Consolas, monospace;
             font-size: .9rem;
           }
           @media (max-width: 760px) {
-            .hero { grid-template-columns: 1fr; }
-            main { padding-top: 28px; }
+            .topbar { align-items: stretch; flex-direction: column; }
+            .status { justify-content: flex-start; white-space: normal; }
+            .workspace { grid-template-columns: 1fr; }
+            .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           }
         </style>
       </head>
       <body>
         <main>
-          <section class="hero">
-            <div class="panel">
-              <h1>DENA Interop</h1>
-              <p class="lead">Cliente demo servido por APISIX. Obtiene un token del realm piloto y consulta expedientes por <code>POST /dena/admin-files</code> en el mismo origen.</p>
-              <div class="cards">
-                <article>
-                  <h2>Identidad</h2>
-                  <p>Keycloak realm piloto emite el token OIDC.</p>
-                </article>
-                <article>
-                  <h2>Gateway</h2>
-                  <p>APISIX valida el bearer token antes de llegar a PostgREST.</p>
-                </article>
-                <article>
-                  <h2>Datalake</h2>
-                  <p>PostgREST ejecuta la RPC DENA y devuelve expedientes.</p>
-                </article>
+          <header class="topbar">
+            <div class="brand">
+              <div class="mark">D</div>
+              <div>
+                <h1>DENA Interop</h1>
+                <p class="subtitle">Consulta demo de expedientes federados por OIDC</p>
               </div>
             </div>
-            <form class="panel" id="login">
-              <label for="username">Usuario</label>
-              <input id="username" name="username" value="testuser" autocomplete="username">
-              <label for="password">Password</label>
-              <input id="password" name="password" value="Test1234!" type="password" autocomplete="current-password">
-              <label for="limit">Expedientes a consultar</label>
-              <input id="limit" name="limit" value="5" type="number" min="1" max="50">
-              <button type="submit">Consultar expedientes</button>
-              <div class="status" id="status">Listo para autenticar.</div>
-            </form>
+            <div class="status" id="status">Listo para autenticar.</div>
+          </header>
+
+          <section class="workspace">
+            <aside class="panel">
+              <div class="panel-head">
+                <h2>Parámetros</h2>
+                <p>La consulta obtiene token en Keycloak y llama a la RPC DENA mediante APISIX.</p>
+              </div>
+              <form id="login">
+                <label for="username">Usuario</label>
+                <input id="username" name="username" value="testuser" autocomplete="username">
+                <label for="password">Password</label>
+                <input id="password" name="password" value="Test1234!" type="password" autocomplete="current-password">
+                <label for="statusFilter">Estado</label>
+                <select id="statusFilter" name="statusFilter">
+                  <option value="">Todos</option>
+                  <option value="abierto">Abierto</option>
+                  <option value="en_tramitacion">En tramitación</option>
+                  <option value="pendiente_documentacion">Pendiente documentación</option>
+                  <option value="resuelto">Resuelto</option>
+                  <option value="archivado">Archivado</option>
+                </select>
+                <label for="limit">Expedientes a consultar</label>
+                <input id="limit" name="limit" value="10" type="number" min="1" max="50">
+                <button id="submitButton" type="submit">Consultar expedientes</button>
+              </form>
+              <div class="flow">
+                <div class="flow-step"><span>1</span><strong>Token OIDC</strong></div>
+                <div class="flow-step"><span>2</span><strong>Validación APISIX</strong></div>
+                <div class="flow-step"><span>3</span><strong>RPC PostgREST</strong></div>
+              </div>
+            </aside>
+
+            <section class="results">
+              <div class="summary" id="summary">
+                <div class="metric"><span>Expedientes</span><strong>0</strong></div>
+                <div class="metric"><span>Importe total</span><strong>0 €</strong></div>
+                <div class="metric"><span>Última actualización</span><strong>-</strong></div>
+                <div class="metric"><span>Sistemas origen</span><strong>0</strong></div>
+              </div>
+              <div class="panel">
+                <div class="panel-head">
+                  <h2>Expedientes</h2>
+                  <p id="resultLabel">Ejecuta una consulta para ver resultados estructurados.</p>
+                </div>
+                <div class="table-wrap" id="tableWrap">
+                  <div class="empty">Sin resultados todavía.</div>
+                </div>
+                <details>
+                  <summary>Ver respuesta JSON</summary>
+                  <pre id="output">Sin resultados todavía.</pre>
+                </details>
+              </div>
+            </section>
           </section>
-          <pre id="output">Sin resultados todavia.</pre>
         </main>
         <script>
           const statusEl = document.querySelector("#status");
           const outputEl = document.querySelector("#output");
+          const summaryEl = document.querySelector("#summary");
+          const tableWrap = document.querySelector("#tableWrap");
+          const resultLabel = document.querySelector("#resultLabel");
           const form = document.querySelector("#login");
+          const submitButton = document.querySelector("#submitButton");
+
+          const statusLabels = {
+            abierto: "Abierto",
+            en_tramitacion: "En tramitación",
+            pendiente_documentacion: "Pendiente documentación",
+            resuelto: "Resuelto",
+            archivado: "Archivado"
+          };
+
+          const currency = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+          const shortDate = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
 
           function setStatus(message, kind = "") {
             statusEl.textContent = message;
             statusEl.className = `status ${kind}`;
           }
 
+          function escapeHtml(value) {
+            return String(value ?? "")
+              .replaceAll("&", "&amp;")
+              .replaceAll("<", "&lt;")
+              .replaceAll(">", "&gt;")
+              .replaceAll('"', "&quot;")
+              .replaceAll("'", "&#039;");
+          }
+
+          function formatDate(value) {
+            if (!value) return "-";
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? value : shortDate.format(date);
+          }
+
+          function formatStatus(value) {
+            const label = statusLabels[value] || value || "Sin estado";
+            return `<span class="badge ${escapeHtml(value)}">${escapeHtml(label)}</span>`;
+          }
+
+          function renderSummary(rows) {
+            const totalAmount = rows.reduce((sum, row) => sum + Number(row.amount_eur || 0), 0);
+            const latest = rows
+              .map((row) => new Date(row.updated_at))
+              .filter((date) => !Number.isNaN(date.getTime()))
+              .sort((a, b) => b - a)[0];
+            const sources = new Set(rows.map((row) => row.source_system).filter(Boolean));
+            summaryEl.innerHTML = `
+              <div class="metric"><span>Expedientes</span><strong>${rows.length}</strong></div>
+              <div class="metric"><span>Importe total</span><strong>${currency.format(totalAmount)}</strong></div>
+              <div class="metric"><span>Última actualización</span><strong>${latest ? shortDate.format(latest) : "-"}</strong></div>
+              <div class="metric"><span>Sistemas origen</span><strong>${sources.size}</strong></div>
+            `;
+          }
+
+          function renderTable(rows) {
+            if (!rows.length) {
+              tableWrap.innerHTML = '<div class="empty">La consulta no devolvió expedientes.</div>';
+              resultLabel.textContent = "No hay expedientes para los filtros seleccionados.";
+              return;
+            }
+            resultLabel.textContent = `${rows.length} expedientes recuperados desde la API DENA.`;
+            tableWrap.innerHTML = `
+              <table>
+                <thead>
+                  <tr>
+                    <th>Expediente</th>
+                    <th>Título</th>
+                    <th>Estado</th>
+                    <th>Importe</th>
+                    <th>Apertura</th>
+                    <th>Actualizado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows.map((row) => `
+                    <tr>
+                      <td class="code">${escapeHtml(row.expediente_code || row.id)}</td>
+                      <td class="title-cell">
+                        ${escapeHtml(row.title)}
+                        <small>${escapeHtml(row.citizen_id)} · ${escapeHtml(row.source_system)}</small>
+                      </td>
+                      <td>${formatStatus(row.status)}</td>
+                      <td>${currency.format(Number(row.amount_eur || 0))}</td>
+                      <td>${formatDate(row.opened_at)}</td>
+                      <td>${formatDate(row.updated_at)}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            `;
+          }
+
+          function renderPayload(payload) {
+            const rows = Array.isArray(payload) ? payload : [];
+            renderSummary(rows);
+            renderTable(rows);
+            outputEl.textContent = JSON.stringify(payload, null, 2);
+          }
+
           form.addEventListener("submit", async (event) => {
             event.preventDefault();
             setStatus("Solicitando token...");
             outputEl.textContent = "Esperando respuesta...";
+            submitButton.disabled = true;
             const data = new FormData(form);
             try {
               const tokenResponse = await fetch("/realms/piloto/protocol/openid-connect/token", {
@@ -200,23 +479,31 @@ data:
               }
               const tokenJson = await tokenResponse.json();
               setStatus("Token emitido. Consultando API...");
+              const requestBody = { p_limit: Number(data.get("limit") || 10) };
+              if (data.get("statusFilter")) {
+                requestBody.p_status = data.get("statusFilter");
+              }
               const apiResponse = await fetch("/dena/admin-files", {
                 method: "POST",
                 headers: {
                   "Authorization": `Bearer ${tokenJson.access_token}`,
                   "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ p_limit: Number(data.get("limit") || 5) })
+                body: JSON.stringify(requestBody)
               });
               if (!apiResponse.ok) {
-                throw new Error(`API HTTP ${apiResponse.status}`);
+                  throw new Error(`API HTTP ${apiResponse.status}`);
               }
               const payload = await apiResponse.json();
-              outputEl.textContent = JSON.stringify(payload, null, 2);
-              setStatus(`Consulta correcta: ${payload.length} expedientes.`, "ok");
+              renderPayload(payload);
+              setStatus(`Consulta correcta: ${Array.isArray(payload) ? payload.length : 0} expedientes.`, "ok");
             } catch (error) {
               outputEl.textContent = String(error);
+              tableWrap.innerHTML = `<div class="empty">${escapeHtml(error.message || error)}</div>`;
+              resultLabel.textContent = "No se pudo completar la consulta.";
               setStatus("La consulta ha fallado.", "bad");
+            } finally {
+              submitButton.disabled = false;
             }
           });
         </script>
