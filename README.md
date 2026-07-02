@@ -139,6 +139,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Observabilidad y Grafana](docs/grafana-observabilidad.md)
 - [Runbook operativo](docs/runbook.md)
 - [Arquitectura](docs/arquitectura.md)
+- [Documentacion de herramientas](docs/herramientas/README.md)
 
 ## Estructura
 
