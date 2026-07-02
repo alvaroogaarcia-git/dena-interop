@@ -4,7 +4,7 @@ Fecha: 2026-06-22
 
 ## Resumen
 
-El cluster queda validado hasta Fase 12:
+El clúster queda validado hasta Fase 12:
 
 - Fases 0-11: ver `docs/estado-fases-0-11.md`.
 - Fase 11b: origen PostgreSQL en `verticales`, Mathesar local y driver JDBC de PostgreSQL persistido en NiFi.
@@ -43,7 +43,7 @@ Estado validado:
 - NodePort Mathesar: `30900`
 - Driver JDBC NiFi: `postgresql-42.7.4.jar` en `nifi-extensions`
 
-Configuracion validada:
+Configuración validada:
 
 - Mathesar usa `POSTGRES_HOST=postgresql-verticales.verticales.svc.cluster.local`
 - Mathesar usa `POSTGRES_DB=mathesar_django`
@@ -52,7 +52,7 @@ Configuracion validada:
 - NiFi mantiene acceso de operador por `kubectl port-forward`
 - el origen CSV/GetFile queda reemplazado por PostgreSQL como fuente de cambios
 
-Validacion esperada:
+Validación esperada:
 
 ```text
 postgresql-verticales-0   1/1   Running
@@ -70,7 +70,7 @@ NiFi: https://localhost:8443/nifi
 Notas operativas:
 
 - El primer arranque de Mathesar requiere crear el usuario admin desde la UI.
-- Dentro de Mathesar hay que anadir la conexion a `expedientes` usando `postgres`.
+- Dentro de Mathesar hay que añadir la conexión a `expedientes` usando `postgres`.
 - El NodePort directo de NiFi `30821` sigue devolviendo `400`; el acceso validado continua siendo por port-forward.
 - La Fase 12 versiona el flujo NiFi JDBC incremental; Fase 11b deja preparado el origen, el driver y la conectividad.
 - En este nodo de `4 GiB`, Mathesar queda reducido a `128Mi` de request y `256Mi` de limit para poder programarse.
@@ -102,4 +102,4 @@ Estado esperado:
 - Flujo conservado tras `kubectl rollout restart deployment/nifi -n datalake`.
 
 Procedimiento: `docs/fase12-nifi-jdbc.md`.
-Optimizacion del nodo: `docs/optimizacion-k3s-4gb.md`.
+Optimización del nodo: `docs/optimizacion-k3s-4gb.md`.

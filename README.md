@@ -1,10 +1,10 @@
 # dena-interop
 
-Stack local de interoperabilidad desplegado sobre un nodo unico DietPi x86_64 con k3s, Helm y configuracion como codigo.
+Stack local de interoperabilidad desplegado sobre un nodo único DietPi x86_64 con k3s, Helm y configuración como código.
 
 ## Estado actual
 
-El entorno esta validado hasta Fase 17 de la guia de instalacion:
+El entorno está validado hasta Fase 17 de la guía de instalación:
 
 | Fase | Componente | Estado |
 | --- | --- | --- |
@@ -27,9 +27,9 @@ El entorno esta validado hasta Fase 17 de la guia de instalacion:
 | 14 | Terraform: datasources y dashboards de Grafana | Validado |
 | 15 | SQL del datalake, staging y carga local | Validado |
 | 16 | Cliente demo SPA servido por APISIX | Validado |
-| 17 | Portainer para inspeccion operativa | Validado |
+| 17 | Portainer para inspección operativa | Validado |
 
-## Que hay desplegado
+## Qué hay desplegado
 
 - Namespace `auth`
   - PostgreSQL `17.1.0` mediante chart `postgresql-16.2.1`.
@@ -70,11 +70,11 @@ El entorno esta validado hasta Fase 17 de la guia de instalacion:
   - Mathesar `0.11.0` publicado en `NodePort 30900`.
 - Namespace `portainer`
   - Portainer CE `2.39.3` publicado en HTTPS `NodePort 30779`.
-- El alcance definido hasta Fase 17 esta completado.
+- El alcance definido hasta Fase 17 está completado.
 
-## Verificacion rapida
+## Verificación rápida
 
-Desde la maquina de operador:
+Desde la máquina de operador:
 
 ```bash
 cd /home/dietpi/dena-interop
@@ -108,7 +108,7 @@ HTTP/1.1 401 Unauthorized
 Server: APISIX/3.16.0
 ```
 
-La ruta `/api` exige un bearer token valido del realm `piloto`. `scripts/verify-fase13.sh` comprueba el rechazo sin token, obtiene un token de `testuser` y valida `/api` y `/dena/admin-files`.
+La ruta `/api` exige un bearer token válido del realm `piloto`. `scripts/verify-fase13.sh` comprueba el rechazo sin token, obtiene un token de `testuser` y valida `/api` y `/dena/admin-files`.
 
 Resultado esperado de `scripts/verify-fase10.sh`:
 
@@ -119,9 +119,9 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - `nifi` responde `HTTP/1.1 200 OK` por HTTPS interno con `Host: localhost:8443`.
 - `mathesar` queda escuchando en `:8000` y accesible mediante el servicio `mathesar`.
 
-## Documentacion principal
+## Documentación principal
 
-- [Guia completa de instalacion](docs/guia-instalacion.md)
+- [Guía completa de instalación](docs/guia-instalacion.md)
 - [GitHub Actions](docs/github-actions.md)
 - [Estado validado Fases 0-7](docs/estado-fases-0-7.md)
 - [Estado validado Fases 0-10](docs/estado-fases-0-10.md)
@@ -132,19 +132,19 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Estado validado Fases 0-15](docs/estado-fases-0-15.md)
 - [Estado validado Fases 0-17](docs/estado-fases-0-17.md)
 - [Fase 15 - SQL del datalake y carga local](docs/fase15-datalake.md)
-- [Flujo NiFi JDBC incremental (extension 11c)](docs/fase12-nifi-jdbc.md)
+- [Flujo NiFi JDBC incremental (extensión 11c)](docs/fase12-nifi-jdbc.md)
 - [Estado validado Fases 0-6](docs/estado-fases-0-6.md)
 - [Estado validado Fases 0-3](docs/estado-fases-0-3.md)
-- [Preparacion de Fase 8](docs/fase8-preparacion.md)
+- [Preparación de Fase 8](docs/fase8-preparacion.md)
 - [Observabilidad y Grafana](docs/grafana-observabilidad.md)
 - [Runbook operativo](docs/runbook.md)
 - [Arquitectura](docs/arquitectura.md)
-- [Documentacion de herramientas](docs/herramientas/README.md)
+- [Documentación de herramientas](docs/herramientas/README.md)
 
 ## Estructura
 
 ```text
-docs/           Documentacion operativa y estado validado
+docs/           Documentación operativa y estado validado
 helm-values/    Values Helm versionados
 k8s-manifests/  Manifiestos Kubernetes versionados
 scripts/        Provisionamiento y verificaciones reproducibles

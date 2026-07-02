@@ -12,7 +12,7 @@ Aplicar en `datalake`:
 - staging `dena.admin_file_staging`
 - función de promoción `dena.dena_staging_to_main()`
 
-## Aplicacion de SQL
+## Aplicación de SQL
 
 ```bash
 export KUBECONFIG=/home/dietpi/.kube/dena-config
@@ -61,11 +61,11 @@ Generar el resumen del flujo:
 python3 scripts/dena/nifi-build-flow.py
 ```
 
-## Verificacion
+## Verificación
 
 ```bash
 bash scripts/dena/apply-fase15-datalake.sh
 bash scripts/verify-fase15.sh
 ```
 
-La verificacion comprueba que el esquema DENA y la staging existen en el datalake.
+La verificación comprueba que el esquema DENA y la staging existen en el datalake.

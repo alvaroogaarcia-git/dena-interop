@@ -17,7 +17,7 @@ No se ha empezado la Fase 11:
 - No hay NiFi.
 - No hay Mathesar.
 - APISIX sigue sin rutas.
-- El esquema DENA de Fase 15 todavia no esta aplicado.
+- El esquema DENA de Fase 15 todavía no está aplicado.
 
 ## Releases Helm
 
@@ -39,7 +39,7 @@ tempo               monitoring  tempo-1.24.4                     2.9.0
 - Modo: `DaemonSet`
 - Service: `otel-collector-opentelemetry-collector`
 
-Validacion:
+Validación:
 
 ```text
 otel-collector-opentelemetry-collector-agent-...   1/1   Running
@@ -49,7 +49,7 @@ Pipelines validadas:
 
 - logs hacia Loki por `otlphttp`
 - trazas hacia Tempo por OTLP HTTP
-- metricas expuestas para scrape de Prometheus
+- métricas expuestas para scrape de Prometheus
 
 ## Fase 9 - PostgreSQL datalake
 
@@ -62,7 +62,7 @@ Pipelines validadas:
 - PVC: `data-postgresql-datalake-0`, `4Gi`, `local-path`
 - Base de datos objetivo: `datalake`
 
-Validacion:
+Validación:
 
 ```text
 postgresql-datalake-0   1/1   Running
@@ -96,7 +96,7 @@ postgrest|t
 postgrest->anon
 ```
 
-Validacion HTTP:
+Validación HTTP:
 
 ```text
 HTTP/1.1 200 OK
@@ -104,7 +104,7 @@ Server: postgrest/13.0.4
 Content-Type: application/openapi+json; charset=utf-8
 ```
 
-La raiz `/` del servicio devuelve el documento OpenAPI del esquema `public`, lo que confirma:
+La raíz `/` del servicio devuelve el documento OpenAPI del esquema `public`, lo que confirma:
 
 - conectividad entre `postgrest` y `postgresql-datalake`
 - password correcta en `postgrest-secret`
@@ -131,4 +131,4 @@ Estado esperado:
 
 ## Siguiente fase
 
-La siguiente fase de la guia es la Fase 11, pero no forma parte de este cierre.
+La siguiente fase de la guía es la Fase 11, pero no forma parte de este cierre.

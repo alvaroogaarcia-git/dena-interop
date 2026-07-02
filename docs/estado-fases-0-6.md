@@ -28,8 +28,8 @@ Notas de red:
 
 - Usar `GODEBUG=http2client=0` para operaciones Helm contra repos externos.
 - `helm repo update` no soporta `--insecure-skip-tls-verify` para repositorios, solo para el API server de Kubernetes.
-- `charts.apiseven.com` corta la conexion; el indice Apache de APISIX funciona y conserva el chart `apiseven/apisix`.
-- Los charts Bitnami actuales descargan desde OCI/Docker Hub; en esta red falla el token anonimo con `403 Forbidden`.
+- `charts.apiseven.com` corta la conexión; el índice Apache de APISIX funciona y conserva el chart `apiseven/apisix`.
+- Los charts Bitnami actuales descargan desde OCI/Docker Hub; en esta red falla el token anónimo con `403 Forbidden`.
 
 ## Fase 4 - PostgreSQL auth
 
@@ -43,11 +43,11 @@ Release Helm:
 
 Decision operativa:
 
-- Se usa `bitnami/postgresql` version `16.2.1` porque descarga como `.tgz` clasico.
+- Se usa `bitnami/postgresql` versión `16.2.1` porque descarga como `.tgz` clásico.
 - Se sustituye la imagen por `docker.io/bitnamilegacy/postgresql:17.1.0-debian-12-r0`, ya que `docker.io/bitnami/postgresql:17.1.0-debian-12-r0` fue retirado.
 - PVC local-path: `data-postgresql-0`, `4Gi`.
 
-Validacion realizada:
+Validación realizada:
 
 ```bash
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql -n auth --timeout=180s
@@ -80,9 +80,9 @@ Secret:
 
 - `keycloak-secret`
 - Usuario admin: `admin`
-- La password admin esta en `.local/fase4-6.env`, archivo ignorado por Git.
+- La password admin está en `.local/fase4-6.env`, archivo ignorado por Git.
 
-Validacion realizada:
+Validación realizada:
 
 ```bash
 kubectl wait --for=condition=ready pod -l app=keycloak -n auth --timeout=360s
@@ -151,13 +151,13 @@ apisix      gateway   deployed   apisix-2.14.1       3.16.0
 postgresql  auth      deployed   postgresql-16.2.1   17.1.0
 ```
 
-Namespaces de aplicacion:
+Namespaces de aplicación:
 
 - `auth`: PostgreSQL + Keycloak.
 - `gateway`: APISIX + etcd.
 - `app`, `monitoring`, `datalake`, `verticales`: creados, sin workloads de fases posteriores.
 
-## Comandos rapidos de comprobacion
+## Comandos rápidos de comprobación
 
 ```bash
 cd /home/dietpi/dena-interop

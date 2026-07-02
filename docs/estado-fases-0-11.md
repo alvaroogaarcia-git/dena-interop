@@ -9,14 +9,14 @@ El clúster queda validado hasta Fase 11:
 - Fases 0-10: ver `docs/estado-fases-0-10.md`.
 - Fase 11: NiFi 2.9 desplegado en `datalake` con HTTPS y single-user.
 
-Todavia no se ha empezado la Fase 11b:
+Todavía no se ha empezado la Fase 11b:
 
 - No hay recursos en `verticales`.
 - No hay Mathesar.
 - No hay JDBC driver PostgreSQL copiado a `extensions/`.
 - No hay flujo NiFi cargado.
 - APISIX sigue sin rutas.
-- El esquema DENA de Fase 15 todavia no esta aplicado.
+- El esquema DENA de Fase 15 todavía no está aplicado.
 
 ## Fase 11 - Apache NiFi 2.9
 
@@ -33,16 +33,16 @@ Todavia no se ha empezado la Fase 11b:
 - Heap JVM: `256m`
 - Requests/Limits: `100m CPU`, `384Mi` request, `1Gi` limit
 
-Configuracion validada:
+Configuración validada:
 
 - `NIFI_WEB_HTTPS_PORT=8443`
 - `NIFI_WEB_HTTPS_HOST=0.0.0.0`
 - `NIFI_WEB_PROXY_HOST=localhost:8443,192.168.56.15:30821`
 - probes HTTPS con `Host: localhost:8443`
 - sin `startupProbe`; `readiness` y `liveness` relajadas para el arranque real del nodo
-- autenticacion single-user desde `nifi-secret`
+- autenticación single-user desde `nifi-secret`
 
-Validacion:
+Validación:
 
 ```text
 nifi-...   1/1   Running
@@ -50,7 +50,7 @@ service/nifi   NodePort   ...   8443:30821/TCP
 pvc/nifi-extensions   Bound
 ```
 
-Validacion HTTPS interna:
+Validación HTTPS interna:
 
 ```text
 HTTP/1.1 200 OK
@@ -70,8 +70,8 @@ https://localhost:8443/nifi
 
 Nota operativa:
 
-- El NodePort directo `https://192.168.56.15:30821/nifi` no es la via validada para esta fase.
-- En este nodo de `4 GiB`, NiFi quedo estable solo tras reducir heap a `256m`.
+- El NodePort directo `https://192.168.56.15:30821/nifi` no es la vía validada para esta fase.
+- En este nodo de `4 GiB`, NiFi quedó estable solo tras reducir heap a `256m`.
 - El flujo JDBC y el driver PostgreSQL quedan para la Fase 11b.
 
 ## Comandos de cierre
@@ -94,4 +94,4 @@ Estado esperado:
 
 ## Siguiente fase
 
-La siguiente fase de la guia es la Fase 11b, pero no forma parte de este cierre.
+La siguiente fase de la guía es la Fase 11b, pero no forma parte de este cierre.

@@ -8,8 +8,8 @@ Validado:
 
 - Paquetes instalados: `curl`, `wget`, `git`, `open-iscsi`, `nfs-common`, `iptables`.
 - Swap sin entradas activas en `/etc/fstab`.
-- Modulos cargados: `overlay`, `br_netfilter`.
-- Persistencia de modulos: `/etc/modules-load.d/k3s.conf`.
+- Módulos cargados: `overlay`, `br_netfilter`.
+- Persistencia de módulos: `/etc/modules-load.d/k3s.conf`.
 - Sysctl aplicado y persistido en `/etc/sysctl.d/99-k3s.conf`:
   - `net.bridge.bridge-nf-call-iptables = 1`
   - `net.bridge.bridge-nf-call-ip6tables = 1`
@@ -21,7 +21,7 @@ Validado:
 
 - Servicio `k3s` activo.
 - Nodo `dietpi` en estado `Ready`.
-- Configuracion persistente creada en:
+- Configuración persistente creada en:
   - `/boot/dietpi-k3s.yaml`
   - `/etc/rancher/k3s/config.yaml`
 
@@ -62,25 +62,25 @@ Repos Helm disponibles:
 - `grafana`
 - `open-telemetry`
 
-Configuracion aplicada para red corporativa:
+Configuración aplicada para red corporativa:
 
 - Usar `GODEBUG=http2client=0` en operaciones Helm contra repos externos.
-- `bitnami` esta registrado contra `https://repo.broadcom.com/bitnami-files`.
+- `bitnami` está registrado contra `https://repo.broadcom.com/bitnami-files`.
   - Motivo: `https://charts.bitnami.com/bitnami` redirige a Broadcom y falla con `EOF` al combinar Helm y `--insecure-skip-tls-verify`.
-- `apiseven` esta registrado contra `https://apache.github.io/apisix-helm-chart`.
-  - Motivo: `https://charts.apiseven.com` corta la conexion; el indice Apache contiene el chart `apiseven/apisix`.
+- `apiseven` está registrado contra `https://apache.github.io/apisix-helm-chart`.
+  - Motivo: `https://charts.apiseven.com` corta la conexión; el índice Apache contiene el chart `apiseven/apisix`.
 - `helm repo update` no soporta `--insecure-skip-tls-verify` para repositorios; solo expone el flag equivalente para el API server de Kubernetes.
 
-Validacion de charts:
+Validación de charts:
 
 - `helm repo update` funciona con los cinco repos configurados.
-- `apiseven/apisix` version `2.14.1` resuelve y el paquete incluye sus dependencias `etcd`, `common` y `apisix-ingress-controller`.
-- `bitnami/postgresql` version actual `18.7.5` resuelve en el indice, pero descarga desde OCI/Docker Hub y falla en esta red con `403 Forbidden` al pedir token anonimo.
-- `bitnami/postgresql` version `16.2.1` descarga como `.tgz` tradicional y contiene `charts/common` empaquetado.
+- `apiseven/apisix` versión `2.14.1` resuelve y el paquete incluye sus dependencias `etcd`, `common` y `apisix-ingress-controller`.
+- `bitnami/postgresql` versión actual `18.7.5` resuelve en el índice, pero descarga desde OCI/Docker Hub y falla en esta red con `403 Forbidden` al pedir token anónimo.
+- `bitnami/postgresql` versión `16.2.1` descarga como `.tgz` tradicional y contiene `charts/common` empaquetado.
 
 ## Fase 3 - Namespaces
 
-Namespaces de la guia aplicados de forma declarativa:
+Namespaces de la guía aplicados de forma declarativa:
 
 - `auth`
 - `gateway`
@@ -93,5 +93,5 @@ Estado final:
 
 - No existe namespace `apps`.
 - No hay releases Helm instalados.
-- No hay workloads de fases posteriores en namespaces de aplicacion.
+- No hay workloads de fases posteriores en namespaces de aplicación.
 - Solo quedan workloads base de `kube-system`: CoreDNS, local-path-provisioner y metrics-server.

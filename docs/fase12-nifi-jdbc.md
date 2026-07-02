@@ -1,6 +1,6 @@
-# Extension 11c - NiFi JDBC incremental
+# Extensión 11c - NiFi JDBC incremental
 
-Nota de numeracion: este flujo se implemento originalmente con el nombre interno `Fase 12`. En el plan consolidado queda como extension 11c; la Fase 12 corresponde a Terraform y Keycloak. Se conservan nombres de scripts y del grupo NiFi por compatibilidad.
+Nota de numeración: este flujo se implementó originalmente con el nombre interno `Fase 12`. En el plan consolidado queda como extensión 11c; la Fase 12 corresponde a Terraform y Keycloak. Se conservan nombres de scripts y del grupo NiFi por compatibilidad.
 
 Esta fase deja preparado un flujo NiFi reproducible para leer incrementalmente `expedientes.admin_file` y persistir la salida en disco dentro del PVC de NiFi.
 
@@ -26,7 +26,7 @@ La lectura incremental se apoya en:
 - Processor `Stamp Output Filename`
 - Processor `Persist Fase 12 Output`
 
-En la raiz de NiFi se ve un solo bloque de grupo; al abrirlo aparecen los tres procesadores y los dos controller services de la fase.
+En la raíz de NiFi se ve un solo bloque de grupo; al abrirlo aparecen los tres procesadores y los dos controller services de la fase.
 
 ## Requisitos previos
 
@@ -46,7 +46,7 @@ bash scripts/dena/provision-fase12-nifi.sh
 
 El script:
 
-1. Abre y cierra automaticamente un `port-forward` local a NiFi.
+1. Abre y cierra automáticamente un `port-forward` local a NiFi.
 2. Lee usuario y password desde `nifi-secret` y obtiene un token.
 3. Crea o reutiliza el grupo y sus componentes.
 4. Reconfigura DBCP con las claves de propiedades de NiFi 2.9.
@@ -55,13 +55,13 @@ El script:
 
 El aprovisionamiento es idempotente: puede repetirse para reparar o reconciliar el flujo.
 
-## Verificacion
+## Verificación
 
 ```bash
 bash scripts/verify-fase12.sh
 ```
 
-La verificacion comprueba:
+La verificación comprueba:
 
 - presencia del grupo de proceso
 - los tres procesadores en `VALID/RUNNING`
@@ -69,11 +69,11 @@ La verificacion comprueba:
 - disponibilidad del directorio de salida
 - presencia del driver JDBC en NiFi
 
-La validacion realizada genero un fichero `fase12-*.json` en el PVC.
+La validación realizada generó un fichero `fase12-*.json` en el PVC.
 
 ## Persistencia
 
-El deployment configura `nifi.flow.configuration.file` sobre `/persistent/conf/flow.json.gz`, dentro de `nifi-extensions`. La clave `nifi.sensitive.props.key` se obtiene de `nifi-secret`, por lo que las propiedades JDBC cifradas se pueden leer despues de recrear el pod.
+El deployment configura `nifi.flow.configuration.file` sobre `/persistent/conf/flow.json.gz`, dentro de `nifi-extensions`. La clave `nifi.sensitive.props.key` se obtiene de `nifi-secret`, por lo que las propiedades JDBC cifradas se pueden leer después de recrear el pod.
 
 Prueba validada:
 
@@ -97,7 +97,7 @@ kubectl exec -n verticales postgresql-verticales-0 -- \
   psql -U postgres -d expedientes -c "update expedientes.admin_file set status = 'archivado', updated_at = now() where id = 1;"
 ```
 
-Despues, reejecutar el flujo o esperar al siguiente ciclo de NiFi y revisar que aparece un nuevo JSON en el directorio de salida.
+Después, reejecutar el flujo o esperar al siguiente ciclo de NiFi y revisar que aparece un nuevo JSON en el directorio de salida.
 
 ## Acceso a NiFi
 

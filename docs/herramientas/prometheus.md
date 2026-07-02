@@ -1,21 +1,21 @@
 # Prometheus
 
-## Que Es
+## Qué Es
 
-Prometheus es una base de datos de metricas y un motor de consulta temporal. Recoge metricas de Kubernetes y de servicios instrumentados.
+Prometheus es una base de datos de métricas y un motor de consulta temporal. Recoge métricas de Kubernetes y de servicios instrumentados.
 
 ## Objetivo En Este Piloto
 
-Prometheus permite saber si los pods estan vivos, cuanta CPU/memoria consumen y que componentes fallan.
+Prometheus permite saber si los pods están vivos, cuánta CPU/memoria consumen y qué componentes fallan.
 
-## Donde Esta
+## Dónde Está
 
 - Namespace: `monitoring`
 - StatefulSet: `prometheus-monitoring-kube-prometheus-prometheus`
 - Service interno: `prometheus-operated:9090`
 - Acceso recomendado: Grafana o port-forward.
 
-## Como Se Usa
+## Cómo Se Usa
 
 Port-forward:
 
@@ -29,9 +29,9 @@ Abrir:
 http://localhost:9090
 ```
 
-## Que Contiene En Este Caso
+## Qué Contiene En Este Caso
 
-Metricas de:
+Métricas de:
 
 - Kubernetes.
 - Node exporter.
@@ -41,7 +41,7 @@ Metricas de:
 - APISIX prometheus plugin, cuando aplica.
 - OTel Collector metrics pipeline.
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 ```bash
 kubectl rollout status statefulset/prometheus-monitoring-kube-prometheus-prometheus -n monitoring
@@ -52,6 +52,6 @@ Desde Grafana:
 - Datasource `Prometheus`.
 - Dashboards de la carpeta `DENA`.
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
-Porque las metricas permiten detectar problemas antes de mirar logs: pods sin replicas, reinicios, consumo alto o servicios caidos.
+Porque las métricas permiten detectar problemas antes de mirar logs: pods sin réplicas, reinicios, consumo alto o servicios caídos.

@@ -1,14 +1,14 @@
-# Preparacion de Fase 8
+# Preparación de Fase 8
 
 Fecha: 2026-06-17
 
 ## Objetivo
 
-Dejar el entorno listo para arrancar manualmente la Fase 8 de la guia:
+Dejar el entorno listo para arrancar manualmente la Fase 8 de la guía:
 
 - chart values versionado para `otel-collector`
 - preflight de salud del stack previo
-- receta corta de recuperacion cuando el nodo vuelve de un reinicio con pods en `CreateContainerError`
+- receta corta de recuperación cuando el nodo vuelve de un reinicio con pods en `CreateContainerError`
 
 ## Archivos nuevos
 
@@ -40,7 +40,7 @@ helm install otel-collector open-telemetry/opentelemetry-collector \
   --values helm-values/otel-collector-values.yaml
 ```
 
-Validacion minima de Fase 8:
+Validación mínima de Fase 8:
 
 ```bash
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=otel-collector -n monitoring --timeout=240s
@@ -48,12 +48,12 @@ kubectl get pods,svc -n monitoring
 kubectl get servicemonitor -n monitoring | grep otel
 ```
 
-## Configuracion aplicada al collector
+## Configuración aplicada al collector
 
 - `mode: daemonset`
 - logs a Loki por `otlphttp`
 - trazas a Tempo por OTLP HTTP
-- metricas expuestas en formato Prometheus para que las raspe `kube-prometheus-stack`
+- métricas expuestas en formato Prometheus para que las raspe `kube-prometheus-stack`
 - presets activados:
   - `logsCollection`
   - `hostMetrics`
@@ -63,11 +63,11 @@ kubectl get servicemonitor -n monitoring | grep otel
 
 ## Nota operativa
 
-El clúster actual no esta en un estado valido para seguir instalando fases nuevas hasta recuperar:
+El clúster actual no está en un estado válido para seguir instalando fases nuevas hasta recuperar:
 
 - `keycloak`
 - `apisix`
 - varios componentes de `monitoring`
 - `coredns` y `metrics-server`
 
-La preparacion de Fase 8 deja el material listo en el repo, pero presupone que primero vuelvas a tener Fase 7 sana.
+La preparación de Fase 8 deja el material listo en el repo, pero presupone que primero vuelvas a tener Fase 7 sana.

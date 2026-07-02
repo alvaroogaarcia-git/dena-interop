@@ -1,8 +1,8 @@
 # SPA Cliente DENA
 
-## Que Es
+## Qué Es
 
-La SPA cliente DENA es una pagina web demo servida por NGINX. Simula un cliente DENA-CORE que se autentica y consulta expedientes.
+La SPA cliente DENA es una página web demo servida por NGINX. Simula un cliente DENA-CORE que se autentica y consulta expedientes.
 
 ## Objetivo En Este Piloto
 
@@ -15,15 +15,15 @@ Demuestra el flujo completo:
 5. PostgREST ejecuta la RPC.
 6. La SPA muestra expedientes.
 
-## Donde Esta
+## Dónde Está
 
 - Namespace: `app`
 - Deployment: `dena-interop-spa`
 - Service interno: `dena-interop-spa`
-- URL publica: `http://192.168.56.15:30080/`
+- URL pública: `http://192.168.56.15:30080/`
 - Manifiesto: `k8s-manifests/dena-interop-spa.yaml`
 
-## Como Se Usa
+## Cómo Se Usa
 
 Abrir:
 
@@ -36,17 +36,17 @@ Credenciales demo:
 - Usuario: `testuser`
 - Password: `Test1234!`
 
-## Que Contiene En Este Caso
+## Qué Contiene En Este Caso
 
-Contiene una pagina HTML/JS estatica en un ConfigMap. No es la SPA definitiva de produccion; es una demo funcional para probar OIDC y API DENA desde navegador.
+Contiene una página HTML/JS estática en un ConfigMap. No es la SPA definitiva de producción; es una demo funcional para probar OIDC y API DENA desde navegador.
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 ```bash
 curl -i http://192.168.56.15:30080/
 bash scripts/dena/test-curl.sh
 ```
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
-Porque permite enseñar el flujo a usuarios no tecnicos sin ejecutar comandos manuales para token y API.
+Porque permite enseñar el flujo a usuarios no técnicos sin ejecutar comandos manuales para token y API.

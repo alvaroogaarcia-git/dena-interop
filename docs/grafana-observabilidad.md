@@ -6,14 +6,14 @@ Fecha de referencia: 2026-06-22
 
 Dejar Grafana como punto central del entorno para:
 
-- metricas de cluster y nodo
+- métricas de clúster y nodo
 - logs en Loki
 - trazas en Tempo
-- metricas de Keycloak
-- metricas de las tres bases PostgreSQL
+- métricas de Keycloak
+- métricas de las tres bases PostgreSQL
 - dashboards operativos propios del stack
 
-La autenticacion de Grafana sigue saliendo del secret `grafana-admin`. No se ha guardado ninguna credencial nueva en Git.
+La autenticación de Grafana sigue saliendo del secret `grafana-admin`. No se ha guardado ninguna credencial nueva en Git.
 
 ## Cambios versionados
 
@@ -31,7 +31,7 @@ Se han dejado versionados:
 - `Loki.jsonData.maxLines: 1000`
 - persistencia de Grafana activada sobre el PVC `monitoring-grafana` de 1Gi para conservar datasources y dashboards entre reinicios
 - sidecar de dashboards desactivado porque Terraform es la fuente de verdad
-- recursos de Grafana ajustados a nodo unico:
+- recursos de Grafana ajustados a nodo único:
   - `requests.cpu: 25m`
   - `requests.memory: 64Mi`
   - `limits.memory: 192Mi`
@@ -70,7 +70,7 @@ En vez de forzar `helm upgrade` sobre releases que ya contienen secretos sensibl
   - `verticales`
 - `Service` interno por exporter
 - `ServiceMonitor` en `monitoring`
-- `SecretRef` a secrets ya existentes del cluster
+- `SecretRef` a secrets ya existentes del clúster
 
 Recursos ajustados para el nodo:
 
@@ -86,7 +86,7 @@ Resultado validado en Prometheus:
 
 Archivo adicional: `helm-values/postgresql-metrics-values.yaml`
 
-Ese fichero queda preparado como alternativa futura si mas adelante quieres volver al camino de exporter embebido por Helm.
+Ese fichero queda preparado como alternativa futura si más adelante quieres volver al camino de exporter embebido por Helm.
 
 ### Dashboards propios
 
@@ -100,9 +100,9 @@ Dashboards cargados y validados por API:
 - `Observability Loki`
 - `Observability Tempo`
 
-Desde Fase 14, Terraform es la fuente de verdad de estos dashboards y de los datasources principales. Los JSON versionados estan en `terraform/dashboards/` y se aplican con `scripts/dena/apply-fase14-grafana.sh`.
+Desde Fase 14, Terraform es la fuente de verdad de estos dashboards y de los datasources principales. Los JSON versionados están en `terraform/dashboards/` y se aplican con `scripts/dena/apply-fase14-grafana.sh`.
 
-## Pasos aplicados de verdad en el cluster
+## Pasos aplicados de verdad en el clúster
 
 Desde:
 
@@ -111,7 +111,7 @@ cd /home/dietpi/dena-interop
 export KUBECONFIG=/home/dietpi/.kube/dena-config
 ```
 
-### 1. Activar metricas de Keycloak
+### 1. Activar métricas de Keycloak
 
 ```bash
 kubectl apply -f k8s-manifests/keycloak-deployment.yaml
@@ -132,7 +132,7 @@ kubectl apply -f k8s-manifests/grafana-dashboards.yaml
 
 ### 4. Completar el rollout de Grafana en un nodo justo de memoria
 
-Durante la aplicacion de cambios de Grafana, el nodo unico no tenia margen para un `RollingUpdate` con `maxSurge`. Para cerrarlo de forma controlada se hizo:
+Durante la aplicación de cambios de Grafana, el nodo único no tenia margen para un `RollingUpdate` con `maxSurge`. Para cerrarlo de forma controlada se hizo:
 
 ```bash
 kubectl scale deployment monitoring-grafana -n monitoring --replicas=0
@@ -149,7 +149,7 @@ kubectl scale rs monitoring-grafana-69f98764c5 -n monitoring --replicas=0
 kubectl delete pod -n auth -l app=keycloak
 ```
 
-## Validacion ejecutada
+## Validación ejecutada
 
 ### Grafana
 
@@ -179,7 +179,7 @@ Acceso:
 
 ### Prometheus
 
-Validacion hecha mediante `kubectl port-forward` temporal al servicio de Prometheus y consultas HTTP:
+Validación hecha mediante `kubectl port-forward` temporal al servicio de Prometheus y consultas HTTP:
 
 ```bash
 kubectl port-forward -n monitoring svc/monitoring-kube-prometheus-prometheus 19090:9090
@@ -194,21 +194,21 @@ Resultados validados:
 - `pg_up=1` en `verticales`
 - `up{service="keycloak"}=1`
 
-## Estado final util
+## Estado final útil
 
 Desde Grafana ya quedan centralizados:
 
-- metricas de Kubernetes
-- metricas de nodo
-- logs de pods via OTel Collector + Loki
+- métricas de Kubernetes
+- métricas de nodo
+- logs de pods vía OTel Collector + Loki
 - trazas en Tempo
-- metricas de Keycloak
-- metricas de PostgreSQL
+- métricas de Keycloak
+- métricas de PostgreSQL
 - dashboards propios del stack
 
 ## Limites actuales
 
-No he instrumentado todavia con metricas o trazas propias:
+No he instrumentado todavía con métricas o trazas propias:
 
 - `APISIX`
 - `NiFi`
@@ -221,4 +221,4 @@ Esos cuatro siguen visibles por:
 - logs de contenedor en Loki
 - consumo de recursos del pod en Prometheus
 
-Para tenerlos con dashboards y trazas de aplicacion hace falta una fase posterior especifica por producto.
+Para tenerlos con dashboards y trazas de aplicación hace falta una fase posterior específica por producto.

@@ -1,6 +1,6 @@
-# Guia UI - Flujo NiFi de Fase 15
+# Guía UI - Flujo NiFi de Fase 15
 
-Esta guia describe la configuracion manual del flujo incremental de Fase 15 en NiFi 2.9.
+Esta guía describe la configuración manual del flujo incremental de Fase 15 en NiFi 2.9.
 
 ## Componentes
 
@@ -16,7 +16,7 @@ Dentro del grupo, crear:
 - Processor `Persist Staging Batch`
 - Processor `Promote Staging To Main`
 
-## Configuracion
+## Configuración
 
 `Verticales DBCP`
 

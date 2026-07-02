@@ -1,6 +1,6 @@
-# Optimizacion de k3s para el nodo de 4 GiB
+# Optimización de k3s para el nodo de 4 GiB
 
-Fecha de validacion: 2026-06-22
+Fecha de validación: 2026-06-22
 
 ## Incidente observado
 
@@ -10,24 +10,24 @@ Fecha de validacion: 2026-06-22
 Transaction commit failed: sql: transaction has already been committed or rolled back
 ```
 
-Antes del cierre se observaron consultas Kine lentas, timeouts de API, `PLEG is not healthy`, un pico de `1.5 GiB` de memoria para el servicio, `1010 MiB` de swap y el filesystem raiz al `91-92 %`.
+Antes del cierre se observaron consultas Kine lentas, timeouts de API, `PLEG is not healthy`, un pico de `1.5 GiB` de memoria para el servicio, `1010 MiB` de swap y el filesystem raíz al `91-92 %`.
 
-No fue un fallo de NiFi ni del flujo de Fase 12. La causa fue la combinacion de presion de memoria, swap e I/O sobre un nodo unico de `4 GiB`.
+No fue un fallo de NiFi ni del flujo de Fase 12. La causa fue la combinación de presión de memoria, swap e I/O sobre un nodo único de `4 GiB`.
 
 ## Correcciones aplicadas
 
 - Limpieza de contenedores detenidos del runtime de k3s.
-- Limpieza inicial del filesystem raiz del `91-92 %` al `75 %`.
+- Limpieza inicial del filesystem raíz del `91-92 %` al `75 %`.
 - Estado final al `86 %` tras desplegar todas las capas activas y reducir la reserva ext4 del `5 %` al `1 %`.
-- Prometheus reducido de `7d` a `3d` de retencion.
+- Prometheus reducido de `7d` a `3d` de retención.
 - Scrape y evaluacion de Prometheus ajustados a `60s`.
 - OpenTelemetry host metrics ajustado de `10s` a `30s`.
 - Requests y limits revisados para PostgreSQL, Keycloak, NiFi, Grafana, Prometheus, Loki, Tempo, OpenTelemetry y PostgREST.
 - NiFi reserva `640Mi`, acorde con su consumo real, y mantiene un limite de `768Mi`.
-- Deployments de una replica de monitorizacion configurados con estrategia `Recreate` para no duplicar memoria durante upgrades.
+- Deployments de una réplica de monitorizacion configurados con estrategia `Recreate` para no duplicar memoria durante upgrades.
 - Flujo y clave sensible de NiFi persistidos en el PVC `nifi-extensions`.
 
-## Recuperacion
+## Recuperación
 
 Comprobar la causa antes de reiniciar:
 
@@ -45,25 +45,25 @@ kubectl get nodes -o wide
 kubectl get pods -A
 ```
 
-Retirar contenedores detenidos. El comando no elimina contenedores en ejecucion:
+Retirar contenedores detenidos. El comando no elimina contenedores en ejecución:
 
 ```bash
 sudo k3s crictl rm --all
 ```
 
-En esta particion ext4 de `20 GiB` se redujo la reserva para root al `1 %`:
+En esta partición ext4 de `20 GiB` se redujo la reserva para root al `1 %`:
 
 ```bash
 sudo tune2fs -m 1 /dev/sda1
 ```
 
-Esto libero aproximadamente `800 MiB` sin eliminar datos. No se debe aplicar a otro dispositivo sin comprobar antes su filesystem y funcion.
+Esto libero aproximadamente `800 MiB` sin eliminar datos. No se debe aplicar a otro dispositivo sin comprobar antes su filesystem y función.
 
 No se deben borrar manualmente `/var/lib/rancher/k3s`, los PVC ni snapshots activos de containerd.
 
-## Aplicacion de valores
+## Aplicación de valores
 
-Los valores optimizados estan versionados en `helm-values/` y los recursos directos en `k8s-manifests/`.
+Los valores optimizados están versionados en `helm-values/` y los recursos directos en `k8s-manifests/`.
 
 ```bash
 helm upgrade monitoring prometheus-community/kube-prometheus-stack --version 86.2.3 \
@@ -85,7 +85,7 @@ kubectl apply -f k8s-manifests/nifi-deployment.yaml
 
 Las releases PostgreSQL usan sus respectivos ficheros de `helm-values/`.
 
-## Validacion final
+## Validación final
 
 ```bash
 systemctl is-active k3s
@@ -104,7 +104,7 @@ Condiciones esperadas:
 - `MemoryPressure=False`
 - `DiskPressure=False`
 - todos los workloads activos en `Running/Ready`
-- filesystem raiz por debajo del `90 %`; estado validado: `86 %`
-- Fase 12 valida despues de reiniciar NiFi
+- filesystem raíz por debajo del `90 %`; estado validado: `86 %`
+- Fase 12 valida después de reiniciar NiFi
 
-El disco de `20 GiB` sigue siendo el minimo operativo para todas las imagenes actuales. Antes de incorporar mas componentes pesados se recomienda ampliar la VM a `30-40 GiB`.
+El disco de `20 GiB` sigue siendo el mínimo operativo para todas las imágenes actuales. Antes de incorporar más componentes pesados se recomienda ampliar la VM a `30-40 GiB`.

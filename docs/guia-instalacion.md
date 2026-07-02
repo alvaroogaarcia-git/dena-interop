@@ -1,10 +1,10 @@
-# Guia completa de instalacion
+# Guía completa de instalación
 
-Esta guia reconstruye el estado validado hasta Fase 17 de `dena-interop` sobre un nodo unico DietPi x86_64 con k3s, Helm y Terraform.
+Esta guía reconstruye el estado validado hasta Fase 17 de `dena-interop` sobre un nodo único DietPi x86_64 con k3s, Helm y Terraform.
 
-El objetivo es que una persona con conocimientos minimos de Linux, Kubernetes y terminal pueda repetir la instalacion sin depender de pasos implicitos.
+El objetivo es que una persona con conocimientos mínimos de Linux, Kubernetes y terminal pueda repetir la instalación sin depender de pasos implícitos.
 
-Para entender que hace cada herramienta antes de instalarla, consulta `docs/herramientas/README.md`.
+Para entender qué hace cada herramienta antes de instalarla, consulta `docs/herramientas/README.md`.
 
 ## 0. Supuestos del entorno
 
@@ -21,11 +21,11 @@ Valores usados en el laboratorio validado:
 | Namespace auth | `auth` |
 | Namespace gateway | `gateway` |
 
-Convencion de comandos:
+Convención de comandos:
 
 - `Servidor`: comando ejecutado dentro de la VM DietPi.
-- `Local`: comando ejecutado en la maquina de operador.
-- En este laboratorio, Codex opera desde `/home/dietpi`, que actua como maquina de operador local contra el API server de k3s.
+- `Local`: comando ejecutado en la máquina de operador.
+- En este laboratorio, Codex opera desde `/home/dietpi`, que actúa como máquina de operador local contra el API server de k3s.
 
 ## 1. Requisitos previos
 
@@ -33,16 +33,16 @@ Necesitas:
 
 - Acceso SSH al servidor DietPi.
 - Permisos para instalar paquetes en DietPi.
-- `kubectl`, `helm` y `terraform` en la maquina de operador.
+- `kubectl`, `helm` y `terraform` en la máquina de operador.
 - Acceso al repositorio del proyecto.
 - Red capaz de resolver GitHub, Broadcom/Bitnami y Apache GitHub Pages.
 
-La red corporativa validada hace inspeccion SSL/TLS. En este entorno se han aplicado estas reglas:
+La red corporativa validada hace inspección SSL/TLS. En este entorno se han aplicado estas reglas:
 
 - Usar `GODEBUG=http2client=0` en operaciones Helm contra repos externos.
 - Registrar `bitnami` contra `https://repo.broadcom.com/bitnami-files`.
 - Registrar `apiseven` contra `https://apache.github.io/apisix-helm-chart`.
-- Evitar charts Bitnami modernos que descargan desde OCI/Docker Hub cuando el proxy bloquea tokens anonimos.
+- Evitar charts Bitnami modernos que descargan desde OCI/Docker Hub cuando el proxy bloquea tokens anónimos.
 
 ## 2. Secretos locales
 
@@ -102,7 +102,7 @@ EOF
 chmod 600 .local/demo.env
 ```
 
-Para una instalacion nueva que no sea demo, genera valores nuevos con `openssl rand -base64 24` y no reutilices las credenciales anteriores.
+Para una instalación nueva que no sea demo, genera valores nuevos con `openssl rand -base64 24` y no reutilices las credenciales anteriores.
 
 ## 3. Fase 0 - Preparar DietPi
 
@@ -114,7 +114,7 @@ ssh dena "apt-get install -y curl wget git open-iscsi nfs-common iptables"
 ssh dena "swapoff -a && sed -i '/swap/d' /etc/fstab"
 ```
 
-Persistir modulos requeridos por k3s:
+Persistir módulos requeridos por k3s:
 
 ```bash
 ssh dena "cat >/etc/modules-load.d/k3s.conf <<'EOF'
@@ -137,7 +137,7 @@ EOF"
 ssh dena "sysctl --system"
 ```
 
-Verificacion:
+Verificación:
 
 ```bash
 ssh dena "lsmod | grep -E 'overlay|br_netfilter'"
@@ -162,7 +162,7 @@ ssh dena "grep -q '^SOFTWARE_K3S_EXEC=' /boot/dietpi.txt \
   || echo 'SOFTWARE_K3S_EXEC=server' >> /boot/dietpi.txt"
 ```
 
-Crear configuracion k3s:
+Crear configuración k3s:
 
 ```bash
 ssh dena "cat >/boot/dietpi-k3s.yaml <<'EOF'
@@ -181,7 +181,7 @@ Instalar k3s con DietPi. En DietPi v10+ el ID correcto de k3s es `193`:
 ssh dena "/boot/dietpi/dietpi-software install 193"
 ```
 
-Si k3s ya existia, asegurate de que `/etc/rancher/k3s/config.yaml` coincide:
+Si k3s ya existía, asegúrate de que `/etc/rancher/k3s/config.yaml` coincide:
 
 ```bash
 ssh dena "cat >/etc/rancher/k3s/config.yaml <<'EOF'
@@ -196,7 +196,7 @@ EOF"
 ssh dena "systemctl restart k3s"
 ```
 
-Verificacion:
+Verificación:
 
 ```bash
 ssh dena "KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl wait --for=condition=Ready node --all --timeout=120s"
@@ -274,7 +274,7 @@ for ns in auth gateway app monitoring datalake verticales; do
 done
 ```
 
-Verificacion:
+Verificación:
 
 ```bash
 kubectl get ns
@@ -289,7 +289,7 @@ Resultado esperado:
 - `datalake`
 - `verticales`
 
-No usar `apps` en plural para esta guia. El namespace correcto hasta Fase 6 es `app`.
+No usar `apps` en plural para esta guía. El namespace correcto hasta Fase 6 es `app`.
 
 ## 7. Fase 4 - PostgreSQL para Keycloak
 
@@ -319,13 +319,13 @@ Si el secreto ya existe y quieres recrearlo:
 kubectl delete secret postgresql-auth -n auth --ignore-not-found
 ```
 
-Despues repite el comando `kubectl create secret`.
+Después repite el comando `kubectl create secret`.
 
 ### 7.3 Descargar chart PostgreSQL validado
 
 El chart Bitnami actual descarga desde OCI/Docker Hub y en esta red falla con `403 Forbidden`.
 
-Usar la version validada `16.2.1`, que descarga como paquete `.tgz` clasico:
+Usar la versión validada `16.2.1`, que descarga como paquete `.tgz` clásico:
 
 ```bash
 curl -kL --http1.1 --fail \
@@ -483,7 +483,7 @@ Server: APISIX/3.16.0
 {"error_msg":"404 Route Not Found"}
 ```
 
-Este resultado es correcto en Fase 6: APISIX esta levantado, pero todavia no hay rutas configuradas.
+Este resultado es correcto en Fase 6: APISIX está levantado, pero todavía no hay rutas configuradas.
 
 ### 9.4 Validar Admin API
 
@@ -504,7 +504,7 @@ Resultado esperado:
 {"list":[],"total":0}
 ```
 
-## 10. Comprobacion parcial de Fases 4-6
+## 10. Comprobación parcial de Fases 4-6
 
 ```bash
 kubectl get nodes -o wide
@@ -577,8 +577,8 @@ Notas:
 
 - Grafana queda publicado en `NodePort 31803`.
 - Alertmanager queda desactivado para reducir consumo local.
-- Prometheus usa `emptyDir`, retencion `7d` y sin `retentionSize`.
-- Para produccion, define `retentionSize` y un PVC acotado.
+- Prometheus usa `emptyDir`, retención `7d` y sin `retentionSize`.
+- Para producción, define `retentionSize` y un PVC acotado.
 
 ### 11.3 Instalar Loki v7
 
@@ -592,7 +592,7 @@ GODEBUG=http2client=0 helm install loki grafana/loki \
   --timeout 10m
 ```
 
-Configuracion validada:
+Configuración validada:
 
 - `deploymentMode: SingleBinary`
 - `singleBinary.replicas: 1`
@@ -615,14 +615,14 @@ GODEBUG=http2client=0 helm install tempo grafana/tempo \
   --timeout 10m
 ```
 
-Configuracion validada:
+Configuración validada:
 
 - Tempo local sin PVC.
 - OTLP gRPC `4317`.
 - OTLP HTTP `4318`.
 - Readiness HTTP en `3200`.
 
-### 11.5 Verificacion de Fase 7
+### 11.5 Verificación de Fase 7
 
 ```bash
 kubectl get pods,svc,pvc -n monitoring -o wide
@@ -665,7 +665,7 @@ Datasources esperados:
 
 ## Fase 8 - OTel Collector
 
-La Fase 8 instala el OpenTelemetry Collector como `DaemonSet` en `monitoring`. Recoge senales del nodo y deja listas las pipelines de metricas, logs y trazas hacia Prometheus, Loki y Tempo.
+La Fase 8 instala el OpenTelemetry Collector como `DaemonSet` en `monitoring`. Recoge señales del nodo y deja listas las pipelines de métricas, logs y trazas hacia Prometheus, Loki y Tempo.
 
 ### Preflight
 
@@ -679,7 +679,7 @@ Si el preflight indica workloads no listos, recupera primero la Fase 7:
 bash scripts/recover-fase7.sh
 ```
 
-### Instalacion
+### Instalación
 
 ```bash
 GODEBUG=http2client=0 helm upgrade --install otel-collector open-telemetry/opentelemetry-collector \
@@ -690,7 +690,7 @@ GODEBUG=http2client=0 helm upgrade --install otel-collector open-telemetry/opent
   --timeout 10m
 ```
 
-### Verificacion
+### Verificación
 
 ```bash
 kubectl rollout status daemonset/otel-collector-opentelemetry-collector-agent -n monitoring --timeout=240s
@@ -702,14 +702,14 @@ Resultado esperado:
 
 - DaemonSet `otel-collector-opentelemetry-collector-agent` con `1/1`.
 - Service `otel-collector-opentelemetry-collector`.
-- Pipeline de metricas expuesta para Prometheus.
+- Pipeline de métricas expuesta para Prometheus.
 - Logs sin errores de exportacion hacia Loki/Tempo.
 
 ## Fase 9 - PostgreSQL del datalake
 
 La Fase 9 despliega la base `datalake`, que es el destino consolidado de los datos sincronizados y la base que PostgREST expone como API interna.
 
-### Instalacion
+### Instalación
 
 ```bash
 helm upgrade --install postgresql-datalake bitnami/postgresql \
@@ -722,7 +722,7 @@ helm upgrade --install postgresql-datalake bitnami/postgresql \
 
 Si la red bloquea el chart remoto, descarga el `.tgz` previamente y usa la ruta local igual que en Fase 4.
 
-### Verificacion
+### Verificación
 
 ```bash
 kubectl rollout status statefulset/postgresql-datalake -n datalake --timeout=180s
@@ -742,11 +742,11 @@ Resultado esperado:
 
 ## Fase 10 - PostgREST
 
-La Fase 10 instala PostgREST sobre PostgreSQL datalake. PostgREST no se expone directamente fuera del cluster; APISIX lo publicara despues bajo `/api/*` y `/dena/admin-files`.
+La Fase 10 instala PostgREST sobre PostgreSQL datalake. PostgREST no se expone directamente fuera del clúster; APISIX lo publicara después bajo `/api/*` y `/dena/admin-files`.
 
 ### Roles SQL
 
-Crear el rol autenticador `postgrest`, el rol anonimo `anon` y el permiso para asumirlo:
+Crear el rol autenticador `postgrest`, el rol anónimo `anon` y el permiso para asumirlo:
 
 ```bash
 PG="$(kubectl get secret -n datalake postgresql-datalake -o jsonpath='{.data.postgres-password}' | base64 -d)"
@@ -758,7 +758,7 @@ kubectl exec -i -n datalake postgresql-datalake-0 -- \
   < sql/00-postgrest-roles.sql
 ```
 
-Validacion esperada:
+Validación esperada:
 
 ```bash
 kubectl exec -n datalake postgresql-datalake-0 -- \
@@ -794,7 +794,7 @@ kubectl apply -f k8s-manifests/postgrest-deployment.yaml
 kubectl rollout status deployment/postgrest -n datalake --timeout=180s
 ```
 
-### Verificacion
+### Verificación
 
 ```bash
 bash scripts/verify-fase10.sh
@@ -802,7 +802,7 @@ bash scripts/verify-fase10.sh
 
 Resultado esperado:
 
-- `postgresql-datalake` y `postgrest` estan operativos.
+- `postgresql-datalake` y `postgrest` están operativos.
 - `postgrest-secret` apunta a `postgresql-datalake.datalake.svc.cluster.local`.
 - Roles `anon` y `postgrest` existen.
 - `postgrest` puede asumir `anon`.
@@ -824,7 +824,7 @@ kubectl delete secret grafana-admin -n monitoring --ignore-not-found
 kubectl delete secret keycloak-secret postgresql-auth -n auth --ignore-not-found
 ```
 
-Si quieres borrar tambien datos persistentes:
+Si quieres borrar también datos persistentes:
 
 ```bash
 kubectl delete pvc storage-loki-0 -n monitoring --ignore-not-found
@@ -846,8 +846,8 @@ failed to fetch anonymous token ... auth.docker.io ... 403 Forbidden
 
 Causa:
 
-- El indice Bitnami moderno publica charts por OCI.
-- La red corporativa bloquea el token anonimo de Docker Hub.
+- El índice Bitnami moderno publica charts por OCI.
+- La red corporativa bloquea el token anónimo de Docker Hub.
 
 Solucion validada:
 
@@ -855,7 +855,7 @@ Solucion validada:
 - Instalar desde paquete local.
 - Sustituir imagen por `bitnamilegacy/postgresql`, ya configurado en `helm-values/postgresql-values.yaml`.
 
-### charts.apiseven.com corta la conexion
+### charts.apiseven.com corta la conexión
 
 Sintoma:
 
@@ -871,7 +871,7 @@ GODEBUG=http2client=0 helm repo add apiseven https://apache.github.io/apisix-hel
 
 ### Keycloak no arranca
 
-Comandos utiles:
+Comandos útiles:
 
 ```bash
 kubectl get pods -n auth
@@ -881,14 +881,14 @@ kubectl describe pod -n auth -l app=keycloak
 
 Puntos a revisar:
 
-- `postgresql-0` esta `Ready`.
+- `postgresql-0` está `Ready`.
 - `keycloak-secret` existe.
 - `KC_DB_PASSWORD` coincide con el password del usuario `keycloak`.
 - La base `keycloak` existe.
 
 ### APISIX no queda Ready
 
-Comandos utiles:
+Comandos útiles:
 
 ```bash
 kubectl get pods -n gateway
@@ -899,11 +899,11 @@ kubectl describe pod -n gateway -l app.kubernetes.io/name=apisix
 
 Puntos a revisar:
 
-- `apisix-etcd-0` esta `Ready`.
+- `apisix-etcd-0` está `Ready`.
 - El init container `wait-etcd` puede resolver `apisix-etcd.gateway.svc.cluster.local`.
 - El servicio `apisix-gateway` mantiene `80:30080/TCP`.
 
-## Anexo C - Politica de commits
+## Anexo C - Política de commits
 
 Recomendacion para seguimiento:
 
@@ -915,14 +915,14 @@ Recomendacion para seguimiento:
 Formato recomendado:
 
 ```text
-fase-N: descripcion corta del cambio
-docs: actualizar guia de instalacion
+fase-N: descripción corta del cambio
+docs: actualizar guía de instalación
 infra: ajustar values de apisix
 ```
 
 ## Fase 11 - Apache NiFi 2.9
 
-ADR-007: NiFi 2.x arranca seguro por defecto con HTTPS y single-user. En este laboratorio se valida una sola replica en `datalake`, con `strategy: Recreate`, `NodePort 30821`, probes HTTPS con `Host: localhost:8443`, heap JVM `256m` y un PVC persistente para `extensions/`.
+ADR-007: NiFi 2.x arranca seguro por defecto con HTTPS y single-user. En este laboratorio se valida una sola réplica en `datalake`, con `strategy: Recreate`, `NodePort 30821`, probes HTTPS con `Host: localhost:8443`, heap JVM `256m` y un PVC persistente para `extensions/`.
 
 ### 11.1 Secret de single-user
 
@@ -960,7 +960,7 @@ Recursos validados en este nodo:
 - `NIFI_JVM_HEAP_INIT=256m`
 - `NIFI_JVM_HEAP_MAX=256m`
 
-### 11.3 Verificacion de Fase 11
+### 11.3 Verificación de Fase 11
 
 ```bash
 bash scripts/verify-fase11.sh
@@ -1003,7 +1003,7 @@ Notas:
 
 ## Fase 11b - Verticales: PostgreSQL origen + Mathesar
 
-ADR-008: la fuente del vertical deja de ser CSV/GetFile y pasa a ser PostgreSQL. La tabla `expedientes.admin_file` queda como fuente de verdad editable; Mathesar la expone por web y NiFi queda preparado para sincronizacion incremental usando `updated_at`.
+ADR-008: la fuente del vertical deja de ser CSV/GetFile y pasa a ser PostgreSQL. La tabla `expedientes.admin_file` queda como fuente de verdad editable; Mathesar la expone por web y NiFi queda preparado para sincronización incremental usando `updated_at`.
 
 ### 11b.1 Driver JDBC de PostgreSQL en NiFi
 
@@ -1058,7 +1058,7 @@ bash scripts/dena/load-expedientes.sh
 Estado esperado tras la carga:
 
 - `expedientes.admin_file` contiene `50` filas
-- existe indice por `updated_at`
+- existe índice por `updated_at`
 - el `CHECK` de `status` queda aplicado
 
 ### 11b.4 Mathesar local
@@ -1085,14 +1085,14 @@ http://192.168.56.15:30900
 Notas:
 
 - En el primer arranque hay que crear el usuario admin desde la UI.
-- Dentro de Mathesar hay que anadir una conexion a `expedientes` usando:
+- Dentro de Mathesar hay que añadir una conexión a `expedientes` usando:
   - host `postgresql-verticales.verticales.svc.cluster.local`
   - base `expedientes`
   - usuario `postgres`
 - En esta imagen, `/healthz/ready/` no resulta estable en este entorno; las probes quedan por TCP sobre `:8000`.
 - En este nodo de `4 GiB`, Mathesar queda ajustado a `WEB_CONCURRENCY=1` y `128Mi/256Mi` para poder convivir con NiFi.
 
-### 11b.5 Verificacion de Fase 11b
+### 11b.5 Verificación de Fase 11b
 
 ```bash
 bash scripts/verify-fase11b.sh
@@ -1109,7 +1109,7 @@ Resultados esperados:
 
 ### 11b.6 Nota de acceso a NiFi 2.x
 
-NiFi 2.x sigue requiriendo que el `Host` coincida con una entrada valida en `NIFI_WEB_PROXY_HOST`. En este laboratorio se valida el acceso por `kubectl port-forward` y tambien por NodePort con el host publicado en el deployment:
+NiFi 2.x sigue requiriendo que el `Host` coincida con una entrada válida en `NIFI_WEB_PROXY_HOST`. En este laboratorio se valida el acceso por `kubectl port-forward` y también por NodePort con el host publicado en el deployment:
 
 ```bash
 kubectl port-forward -n datalake svc/nifi 8443:8443
@@ -1129,7 +1129,7 @@ ADR-009: el laboratorio pasa de dejar preparado el origen a materializar un fluj
 
 - Grupo de proceso: `Fase 12 - JDBC incremental`
 - Fuente: `QueryDatabaseTableRecord`
-- Conexion JDBC: `Verticales DBCP`
+- Conexión JDBC: `Verticales DBCP`
 - Writer: `JSON Record Writer`
 - Nombres de fichero: `Stamp Output Filename`
 - Destino: `Persist Fase 12 Output`
@@ -1143,7 +1143,7 @@ bash scripts/dena/provision-fase12-nifi.sh
 
 El script:
 
-1. abre automaticamente el `port-forward` de NiFi
+1. abre automáticamente el `port-forward` de NiFi
 2. obtiene credenciales desde `nifi-secret`
 3. crea o reutiliza el grupo y los controller services
 4. reconcilia propiedades con la API de NiFi 2.9
@@ -1151,13 +1151,13 @@ El script:
 6. evita conexiones duplicadas
 7. habilita y arranca el flujo
 
-### 12.3 Verificacion
+### 12.3 Verificación
 
 ```bash
 bash scripts/verify-fase12.sh
 ```
 
-La verificacion comprueba:
+La verificación comprueba:
 
 - grupo de proceso presente
 - procesadores en `VALID/RUNNING`
@@ -1184,23 +1184,23 @@ kubectl exec -n verticales postgresql-verticales-0 -- \
 - El directorio de salida vive dentro del PVC de NiFi, junto al driver JDBC.
 - `flow.json.gz` vive en `/persistent/conf/flow.json.gz` dentro del mismo PVC.
 - `NIFI_SENSITIVE_PROPS_KEY` usa el secreto de NiFi para conservar propiedades cifradas tras reinicios.
-- El procedimiento de optimizacion y recuperacion de k3s queda en `docs/optimizacion-k3s-4gb.md`.
+- El procedimiento de optimización y recuperación de k3s queda en `docs/optimizacion-k3s-4gb.md`.
 
 ## Fase 13 - Terraform y Keycloak
 
 ADR-010: el realm piloto y sus identidades se gestionan con el provider oficial `keycloak/keycloak`. Terraform se conecta al servicio mediante un port-forward local y el estado, que contiene valores sensibles, queda excluido de Git.
 
-Nota: algunos scripts conservan nombres historicos (`apply-fase12-keycloak.sh`, `verify-fase13.sh`, `apply-fase14-grafana.sh`, `apply-fase15-datalake.sh`). La fase correcta es la indicada por esta guia; los nombres de script se mantienen para no romper automatizaciones existentes.
+Nota: algunos scripts conservan nombres históricos (`apply-fase12-keycloak.sh`, `verify-fase13.sh`, `apply-fase14-grafana.sh`, `apply-fase15-datalake.sh`). La fase correcta es la indicada por esta guía; los nombres de script se mantienen para no romper automatizaciones existentes.
 
 Recursos gestionados:
 
 - realm `piloto`
-- cliente publico `react-frontend` con Authorization Code y PKCE S256
+- cliente público `react-frontend` con Authorization Code y PKCE S256
 - cliente confidencial `apisix-gateway`
 - roles `dena-reader`, `dena-writer` y `dena-admin`
 - usuario piloto `testuser`
 
-Aplicacion y verificacion:
+Aplicación y verificación:
 
 ```bash
 bash scripts/dena/apply-fase12-keycloak.sh
@@ -1211,9 +1211,9 @@ El password demo de `testuser` es `Test1234!` salvo que se overridee con `DENA_T
 
 ## Fase 14 - APISIX OIDC e interoperabilidad DENA
 
-ADR-011: APISIX es la unica entrada HTTP. Keycloak conserva URL publica fija `http://192.168.56.15:30080`, PostgREST sigue como `ClusterIP` y las rutas de datos requieren un bearer token validado mediante introspeccion OIDC.
+ADR-011: APISIX es la única entrada HTTP. Keycloak conserva URL pública fija `http://192.168.56.15:30080`, PostgREST sigue como `ClusterIP` y las rutas de datos requieren un bearer token validado mediante introspección OIDC.
 
-Antes de crear las rutas se aplica la funcion SQL y se sincronizan los 50 expedientes actuales:
+Antes de crear las rutas se aplica la función SQL y se sincronizan los 50 expedientes actuales:
 
 ```bash
 bash scripts/dena/apply-dena-api.sh
@@ -1224,21 +1224,21 @@ Recursos APISIX:
 
 - upstream `1`: PostgREST en `postgrest.datalake.svc.cluster.local:3000`
 - upstream `2`: Keycloak en `keycloak.auth.svc.cluster.local:8080`
-- rutas publicas `/realms/*`, `/admin/*` y `/resources/*`
+- rutas públicas `/realms/*`, `/admin/*` y `/resources/*`
 - ruta protegida `/api` y `/api/*`, con eliminacion del prefijo
 - ruta protegida `POST /dena/admin-files`, reescrita a `/rpc/dena_data_retrieve`
 
-Verificacion completa:
+Verificación completa:
 
 ```bash
 bash scripts/verify-fase13.sh
 ```
 
-La prueba valida discovery publico, rechazo `401` sin token, emision de token para `testuser`, acceso autorizado a `/api` y respuesta con expedientes reales desde `POST /dena/admin-files`.
+La prueba valida discovery público, rechazo `401` sin token, emisión de token para `testuser`, acceso autorizado a `/api` y respuesta con expedientes reales desde `POST /dena/admin-files`.
 
 ## Fase 15 - Terraform y Grafana
 
-ADR-012: Grafana se mantiene desplegado por Helm, pero su configuracion funcional queda gestionada por Terraform mediante el provider oficial `grafana/grafana`. Terraform se conecta por port-forward local usando las credenciales del Secret `monitoring/grafana-admin`.
+ADR-012: Grafana se mantiene desplegado por Helm, pero su configuración funcional queda gestionada por Terraform mediante el provider oficial `grafana/grafana`. Terraform se conecta por port-forward local usando las credenciales del Secret `monitoring/grafana-admin`.
 
 Recursos gestionados:
 
@@ -1246,14 +1246,14 @@ Recursos gestionados:
 - carpeta `DENA`
 - dashboards `DENA Stack Overview` y `DENA PostgreSQL Overview`
 
-Aplicacion y verificacion:
+Aplicación y verificación:
 
 ```bash
 bash scripts/dena/apply-fase14-grafana.sh
 bash scripts/verify-fase14.sh
 ```
 
-El script actualiza primero el release `monitoring` para desactivar el provisioning read-only de datasources de Grafana. Despues Terraform crea o actualiza datasources, carpeta y dashboards por API. Los dashboards viven en `terraform/dashboards/` y no dependen del sidecar de ConfigMaps para quedar reproducidos.
+El script actualiza primero el release `monitoring` para desactivar el provisioning read-only de datasources de Grafana. Después Terraform crea o actualiza datasources, carpeta y dashboards por API. Los dashboards viven en `terraform/dashboards/` y no dependen del sidecar de ConfigMaps para quedar reproducidos.
 
 ## Fase 16 - SQL del datalake y carga local
 
@@ -1263,9 +1263,9 @@ La Fase 16 consolida el esquema DENA del datalake y deja una carga reproducible 
 - vista camelCase `dena."adminFile"`
 - RPC `public.dena_data_retrieve`
 - staging `dena.admin_file_staging`
-- funcion de promocion `dena.dena_staging_to_main()`
+- función de promocion `dena.dena_staging_to_main()`
 
-Aplicacion y verificacion:
+Aplicación y verificación:
 
 ```bash
 bash scripts/dena/apply-fase15-datalake.sh
@@ -1284,7 +1284,7 @@ El detalle operativo queda en `docs/fase15-datalake.md`.
 
 La SPA demo queda servida por NGINX en el namespace `app` y APISIX la publica como fallback de `/`.
 
-Aplicacion:
+Aplicación:
 
 ```bash
 kubectl apply -f k8s-manifests/dena-interop-spa.yaml
@@ -1292,7 +1292,7 @@ kubectl rollout status deployment/dena-interop-spa -n app --timeout=180s
 bash scripts/dena/apply-route.sh
 ```
 
-Verificacion:
+Verificación:
 
 ```bash
 curl -i http://192.168.56.15:30080/
@@ -1306,9 +1306,9 @@ Resultado esperado:
 
 ## Extra - Portainer
 
-Portainer corre dentro de k3s con ServiceAccount `cluster-admin`. Es util para inspeccion operativa, no para produccion sin hardening.
+Portainer corre dentro de k3s con ServiceAccount `cluster-admin`. Es útil para inspección operativa, no para producción sin hardening.
 
-Aplicacion:
+Aplicación:
 
 ```bash
 kubectl apply -f k8s-manifests/portainer-deployment.yaml
@@ -1330,7 +1330,7 @@ Si caduca el bootstrap antes de inicializar:
 kubectl rollout restart deployment/portainer -n portainer
 ```
 
-## Verificacion end-to-end
+## Verificación end-to-end
 
 ```bash
 bash scripts/wait-ready.sh

@@ -1,29 +1,29 @@
 # APISIX
 
-## Que Es
+## Qué Es
 
-APISIX es un API Gateway. Recibe peticiones HTTP externas, decide a que servicio interno enviarlas y puede aplicar plugins como autenticacion, reescritura de rutas y metricas.
+APISIX es un API Gateway. Recibe peticiones HTTP externas, decide a qué servicio interno enviarlas y puede aplicar plugins como autenticación, reescritura de rutas y métricas.
 
 ## Objetivo En Este Piloto
 
-APISIX es la unica puerta HTTP externa del flujo DENA:
+APISIX es la única puerta HTTP externa del flujo DENA:
 
 - Publica Keycloak.
 - Protege PostgREST con OIDC.
 - Publica la RPC DENA `POST /dena/admin-files`.
 - Sirve la SPA cliente demo en `/`.
 
-## Donde Esta
+## Dónde Está
 
 - Namespace: `gateway`
 - Deployment: `apisix`
 - StatefulSet: `apisix-etcd`
-- Gateway publico: `http://192.168.56.15:30080`
+- Gateway público: `http://192.168.56.15:30080`
 - Admin API: `svc/apisix-admin:9180`, solo por port-forward.
 
-## Como Se Usa
+## Cómo Se Usa
 
-Acceso publico:
+Acceso público:
 
 ```bash
 curl -i http://192.168.56.15:30080/
@@ -43,7 +43,7 @@ Aplicar rutas versionadas:
 bash scripts/dena/apply-route.sh
 ```
 
-## Que Contiene En Este Caso
+## Qué Contiene En Este Caso
 
 Upstreams:
 
@@ -54,19 +54,19 @@ Upstreams:
 Rutas:
 
 - `/api` y `/api/*`: PostgREST protegido por OIDC.
-- `/realms/*`: Keycloak publico.
+- `/realms/*`: Keycloak público.
 - `/admin/*`: consola admin Keycloak.
 - `/resources/*`: assets de Keycloak.
 - `POST /dena/admin-files`: RPC DENA protegida.
 - `/*`: fallback a la SPA.
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 ```bash
 bash scripts/verify-fase13.sh
 bash scripts/dena/test-curl.sh
 ```
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
 Porque centraliza seguridad y entrada. Las bases de datos y servicios internos no se exponen directamente.

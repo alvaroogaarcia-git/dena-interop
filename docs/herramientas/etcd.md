@@ -1,30 +1,30 @@
 # etcd
 
-## Que Es
+## Qué Es
 
-etcd es una base de datos clave-valor distribuida. En Kubernetes suele usarse como almacenamiento del estado del cluster. En este piloto aparece como componente interno del chart de APISIX.
+etcd es una base de datos clave-valor distribuida. En Kubernetes suele usarse como almacenamiento del estado del clúster. En este piloto aparece como componente interno del chart de APISIX.
 
 ## Objetivo En Este Piloto
 
-APISIX usa etcd para guardar su configuracion:
+APISIX usa etcd para guardar su configuración:
 
 - Upstreams.
 - Rutas.
 - Plugins.
-- Estado de configuracion del gateway.
+- Estado de configuración del gateway.
 
-Cuando `scripts/dena/apply-route.sh` crea rutas con la Admin API de APISIX, esa configuracion queda persistida en etcd.
+Cuando `scripts/dena/apply-route.sh` crea rutas con la Admin API de APISIX, esa configuración queda persistida en etcd.
 
-## Donde Esta
+## Dónde Está
 
 - Namespace: `gateway`
 - StatefulSet: `apisix-etcd`
 - Service: `apisix-etcd`
 - PVC: `data-apisix-etcd-0`
 
-## Como Se Usa
+## Cómo Se Usa
 
-No se usa directamente en operacion normal. APISIX escribe y lee de etcd internamente.
+No se usa directamente en operación normal. APISIX escribe y lee de etcd internamente.
 
 Ver estado:
 
@@ -33,9 +33,9 @@ kubectl get statefulset,pod,pvc -n gateway -l app.kubernetes.io/name=etcd
 kubectl logs -n gateway statefulset/apisix-etcd --tail=80
 ```
 
-## Que Contiene En Este Caso
+## Qué Contiene En Este Caso
 
-Contiene la configuracion activa de APISIX:
+Contiene la configuración activa de APISIX:
 
 - Ruta `/api/*`.
 - Ruta `/dena/admin-files`.
@@ -43,7 +43,7 @@ Contiene la configuracion activa de APISIX:
 - Fallback de la SPA.
 - Upstreams de PostgREST, Keycloak y SPA.
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 ```bash
 kubectl rollout status statefulset/apisix-etcd -n gateway --timeout=180s
@@ -51,6 +51,6 @@ bash scripts/dena/apply-route.sh
 bash scripts/verify-fase13.sh
 ```
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
-Porque APISIX necesita un almacen persistente para su configuracion dinamica. Sin etcd, las rutas del gateway no se mantienen.
+Porque APISIX necesita un almacén persistente para su configuración dinámica. Sin etcd, las rutas del gateway no se mantienen.

@@ -7,7 +7,7 @@ Fecha: 2026-06-24
 El alcance consolidado queda validado hasta Fase 13:
 
 - Fases 0-11b: plataforma, seguridad, gateway, observabilidad, datalake, NiFi y verticales.
-- Extension 11c: flujo JDBC incremental de NiFi, conservando nombres internos históricos de Fase 12.
+- Extensión 11c: flujo JDBC incremental de NiFi, conservando nombres internos históricos de Fase 12.
 - Fase 12: realm, clientes, roles y usuario piloto gestionados por Terraform.
 - Fase 13: rutas APISIX, OIDC obligatorio y endpoint DENA funcional.
 
@@ -17,13 +17,13 @@ Estado validado:
 
 - provider `keycloak/keycloak` 5.8.0 bloqueado en `.terraform.lock.hcl`
 - realm `dena`
-- cliente publico `react-frontend` con PKCE S256
+- cliente público `react-frontend` con PKCE S256
 - cliente confidencial `apisix-gateway`
 - roles `dena-reader`, `dena-writer` y `dena-admin`
 - usuario `testuser` con roles reader y writer
 - Secret Kubernetes `gateway/apisix-oidc`
 - discovery OIDC operativo
-- emision e introspeccion de access token comprobadas
+- emisión e introspección de access token comprobadas
 
 Los secretos y el estado Terraform permanecen fuera de Git.
 
@@ -36,7 +36,7 @@ Upstreams:
 2 -> keycloak.auth.svc.cluster.local:8080
 ```
 
-Rutas publicas:
+Rutas públicas:
 
 - `/realms/*`
 - `/admin/*`
@@ -52,10 +52,10 @@ La API DENA incluye:
 - esquema `dena`
 - tabla `dena.admin_file`
 - 50 expedientes sincronizados desde `verticales`
-- funcion `public.dena_data_retrieve`
-- permisos minimos para el rol PostgREST `anon`
+- función `public.dena_data_retrieve`
+- permisos mínimos para el rol PostgREST `anon`
 
-## Verificacion reproducible
+## Verificación reproducible
 
 ```bash
 export KUBECONFIG=/home/dietpi/.kube/dena-config
@@ -67,10 +67,10 @@ bash scripts/dena/apply-route.sh
 bash scripts/verify-fase13.sh
 ```
 
-La validacion final confirma:
+La validación final confirma:
 
 - `401` al acceder a `/api` sin token
-- token valido para `testuser`
+- token válido para `testuser`
 - OpenAPI de PostgREST accesible con token
 - `POST /dena/admin-files` devuelve expedientes reales
-- todos los workloads del cluster en `Running/Ready`
+- todos los workloads del clúster en `Running/Ready`

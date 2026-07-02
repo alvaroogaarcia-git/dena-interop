@@ -1,6 +1,6 @@
 # Apache NiFi
 
-## Que Es
+## Qué Es
 
 Apache NiFi es una herramienta de flujos de datos. Permite mover, transformar y sincronizar datos entre sistemas mediante procesadores visuales.
 
@@ -8,7 +8,7 @@ Apache NiFi es una herramienta de flujos de datos. Permite mover, transformar y 
 
 NiFi sincroniza los cambios del origen `verticales` hacia el `datalake`. El flujo usa JDBC y consulta incremental basada en `updated_at`.
 
-## Donde Esta
+## Dónde Está
 
 - Namespace: `datalake`
 - Deployment: `nifi`
@@ -16,7 +16,7 @@ NiFi sincroniza los cambios del origen `verticales` hacia el `datalake`. El fluj
 - NodePort: `30821`
 - Acceso validado: port-forward a `8443`
 
-## Como Se Usa
+## Cómo Se Usa
 
 Acceso UI:
 
@@ -36,24 +36,24 @@ Credenciales:
 kubectl get secret -n datalake nifi-secret -o jsonpath='{.data.single-user-password}' | base64 -d
 ```
 
-## Que Contiene En Este Caso
+## Qué Contiene En Este Caso
 
 Flujo:
 
 - Grupo `Fase 12 - JDBC incremental`.
-- Conexion JDBC a `postgresql-verticales`.
+- Conexión JDBC a `postgresql-verticales`.
 - Procesador `Query Verticales Incremental`.
 - Writer JSON.
 - Persistencia de salida en PVC de NiFi.
 - Driver PostgreSQL JDBC en `extensions/`.
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 ```bash
 bash scripts/verify-fase11.sh
 bash scripts/verify-fase12.sh
 ```
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
-Porque simula que los datos viajan automaticamente desde una administracion origen hacia un datalake sin exportaciones manuales.
+Porque simula que los datos viajan automáticamente desde una administración origen hacia un datalake sin exportaciones manuales.

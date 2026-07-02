@@ -1,6 +1,6 @@
 # Helm
 
-## Que Es
+## Qué Es
 
 Helm es un gestor de paquetes para Kubernetes. Instala aplicaciones completas a partir de charts, que son plantillas parametrizables de manifiestos Kubernetes.
 
@@ -15,11 +15,11 @@ Helm instala los productos que tienen chart estable:
 - Tempo.
 - OTel Collector.
 
-Keycloak, PostgREST, NiFi, Mathesar, Portainer y la SPA se despliegan con manifiestos propios porque se necesita mas control o el despliegue es sencillo.
+Keycloak, PostgREST, NiFi, Mathesar, Portainer y la SPA se despliegan con manifiestos propios porque se necesita más control o el despliegue es sencillo.
 
-## Donde Esta
+## Dónde Está
 
-Se ejecuta en la maquina de operador, usando el mismo kubeconfig que `kubectl`.
+Se ejecuta en la máquina de operador, usando el mismo kubeconfig que `kubectl`.
 
 Releases actuales:
 
@@ -27,7 +27,7 @@ Releases actuales:
 helm list -A
 ```
 
-## Como Se Usa
+## Cómo Se Usa
 
 Instalar o actualizar:
 
@@ -37,7 +37,7 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --values helm-values/monitoring-values.yaml
 ```
 
-Ver historico:
+Ver histórico:
 
 ```bash
 helm history monitoring -n monitoring
@@ -49,9 +49,9 @@ Ver valores aplicados:
 helm get values monitoring -n monitoring
 ```
 
-## Que Contiene En Este Caso
+## Qué Contiene En Este Caso
 
-Los valores versionados estan en `helm-values/`:
+Los valores versionados están en `helm-values/`:
 
 - `apisix-values.yaml`
 - `monitoring-values.yaml`
@@ -62,7 +62,7 @@ Los valores versionados estan en `helm-values/`:
 - `postgresql-datalake-values.yaml`
 - `postgresql-verticales-values.yaml`
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 ```bash
 helm list -A
@@ -70,6 +70,6 @@ helm list -A
 
 Resultado esperado: releases `apisix`, `postgresql`, `postgresql-datalake`, `postgresql-verticales`, `monitoring`, `loki`, `tempo` y `otel-collector`.
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
-Porque reduce errores al instalar productos complejos y deja la configuracion principal en ficheros `values.yaml` versionados.
+Porque reduce errores al instalar productos complejos y deja la configuración principal en ficheros `values.yaml` versionados.

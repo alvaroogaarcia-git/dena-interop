@@ -1,6 +1,6 @@
 # Mathesar
 
-## Que Es
+## Qué Es
 
 Mathesar es una interfaz web para editar bases PostgreSQL como si fueran tablas de negocio. Permite introducir y modificar datos sin usar SQL directamente.
 
@@ -8,7 +8,7 @@ Mathesar es una interfaz web para editar bases PostgreSQL como si fueran tablas 
 
 Mathesar simula la herramienta de un funcionario que edita expedientes en el sistema origen.
 
-## Donde Esta
+## Dónde Está
 
 - Namespace: `verticales`
 - Deployment: `mathesar`
@@ -17,7 +17,7 @@ Mathesar simula la herramienta de un funcionario que edita expedientes en el sis
 - Base interna: `mathesar_django`
 - Base de negocio: `expedientes`
 
-## Como Se Usa
+## Cómo Se Usa
 
 Abrir:
 
@@ -25,14 +25,14 @@ Abrir:
 http://192.168.56.15:30900
 ```
 
-Conexion que debe existir en Mathesar:
+Conexión que debe existir en Mathesar:
 
 - Host: `postgresql-verticales.verticales.svc.cluster.local`
 - Puerto: `5432`
 - Base: `expedientes`
 - Usuario: `postgres`
 
-## Que Contiene En Este Caso
+## Qué Contiene En Este Caso
 
 Mathesar permite editar:
 
@@ -42,13 +42,13 @@ Mathesar permite editar:
 
 Los cambios son detectados por NiFi y llevados al datalake.
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 ```bash
 bash scripts/verify-fase11b.sh
 curl -i http://192.168.56.15:30900
 ```
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
-Porque da una UI sencilla para modificar el origen de datos sin construir una aplicacion de gestion completa.
+Porque da una UI sencilla para modificar el origen de datos sin construir una aplicación de gestión completa.

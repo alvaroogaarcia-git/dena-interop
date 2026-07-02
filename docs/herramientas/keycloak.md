@@ -1,14 +1,14 @@
 # Keycloak
 
-## Que Es
+## Qué Es
 
 Keycloak es un servidor de identidad. Gestiona usuarios, clientes, roles y emite tokens OIDC/OAuth2.
 
 ## Objetivo En Este Piloto
 
-Keycloak decide quien puede pedir datos. APISIX valida los tokens emitidos por Keycloak antes de dejar pasar peticiones a la API.
+Keycloak decide quién puede pedir datos. APISIX valida los tokens emitidos por Keycloak antes de dejar pasar peticiones a la API.
 
-## Donde Esta
+## Dónde Está
 
 - Namespace: `auth`
 - Deployment: `keycloak`
@@ -17,7 +17,7 @@ Keycloak decide quien puede pedir datos. APISIX valida los tokens emitidos por K
 - URL admin: `http://192.168.56.15:30080/admin/`
 - Realm operativo: `piloto`
 
-## Como Se Usa
+## Cómo Se Usa
 
 Consola admin:
 
@@ -42,23 +42,23 @@ curl -X POST http://192.168.56.15:30080/realms/piloto/protocol/openid-connect/to
   -d scope=openid
 ```
 
-## Que Contiene En Este Caso
+## Qué Contiene En Este Caso
 
 Realm `piloto`:
 
-- Cliente publico `react-frontend`.
+- Cliente público `react-frontend`.
 - Cliente confidencial `apisix-gateway`.
 - Usuario `testuser`.
 - Roles `dena-reader`, `dena-writer`, `dena-admin`.
 
-Tambien existe realm historico `dena`, pero el operativo del piloto es `piloto`.
+También existe realm histórico `dena`, pero el operativo del piloto es `piloto`.
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 ```bash
 bash scripts/verify-fase12-keycloak.sh
 ```
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
-Porque evita que la API acepte llamadas anonimas. El consumidor necesita un token valido antes de pedir expedientes.
+Porque evita que la API acepte llamadas anónimas. El consumidor necesita un token válido antes de pedir expedientes.

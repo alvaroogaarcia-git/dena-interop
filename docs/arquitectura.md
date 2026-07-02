@@ -1,8 +1,8 @@
 # Arquitectura
 
-## Entrada Unica
+## Entrada Única
 
-APISIX publica el `NodePort 30080` y concentra el trafico externo:
+APISIX publica el `NodePort 30080` y concentra el tráfico externo:
 
 - `/`: SPA cliente demo.
 - `/realms/*`, `/admin/*`, `/resources/*`: Keycloak.
@@ -15,8 +15,8 @@ Keycloak vive en `auth` y usa PostgreSQL propio. El realm operativo del piloto e
 
 Clientes:
 
-- `react-frontend`: cliente publico para la SPA.
-- `apisix-gateway`: cliente confidencial para introspeccion OIDC desde APISIX.
+- `react-frontend`: cliente público para la SPA.
+- `apisix-gateway`: cliente confidencial para introspección OIDC desde APISIX.
 
 Usuario demo:
 
@@ -27,13 +27,13 @@ Usuario demo:
 `verticales` simula el sistema origen editable:
 
 - PostgreSQL `expedientes`.
-- Mathesar para edicion manual.
+- Mathesar para edición manual.
 
 `datalake` consolida y expone:
 
 - PostgreSQL `datalake`.
 - PostgREST.
-- NiFi para sincronizacion incremental desde `verticales`.
+- NiFi para sincronización incremental desde `verticales`.
 
 ## Observabilidad
 

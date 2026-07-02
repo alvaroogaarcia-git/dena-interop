@@ -8,8 +8,8 @@ El alcance consolidado queda versionado y validado hasta Fase 17:
 
 - Fases 0-15: plataforma base, identidad, gateway, observabilidad, datalake, NiFi, verticales, API DENA y SQL reproducible.
 - Fase 16: cliente demo SPA servido por APISIX en `/`.
-- Fase 17: Portainer desplegado e inicializado para inspeccion operativa.
-- Operacion: scripts de espera, verificacion integral y apagado controlado.
+- Fase 17: Portainer desplegado e inicializado para inspección operativa.
+- Operacion: scripts de espera, verificación integral y apagado controlado.
 
 ## Fase 16 - Cliente demo SPA
 
@@ -48,7 +48,7 @@ Se importaron al estado local:
 
 `terraform plan -detailed-exitcode` termina sin cambios.
 
-## Verificacion
+## Verificación
 
 ```bash
 bash scripts/wait-ready.sh

@@ -1,33 +1,33 @@
 # GitHub Actions
 
-## Que Es
+## Qué Es
 
-GitHub Actions es el sistema de automatizacion de GitHub. Ejecuta workflows para validar o aplicar tareas del repositorio.
+GitHub Actions es el sistema de automatización de GitHub. Ejecuta workflows para validar o aplicar tareas del repositorio.
 
 ## Objetivo En Este Piloto
 
 Centraliza verificaciones y operaciones manuales reproducibles.
 
-## Donde Esta
+## Dónde Está
 
 Workflows:
 
 - `.github/workflows/cluster-verify.yml`
 - `.github/workflows/phase-ops.yml`
 
-Documentacion especifica:
+Documentación específica:
 
 - `docs/github-actions.md`
 
-## Como Se Usa
+## Cómo Se Usa
 
 Desde GitHub se lanza manualmente el workflow con inputs:
 
-- Verificacion completa.
-- Verificacion por fase.
-- Aplicacion de fases concretas.
+- Verificación completa.
+- Verificación por fase.
+- Aplicación de fases concretas.
 
-## Que Contiene En Este Caso
+## Qué Contiene En Este Caso
 
 `cluster-verify.yml`:
 
@@ -41,7 +41,7 @@ Desde GitHub se lanza manualmente el workflow con inputs:
 - Provisiona NiFi.
 - Ejecuta verificaciones.
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 Localmente, los mismos scripts se pueden ejecutar:
 
@@ -49,6 +49,6 @@ Localmente, los mismos scripts se pueden ejecutar:
 bash scripts/verify-stack.sh
 ```
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
-Porque evita que las comprobaciones dependan de memoria o pasos manuales. Lo que se valida en local tambien puede automatizarse en CI.
+Porque evita que las comprobaciones dependan de memoria o pasos manuales. Lo que se valida en local también puede automatizarse en CI.

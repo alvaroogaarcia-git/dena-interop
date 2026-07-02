@@ -1,8 +1,8 @@
 # k3s
 
-## Que Es
+## Qué Es
 
-k3s es una distribucion ligera de Kubernetes. Kubernetes es el sistema que ejecuta contenedores, los reinicia si fallan, les da red interna, publica servicios y organiza los componentes por namespaces.
+k3s es una distribución ligera de Kubernetes. Kubernetes es el sistema que ejecuta contenedores, los reinicia si fallan, les da red interna, publica servicios y organiza los componentes por namespaces.
 
 k3s mantiene la experiencia de Kubernetes, pero con menos consumo y menos piezas. Por eso encaja en este piloto de un solo servidor.
 
@@ -21,7 +21,7 @@ En `dena-interop`, k3s es la base donde corre todo:
 - Portainer.
 - SPA cliente demo.
 
-## Donde Esta
+## Dónde Está
 
 - Servidor: `192.168.56.15`
 - Nodo: `dietpi`
@@ -29,11 +29,11 @@ En `dena-interop`, k3s es la base donde corre todo:
 - API server: `https://192.168.56.15:6443`
 - Kubeconfig local: `~/.kube/dena-config`
 
-## Como Se Usa
+## Cómo Se Usa
 
-Normalmente no se opera k3s directamente por SSH. Se opera desde la maquina de operador con `kubectl` y `helm`.
+Normalmente no se opera k3s directamente por SSH. Se opera desde la máquina de operador con `kubectl` y `helm`.
 
-Comandos utiles:
+Comandos útiles:
 
 ```bash
 export KUBECONFIG=/home/dietpi/.kube/dena-config
@@ -42,7 +42,7 @@ kubectl get pods -A
 kubectl get svc -A
 ```
 
-## Que Contiene
+## Qué Contiene
 
 k3s contiene namespaces separados:
 
@@ -55,7 +55,7 @@ k3s contiene namespaces separados:
 - `portainer`: consola Portainer.
 - `kube-system`: componentes internos de Kubernetes.
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 ```bash
 kubectl get nodes
@@ -68,6 +68,6 @@ Resultado esperado:
 - Nodo `dietpi` en `Ready`.
 - Pods principales en `Running`.
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
-Porque permite aislar servicios, reiniciarlos automaticamente, exponer solo lo necesario y reproducir la plataforma desde manifiestos, Helm charts y Terraform.
+Porque permite aislar servicios, reiniciarlos automáticamente, exponer solo lo necesario y reproducir la plataforma desde manifiestos, Helm charts y Terraform.

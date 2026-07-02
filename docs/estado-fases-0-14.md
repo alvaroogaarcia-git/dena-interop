@@ -6,7 +6,7 @@ Fecha: 2026-06-25
 
 El alcance consolidado queda validado hasta Fase 14:
 
-- Fases 0-13: plataforma, autenticacion, gateway, observabilidad, datalake, NiFi, verticales y API DENA protegida por OIDC.
+- Fases 0-13: plataforma, autenticación, gateway, observabilidad, datalake, NiFi, verticales y API DENA protegida por OIDC.
 - Fase 14: Grafana queda gestionado por Terraform para datasources, carpeta y dashboards operativos DENA.
 
 ## Fase 14 - Terraform y Grafana
@@ -26,7 +26,7 @@ Estado versionado:
 
 Los dashboards viven como JSON en `terraform/dashboards/` para que Terraform sea la fuente de verdad de Grafana.
 
-## Aplicacion reproducible
+## Aplicación reproducible
 
 ```bash
 export KUBECONFIG=/home/dietpi/.kube/dena-config
@@ -35,7 +35,7 @@ bash scripts/dena/apply-fase14-grafana.sh
 bash scripts/verify-fase14.sh
 ```
 
-El script de aplicacion:
+El script de aplicación:
 
 - obtiene credenciales desde el Secret `monitoring/grafana-admin`
 - ejecuta `helm upgrade monitoring` con `helm-values/monitoring-values.yaml` para desactivar el provisioning read-only de datasources
@@ -43,7 +43,7 @@ El script de aplicacion:
 - ejecuta `terraform init`
 - aplica solo los recursos Grafana con `terraform apply -target=...`
 
-## Verificacion
+## Verificación
 
 `scripts/verify-fase14.sh` comprueba por API de Grafana:
 
@@ -54,4 +54,4 @@ El script de aplicacion:
 
 ## Siguiente fase
 
-La siguiente fase abierta es la Fase 15: completar SQL DENA y carga al datalake segun la issue correspondiente.
+La siguiente fase abierta es la Fase 15: completar SQL DENA y carga al datalake según la issue correspondiente.

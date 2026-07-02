@@ -27,7 +27,7 @@ tempo       monitoring  tempo-1.24.4                  2.9.0
 - Secret admin: `grafana-admin`
 - Password local: `.local/fase7.env` (ignorado por Git)
 
-Validacion:
+Validación:
 
 ```text
 HTTP/1.1 200 OK
@@ -48,9 +48,9 @@ Datasources provisionados:
 - Alertmanager desactivado para entorno local.
 - Retencion: `7d`.
 - Storage: `emptyDir`.
-- Nota de disco: sin `retentionSize`; para produccion definir `retentionSize` y PVC acotado.
+- Nota de disco: sin `retentionSize`; para producción definir `retentionSize` y PVC acotado.
 
-Validacion:
+Validación:
 
 ```text
 Prometheus Server is Ready.
@@ -64,9 +64,9 @@ Prometheus Server is Ready.
 - StatefulSet: `loki`
 - PVC: `storage-loki-0`, `4Gi`, `local-path`
 - Caches: desactivadas.
-- `read`, `write` y `backend`: replicas `0`.
+- `read`, `write` y `backend`: réplicas `0`.
 
-Validacion:
+Validación:
 
 ```text
 ready
@@ -89,7 +89,7 @@ http://loki.monitoring.svc.cluster.local:3100
 - OTLP HTTP: `4318`
 - Readiness: `3200`
 
-Validacion:
+Validación:
 
 ```text
 ready

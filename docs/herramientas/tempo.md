@@ -1,14 +1,14 @@
 # Tempo
 
-## Que Es
+## Qué Es
 
-Tempo es un backend de trazas distribuidas. Guarda trazas para analizar el recorrido de una peticion entre servicios.
+Tempo es un backend de trazas distribuidas. Guarda trazas para analizar el recorrido de una petición entre servicios.
 
 ## Objetivo En Este Piloto
 
 Tempo completa la observabilidad junto a Prometheus y Loki. Permite preparar el stack para trazabilidad cuando los servicios emitan trazas.
 
-## Donde Esta
+## Dónde Está
 
 - Namespace: `monitoring`
 - StatefulSet: `tempo`
@@ -16,28 +16,28 @@ Tempo completa la observabilidad junto a Prometheus y Loki. Permite preparar el 
 - OTLP gRPC: `4317`
 - OTLP HTTP: `4318`
 
-## Como Se Usa
+## Cómo Se Usa
 
 Normalmente se consulta desde Grafana con el datasource `Tempo`.
 
-Comprobacion interna:
+Comprobación interna:
 
 ```bash
 kubectl run tempo-check --rm -i --restart=Never --image=nginx:alpine -n monitoring -- \
   wget -qO- http://tempo.monitoring.svc.cluster.local:3200/ready
 ```
 
-## Que Contiene En Este Caso
+## Qué Contiene En Este Caso
 
-Tempo recibe trazas desde el OTel Collector. En el piloto puede tener pocas trazas si los servicios no estan instrumentados.
+Tempo recibe trazas desde el OTel Collector. En el piloto puede tener pocas trazas si los servicios no están instrumentados.
 
-## Como Verificarlo
+## Cómo Verificarlo
 
 ```bash
 kubectl rollout status statefulset/tempo -n monitoring
 bash scripts/verify-fase14.sh
 ```
 
-## Por Que Se Usa
+## Por Qué Se Usa
 
-Porque la trazabilidad ayuda a entender una peticion completa cuando intervienen gateway, identidad, API y servicios internos.
+Porque la trazabilidad ayuda a entender una petición completa cuando intervienen gateway, identidad, API y servicios internos.
