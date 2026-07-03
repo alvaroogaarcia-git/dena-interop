@@ -101,5 +101,5 @@ Estado esperado:
 - JSON de salida generado en el PVC.
 - Flujo conservado tras `kubectl rollout restart deployment/nifi -n datalake`.
 
-Procedimiento: `docs/fase12-nifi-jdbc.md`.
-Optimización del nodo: `docs/optimizacion-k3s-4gb.md`.
+Procedimiento: [fase12-nifi-jdbc.md](../guias/fase12-nifi-jdbc.md).
+Optimización del nodo: [optimizacion-k3s-4gb.md](../operacion/optimizacion-k3s-4gb.md).

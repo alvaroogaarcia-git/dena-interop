@@ -2,7 +2,7 @@
 
 Esta guía deja una VM DietPi como réplica demo de `dena-interop` con un solo comando. La VM se crea a mano; el bootstrap instala k3s, herramientas, el repositorio y todas las fases validadas.
 
-Si necesitas preparar la VM desde cero antes de ejecutar el comando, usa primero [configuracion-vm-previa.md](configuracion-vm-previa.md).
+Si necesitas preparar la VM desde cero antes de ejecutar el comando, usa primero [configuracion-vm-previa.md](../operacion/configuracion-vm-previa.md).
 
 ## Requisitos de la VM
 

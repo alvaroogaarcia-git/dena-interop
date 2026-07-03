@@ -17,7 +17,7 @@ Workflows:
 
 Documentación específica:
 
-- `docs/github-actions.md`
+- [github-actions.md](../operacion/github-actions.md)
 
 ## Cómo Se Usa
 

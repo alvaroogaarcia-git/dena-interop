@@ -15,4 +15,4 @@ Esta carpeta guarda el historico de validaciones del piloto. Son documentos de r
 | Fases 0-15 | [estado-fases-0-15.md](estado-fases-0-15.md) | SQL del datalake, staging y carga local |
 | Fases 0-17 | [estado-fases-0-17.md](estado-fases-0-17.md) | Estado consolidado actual hasta Portainer |
 
-Para operacion diaria, usar el [runbook](../runbook.md) y la [guia de instalacion](../guia-instalacion.md).
+Para operacion diaria, usar el [runbook](../operacion/runbook.md) y la [guia de instalacion](../guias/guia-instalacion.md).

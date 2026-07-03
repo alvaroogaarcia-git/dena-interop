@@ -4,7 +4,7 @@ Esta guía reconstruye el estado validado hasta Fase 17 de `dena-interop` sobre 
 
 El objetivo es que una persona con conocimientos mínimos de Linux, Kubernetes y terminal pueda repetir la instalación sin depender de pasos implícitos.
 
-Para entender qué hace cada herramienta antes de instalarla, consulta `docs/herramientas/README.md`.
+Para entender qué hace cada herramienta antes de instalarla, consulta la [documentacion de herramientas](../herramientas/README.md).
 
 ## 0. Supuestos del entorno
 
@@ -1184,7 +1184,7 @@ kubectl exec -n verticales postgresql-verticales-0 -- \
 - El directorio de salida vive dentro del PVC de NiFi, junto al driver JDBC.
 - `flow.json.gz` vive en `/persistent/conf/flow.json.gz` dentro del mismo PVC.
 - `NIFI_SENSITIVE_PROPS_KEY` usa el secreto de NiFi para conservar propiedades cifradas tras reinicios.
-- El procedimiento de optimización y recuperación de k3s queda en `docs/optimizacion-k3s-4gb.md`.
+- El procedimiento de optimización y recuperación de k3s queda en [optimizacion-k3s-4gb.md](../operacion/optimizacion-k3s-4gb.md).
 
 ## Fase 13 - Terraform y Keycloak
 
@@ -1278,7 +1278,7 @@ La carga manual del CSV se hace con:
 bash scripts/dena/load-csv.sh --file expedientes.csv --promote
 ```
 
-El detalle operativo queda en `docs/fase15-datalake.md`.
+El detalle operativo queda en [fase15-datalake.md](fase15-datalake.md).
 
 ## Fase 17 - Cliente demo SPA
 
@@ -1353,4 +1353,4 @@ Apagado controlado:
 ssh dena 'bash -s -- --poweroff' < scripts/stop-stack.sh
 ```
 
-Detalle operativo: `docs/runbook.md`.
+Detalle operativo: [runbook.md](../operacion/runbook.md).

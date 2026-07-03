@@ -121,22 +121,21 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 
 ## Documentación principal
 
-- [Demo rápida en VM nueva](docs/demo-vm.md)
-- [Guía completa de instalación](docs/guia-instalacion.md)
-- [GitHub Actions](docs/github-actions.md)
+- [Índice de documentación](docs/README.md)
+- [Demo rápida en VM nueva](docs/demo/demo-vm.md)
+- [Guía completa de instalación](docs/guias/guia-instalacion.md)
+- [GitHub Actions](docs/operacion/github-actions.md)
 - [Histórico de estados validados por fase](docs/estado-fases/README.md)
-- [Fase 15 - SQL del datalake y carga local](docs/fase15-datalake.md)
-- [Flujo NiFi JDBC incremental (extensión 11c)](docs/fase12-nifi-jdbc.md)
-- [Preparación de Fase 8](docs/fase8-preparacion.md)
-- [Observabilidad y Grafana](docs/grafana-observabilidad.md)
-- [Runbook operativo](docs/runbook.md)
-- [Arquitectura](docs/arquitectura.md)
+- [Fase 15 - SQL del datalake y carga local](docs/guias/fase15-datalake.md)
+- [Flujo NiFi JDBC incremental (extensión 11c)](docs/guias/fase12-nifi-jdbc.md)
+- [Runbook operativo](docs/operacion/runbook.md)
+- [Arquitectura](docs/arquitectura/arquitectura.md)
 - [Documentación de herramientas](docs/herramientas/README.md)
 
 ## Estructura
 
 ```text
-docs/           Documentación operativa y estado validado
+docs/           Documentación organizada por guías, demo, operación, arquitectura y referencia
 helm-values/    Values Helm versionados
 k8s-manifests/  Manifiestos Kubernetes versionados
 scripts/        Provisionamiento y verificaciones reproducibles
