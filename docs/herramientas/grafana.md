@@ -49,10 +49,51 @@ Carpeta:
 Dashboards:
 
 - `DENA Stack Overview`
+- `DENA API Observability`
 - `DENA PostgreSQL Overview`
 - `Observability Prometheus`
 - `Observability Loki`
 - `Observability Tempo`
+
+## Dashboard `DENA API Observability`
+
+Este dashboard sirve para entender la ruta de la API sin tener que conocer todos los comandos de Kubernetes.
+
+La ruta observada es:
+
+```text
+Cliente o SPA -> APISIX -> Keycloak -> PostgREST -> PostgreSQL datalake
+```
+
+Paneles principales:
+
+- `Gateway Disponible`: indica si APISIX tiene una replica disponible. Si aparece en rojo o vale `0`, la entrada HTTP principal no esta lista.
+- `API Datos Disponible`: indica si PostgREST esta disponible. Si APISIX esta bien pero este panel falla, el gateway puede recibir llamadas pero la API de datos no podra responder.
+- `Autenticacion Disponible`: indica si Keycloak esta disponible. Si falla, las rutas protegidas pueden devolver errores de autenticacion aunque la API y la base de datos esten levantadas.
+- `Reinicios API`: muestra los reinicios de APISIX, PostgREST y Keycloak dentro del rango de tiempo seleccionado. Un valor mayor que `0` no siempre es grave, pero conviene revisar logs si no coincide con un reinicio planificado.
+- `CPU Componentes API`: muestra la CPU usada por APISIX, PostgREST y Keycloak. Picos breves son normales; uso alto sostenido puede explicar lentitud.
+- `Memoria Componentes API`: muestra la memoria usada por los componentes de la ruta API. Si sube mucho y coincide con reinicios, puede haber falta de memoria o limites demasiado bajos.
+- `Conexiones PostgreSQL Datalake`: muestra cuantas conexiones estan abiertas contra la base del datalake. Si crece y no baja, puede haber consultas bloqueadas o demasiados clientes.
+- `Filas Leidas por Segundo`: muestra actividad de lectura en PostgreSQL del datalake. Ayuda a ver si la API esta consultando datos o si no llega trafico a la base.
+- `Respuestas HTTP por Codigo`: cuenta respuestas vistas en los access logs de APISIX. Los `2xx` y `3xx` suelen ser correctos; `401` y `403` indican autenticacion o permisos; `5xx` indica error en el gateway o en el servicio al que llama.
+- `Latencia p95 Gateway`: muestra el tiempo por debajo del cual queda el 95% de las peticiones observadas por APISIX. Si sube, los usuarios pueden notar lentitud aunque la API siga respondiendo.
+- `Logs APISIX`: muestra logs recientes del gateway. Se usa para buscar problemas de rutas, autenticacion OIDC, errores `401/403/5xx` o fallos al llamar al upstream.
+- `Logs PostgREST`: muestra logs recientes de la API de datos. Se usa para buscar errores SQL, errores de conexion a PostgreSQL o problemas de configuracion.
+
+Como leerlo ante una incidencia:
+
+- Si `Gateway Disponible` vale `0`, revisar primero APISIX.
+- Si `Gateway Disponible` esta bien pero `API Datos Disponible` vale `0`, revisar PostgREST.
+- Si los usuarios reciben `401` o `403`, revisar `Autenticacion Disponible` y `Logs APISIX`.
+- Si suben los `5xx`, mirar `Logs APISIX`, `Logs PostgREST` y disponibilidad de PostgREST.
+- Si todo esta disponible pero la API va lenta, mirar `Latencia p95 Gateway`, `CPU Componentes API`, `Memoria Componentes API`, `Conexiones PostgreSQL Datalake` y `Filas Leidas por Segundo`.
+- Si hay reinicios, abrir `Logs APISIX` o `Logs PostgREST` y comparar la hora del error con el panel `Reinicios API`.
+
+Limitacion actual:
+
+- El dashboard usa metricas que ya existen en el piloto: Kubernetes, contenedores, PostgreSQL y logs en Loki.
+- Los codigos HTTP y la latencia salen de los access logs de APISIX, no de metricas Prometheus nativas.
+- Todavia no separa latencia y errores por endpoint concreto, por ejemplo `/api` frente a `/dena/admin-files`. Para eso conviene habilitar metricas HTTP especificas en APISIX/PostgREST o enriquecer el parseo de logs con la ruta normalizada.
 
 ## Cómo Verificarlo
 

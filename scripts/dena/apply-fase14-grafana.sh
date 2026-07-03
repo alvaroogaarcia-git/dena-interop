@@ -83,6 +83,7 @@ import_if_missing grafana_data_source.tempo tempo
 import_if_missing grafana_folder.dena dena
 import_if_missing grafana_dashboard.dena_stack_overview dena-stack-overview
 import_if_missing grafana_dashboard.dena_postgresql_overview dena-postgresql-overview
+import_if_missing grafana_dashboard.dena_api_observability dena-api-observability
 import_if_missing grafana_dashboard.observability_prometheus observability-prometheus
 import_if_missing grafana_dashboard.observability_loki observability-loki
 import_if_missing grafana_dashboard.observability_tempo observability-tempo
@@ -94,6 +95,7 @@ terraform -chdir="$TF_DIR" apply -auto-approve \
   -target=grafana_folder.dena \
   -target=grafana_dashboard.dena_stack_overview \
   -target=grafana_dashboard.dena_postgresql_overview \
+  -target=grafana_dashboard.dena_api_observability \
   -target=grafana_dashboard.observability_prometheus \
   -target=grafana_dashboard.observability_loki \
   -target=grafana_dashboard.observability_tempo

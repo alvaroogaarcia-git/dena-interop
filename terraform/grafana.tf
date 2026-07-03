@@ -87,6 +87,17 @@ resource "grafana_dashboard" "dena_postgresql_overview" {
   ]
 }
 
+resource "grafana_dashboard" "dena_api_observability" {
+  folder      = grafana_folder.dena.uid
+  config_json = file("${path.module}/dashboards/dena-api-observability.json")
+  overwrite   = true
+
+  depends_on = [
+    grafana_data_source.prometheus,
+    grafana_data_source.loki
+  ]
+}
+
 resource "grafana_dashboard" "observability_prometheus" {
   folder      = grafana_folder.dena.uid
   config_json = file("${path.module}/dashboards/observability-prometheus.json")

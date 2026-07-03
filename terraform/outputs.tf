@@ -23,6 +23,7 @@ output "grafana_dashboard_uids" {
   value = [
     "dena-stack-overview",
     "dena-postgresql-overview",
+    "dena-api-observability",
     "observability-prometheus",
     "observability-loki",
     "observability-tempo"
