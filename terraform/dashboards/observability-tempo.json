@@ -26,6 +26,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Indica si Tempo esta disponible. Si vale 0, no se podran consultar trazas distribuidas desde Grafana.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -88,6 +89,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Muestra la CPU usada por los pods de Tempo. Picos sostenidos pueden indicar mucha carga de trazas o problemas de procesamiento.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -176,6 +178,7 @@
         "type": "tempo",
         "uid": "tempo"
       },
+      "description": "Lista trazas recientes disponibles en Tempo. Cada traza permite seguir una peticion o flujo entre servicios cuando hay instrumentacion.",
       "gridPos": {
         "h": 11,
         "w": 24,

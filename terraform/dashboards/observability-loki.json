@@ -26,6 +26,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Indica si Loki esta disponible para recibir y consultar logs. Si vale 0, los paneles de logs pueden quedar vacios o fallar.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -88,6 +89,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Muestra la tasa de logs por namespace. Picos altos indican componentes escribiendo mucho log y pueden ayudar a localizar ruido o errores repetidos.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -176,6 +178,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Muestra logs recientes que contienen palabras como error, warn, exception o failed. Es el primer sitio para buscar sintomas cuando algo falla.",
       "gridPos": {
         "h": 11,
         "w": 24,

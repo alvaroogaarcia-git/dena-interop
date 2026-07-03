@@ -26,6 +26,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Indica si Keycloak tiene replicas disponibles. Si vale 1 o mas, el servicio de autenticacion esta levantado; si vale 0, los logins y la validacion de tokens pueden fallar.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -90,6 +91,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Indica si APISIX tiene replicas disponibles. APISIX es el gateway de entrada; si vale 0, las rutas publicas del piloto no estaran disponibles.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -154,6 +156,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Indica si PostgREST tiene replicas disponibles. Si vale 0, la API de datos del datalake no podra responder aunque el gateway siga activo.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -218,6 +221,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Indica si Apache NiFi tiene replicas disponibles. Si vale 0, los flujos de integracion y carga de datos no estan operativos.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -282,6 +286,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Muestra el consumo de CPU agrupado por namespace. Sirve para ver que bloque del stack esta usando mas procesador y detectar picos sostenidos.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -333,6 +338,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Muestra la memoria usada por los contenedores agrupada por namespace. Si una linea sube de forma sostenida, puede indicar presion de memoria o fuga.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -384,6 +390,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Lista los reinicios acumulados de contenedores por namespace. Muchos reinicios suelen indicar fallos de arranque, falta de recursos o problemas de dependencias.",
       "fieldConfig": {
         "defaults": {
           "color": {

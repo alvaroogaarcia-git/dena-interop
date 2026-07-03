@@ -26,6 +26,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Indica si los exporters de PostgreSQL estan respondiendo. Si algun valor es 0, Grafana no puede leer metricas de esa base aunque PostgreSQL pueda seguir funcionando.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -88,6 +89,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Muestra las conexiones abiertas a cada PostgreSQL. Un crecimiento continuo puede indicar saturacion, clientes bloqueados o conexiones que no se cierran.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -139,6 +141,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Muestra transacciones confirmadas por segundo. Ayuda a ver actividad de escritura correcta y comparar carga entre bases.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -190,6 +193,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Tabla de filas devueltas por base de datos. Sirve para detectar donde se concentran las lecturas y confirmar que hay actividad de consulta.",
       "fieldConfig": {
         "defaults": {
           "color": {

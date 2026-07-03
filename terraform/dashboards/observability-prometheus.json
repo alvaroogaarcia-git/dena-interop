@@ -26,6 +26,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Indica si Prometheus esta siendo scrapeado correctamente. Si vale 0, la recogida central de metricas no esta disponible.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -88,6 +89,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Cuenta alertas en estado firing. Un valor mayor que 0 significa que Prometheus ha detectado condiciones que requieren revision.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -154,6 +156,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Muestra el numero de series activas en la base temporal de Prometheus. Si crece demasiado, aumenta el uso de memoria y disco.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -242,6 +245,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Lista los targets que aportan mas muestras por scrape. Sirve para detectar fuentes de metricas demasiado ruidosas o con alta cardinalidad.",
       "fieldConfig": {
         "defaults": {
           "color": {

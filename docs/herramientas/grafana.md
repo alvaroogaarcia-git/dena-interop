@@ -55,6 +55,8 @@ Dashboards:
 - `Observability Loki`
 - `Observability Tempo`
 
+Todos los paneles de estos dashboards incluyen descripcion. En Grafana se ve como un icono de informacion junto al titulo del panel; al pasar el raton por encima explica que mide el panel y como interpretarlo.
+
 ## Dashboard `DENA API Observability`
 
 Este dashboard sirve para entender la ruta de la API sin tener que conocer todos los comandos de Kubernetes.
