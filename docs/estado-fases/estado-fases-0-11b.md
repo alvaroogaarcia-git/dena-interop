@@ -6,7 +6,7 @@ Fecha: 2026-06-22
 
 El clúster queda validado hasta Fase 12:
 
-- Fases 0-11: ver `docs/estado-fases-0-11.md`.
+- Fases 0-11: ver `estado-fases-0-11.md`.
 - Fase 11b: origen PostgreSQL en `verticales`, Mathesar local y driver JDBC de PostgreSQL persistido en NiFi.
 - Fase 12: flujo JDBC incremental NiFi operativo, idempotente y persistente tras reinicio.
 

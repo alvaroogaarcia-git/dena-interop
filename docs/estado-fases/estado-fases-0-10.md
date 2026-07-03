@@ -6,7 +6,7 @@ Fecha: 2026-06-19
 
 El clúster queda validado hasta Fase 10:
 
-- Fases 0-7: ver `docs/estado-fases-0-7.md`.
+- Fases 0-7: ver `estado-fases-0-7.md`.
 - Fase 8: `otel-collector` desplegado y sano en `monitoring`.
 - Fase 9: PostgreSQL del datalake desplegado y sano en `datalake`.
 - Fase 10: PostgREST desplegado, conectado al datalake y validado funcionalmente.

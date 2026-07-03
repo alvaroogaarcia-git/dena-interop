@@ -38,4 +38,4 @@ bash scripts/verify-fase15.sh
 
 ## Continuacion
 
-La Fase 16, Portainer y los scripts de operación quedan cerrados en `docs/estado-fases-0-17.md`.
+La Fase 16, Portainer y los scripts de operación quedan cerrados en `estado-fases-0-17.md`.

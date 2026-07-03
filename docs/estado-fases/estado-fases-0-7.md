@@ -6,7 +6,7 @@ Fecha: 2026-06-16
 
 El clúster queda validado hasta Fase 7:
 
-- Fases 0-6: ver `docs/estado-fases-0-6.md`.
+- Fases 0-6: ver `estado-fases-0-6.md`.
 - Fase 7: observabilidad local en `monitoring`.
 
 ## Releases Helm

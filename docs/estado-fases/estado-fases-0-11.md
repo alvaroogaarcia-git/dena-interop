@@ -6,7 +6,7 @@ Fecha: 2026-06-19
 
 El clúster queda validado hasta Fase 11:
 
-- Fases 0-10: ver `docs/estado-fases-0-10.md`.
+- Fases 0-10: ver `estado-fases-0-10.md`.
 - Fase 11: NiFi 2.9 desplegado en `datalake` con HTTPS y single-user.
 
 Todavía no se ha empezado la Fase 11b:
