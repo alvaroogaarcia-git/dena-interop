@@ -208,6 +208,83 @@ data:
           .health-row:last-child { border-bottom: 0; }
           .health-row strong { font-size: .9rem; }
           .health-row span { color: var(--muted); font-size: .82rem; }
+          .flow-map {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+          }
+          .flow-node {
+            min-width: 0;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+            padding: 9px;
+            text-align: center;
+          }
+          .flow-node strong {
+            display: block;
+            font-size: .78rem;
+          }
+          .flow-node span {
+            display: block;
+            margin-top: 3px;
+            color: var(--ok);
+            font-size: .72rem;
+            font-weight: 800;
+          }
+          .timeline, .notifications, .compare-list, .permission-grid {
+            display: grid;
+            gap: 9px;
+          }
+          .timeline-item, .notification, .compare-row, .permission-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+            padding: 10px;
+          }
+          .timeline-item strong, .notification strong, .compare-row strong, .permission-card strong {
+            display: block;
+            font-size: .9rem;
+          }
+          .timeline-item span, .notification span, .compare-row span, .permission-card span {
+            display: block;
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: .82rem;
+          }
+          .compare-row.ok { border-color: #b8ddc8; background: #eef9f2; }
+          .compare-row.warn { border-color: #f3d38b; background: #fff8e6; }
+          .notification.warn { border-color: #f3d38b; background: #fff8e6; }
+          .notification.ok { border-color: #b8ddc8; background: #eef9f2; }
+          .notification.bad { border-color: #ecc6c6; background: #fff1f1; }
+          .scenario-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+          }
+          .scenario-buttons button {
+            min-height: 36px;
+            padding: 7px 9px;
+            font-size: .84rem;
+          }
+          .citizen-preview {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfdff;
+            padding: 12px;
+            margin-top: 10px;
+          }
+          .citizen-preview h3 {
+            margin: 0 0 7px;
+            font-size: .98rem;
+          }
+          .citizen-preview p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: .86rem;
+            line-height: 1.4;
+          }
           pre {
             overflow: auto;
             max-height: 220px;
@@ -225,11 +302,13 @@ data:
             .layout { grid-template-columns: 320px minmax(0, 1fr); }
             .side-right { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
             .side-right .panel + .panel { margin-top: 0; }
+            .flow-map { grid-template-columns: repeat(3, minmax(0, 1fr)); }
           }
           @media (max-width: 760px) {
             main { width: min(100% - 20px, 1440px); padding-top: 14px; }
             .topbar, .toolbar { align-items: stretch; flex-direction: column; }
             .layout, .side-right, .kpis, .grid2, .detail-grid { grid-template-columns: 1fr; }
+            .flow-map, .scenario-buttons { grid-template-columns: 1fr; }
             table { min-width: 720px; }
           }
         </style>
@@ -296,6 +375,23 @@ data:
                   </div>
                 </div>
               </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Modo presentación</h2>
+                  <p>Escenarios rápidos para enseñar casos sin preparar filtros a mano.</p>
+                </div>
+                <div class="panel-body">
+                  <div class="scenario-buttons">
+                    <button class="button-secondary" type="button" data-scenario="found">Encontrado</button>
+                    <button class="button-secondary" type="button" data-scenario="pending">Pendiente</button>
+                    <button class="button-secondary" type="button" data-scenario="recent">Cambio reciente</button>
+                    <button class="button-secondary" type="button" data-scenario="empty">Sin resultados</button>
+                    <button class="button-secondary" type="button" data-scenario="permission">Permisos</button>
+                    <button class="button-secondary" type="button" data-scenario="sync">Sincronización</button>
+                  </div>
+                </div>
+              </section>
             </aside>
 
             <section>
@@ -325,10 +421,28 @@ data:
                     <div class="actions">
                       <button class="button-secondary" id="recentButton" type="button">Últimos cambios</button>
                       <button class="button-secondary" id="incidentButton" type="button">Incidencias</button>
+                      <button class="button-secondary" id="simulateButton" type="button">Simular cambio</button>
                     </div>
                   </div>
                   <div class="table-wrap" id="tableWrap">
                     <div class="empty">Sin resultados todavía.</div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel" style="margin-top:14px">
+                <div class="panel-head">
+                  <h2>Flujo vivo</h2>
+                  <p>Vista de presentación del recorrido técnico-funcional.</p>
+                </div>
+                <div class="panel-body" id="flowPanel">
+                  <div class="flow-map">
+                    <div class="flow-node"><strong>Admin</strong><span>listo</span></div>
+                    <div class="flow-node"><strong>APISIX</strong><span>listo</span></div>
+                    <div class="flow-node"><strong>Keycloak</strong><span>listo</span></div>
+                    <div class="flow-node"><strong>PostgREST</strong><span>listo</span></div>
+                    <div class="flow-node"><strong>Datalake</strong><span>listo</span></div>
+                    <div class="flow-node"><strong>NiFi</strong><span>listo</span></div>
                   </div>
                 </div>
               </section>
@@ -342,6 +456,46 @@ data:
                 </div>
                 <div class="panel-body" id="detailPanel">
                   <div class="empty">Selecciona un expediente.</div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Origen vs datalake</h2>
+                  <p>Comparador funcional con señales de sincronización.</p>
+                </div>
+                <div class="panel-body" id="comparePanel">
+                  <div class="empty">Selecciona un expediente.</div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Bandeja de incidencias</h2>
+                  <p>Casos que requieren revisión operativa.</p>
+                </div>
+                <div class="panel-body" id="incidentPanel">
+                  <div class="empty">Carga datos para calcular incidencias.</div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Permisos</h2>
+                  <p>Comparativa de roles de la demo.</p>
+                </div>
+                <div class="panel-body" id="permissionPanel">
+                  <div class="empty">Sin sesión.</div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Notificaciones</h2>
+                  <p>Eventos demo generados a partir de estados y simulaciones.</p>
+                </div>
+                <div class="panel-body" id="notificationPanel">
+                  <div class="empty">Sin eventos todavía.</div>
                 </div>
               </section>
 
@@ -393,6 +547,11 @@ data:
           const detailPanel = document.getElementById("detailPanel");
           const healthPanel = document.getElementById("healthPanel");
           const auditPanel = document.getElementById("auditPanel");
+          const comparePanel = document.getElementById("comparePanel");
+          const incidentPanel = document.getElementById("incidentPanel");
+          const permissionPanel = document.getElementById("permissionPanel");
+          const notificationPanel = document.getElementById("notificationPanel");
+          const flowPanel = document.getElementById("flowPanel");
           const resultLabel = document.getElementById("resultLabel");
           const sessionLabel = document.getElementById("sessionLabel");
           const sessionGrid = document.getElementById("sessionGrid");
@@ -401,6 +560,7 @@ data:
           const jsonButton = document.getElementById("jsonButton");
           const recentButton = document.getElementById("recentButton");
           const incidentButton = document.getElementById("incidentButton");
+          const simulateButton = document.getElementById("simulateButton");
           const statusLabels = {
             abierto: "Abierto",
             en_tramitacion: "En tramitación",
@@ -415,6 +575,8 @@ data:
           let visibleRows = [];
           let selectedIndex = null;
           let lastAudit = {};
+          let notifications = [];
+          let simulatedChanges = {};
 
           function escapeHtml(value) {
             return String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -488,7 +650,31 @@ data:
               <div class="item"><span>Usuario</span><strong>${escapeHtml(claims.preferred_username || claims.sub || "-")}</strong></div>
               <div class="item"><span>Roles</span><strong>${escapeHtml(roles.filter((role) => role.startsWith("dena-")).join(", ") || "-")}</strong></div>
             `;
+            renderPermissions(roles);
             if (!isAdmin) setStatus("Usuario autenticado sin rol dena-admin.", "warn");
+          }
+
+          function renderPermissions(roles = []) {
+            const profiles = [
+              { name: "Ciudadano", allowed: "Consultar expedientes propios", denied: "No ve auditoría ni operación" },
+              { name: "Operador", allowed: "Revisar incidencias y trazabilidad", denied: "No modifica permisos" },
+              { name: "Admin", allowed: "Auditoría, exportación y simulación", denied: "Sin escritura persistente en esta demo" }
+            ];
+            permissionPanel.innerHTML = `
+              <div class="permission-grid">
+                ${profiles.map((profile) => `
+                  <div class="permission-card">
+                    <strong>${escapeHtml(profile.name)}</strong>
+                    <span>Puede: ${escapeHtml(profile.allowed)}</span>
+                    <span>Límite: ${escapeHtml(profile.denied)}</span>
+                  </div>
+                `).join("")}
+              </div>
+              <div class="citizen-preview">
+                <h3>Roles de la sesión actual</h3>
+                <p>${escapeHtml(roles.filter((role) => role.startsWith("dena-")).join(", ") || "Sin roles DENA")}</p>
+              </div>
+            `;
           }
 
           function incidentCount(data) {
@@ -513,6 +699,33 @@ data:
             `;
           }
 
+          function syncDelay(row) {
+            const updated = new Date(row.updated_at).getTime();
+            const ingested = new Date(row.ingested_at || row.updated_at).getTime();
+            if (Number.isNaN(updated) || Number.isNaN(ingested)) return null;
+            return Math.max(0, ingested - updated);
+          }
+
+          function delayLabel(ms) {
+            if (ms === null) return "sin dato";
+            if (ms < 60000) return `${Math.round(ms / 1000)} s`;
+            if (ms < 3600000) return `${Math.round(ms / 60000)} min`;
+            return `${Math.round(ms / 3600000)} h`;
+          }
+
+          function rowIncidents(row) {
+            const issues = [];
+            const updated = new Date(row.updated_at).getTime();
+            const now = Date.now();
+            if (row.status === "pendiente_documentacion") issues.push("Documentación pendiente");
+            if (row.status === "abierto" && !Number.isNaN(updated) && now - updated > 7 * 24 * 60 * 60 * 1000) issues.push("Abierto hace más de 7 días");
+            if (Number(row.amount_eur || 0) > 9000) issues.push("Importe alto");
+            const delay = syncDelay(row);
+            if (delay !== null && delay > 10 * 60 * 1000) issues.push("Ingesta retrasada");
+            if (simulatedChanges[row.expediente_code]) issues.push("Cambio simulado pendiente de sincronizar");
+            return issues;
+          }
+
           function applyQuickFilter(mode = "") {
             const query = normalize(quickSearch.value);
             visibleRows = rows.filter((row) => {
@@ -526,6 +739,7 @@ data:
             }
             renderKpis(visibleRows);
             renderTable();
+            renderIncidentPanel();
           }
 
           function renderTable() {
@@ -559,6 +773,7 @@ data:
               </table>
             `;
             renderDetail(visibleRows[0]);
+            renderCompare(visibleRows[0]);
           }
 
           function renderDetail(row) {
@@ -574,10 +789,101 @@ data:
                 <div class="item"><span>Importe</span><strong>${currency.format(Number(row.amount_eur || 0))}</strong></div>
               </div>
               <div class="trace" style="margin-top:14px">
+                <div class="timeline-item"><strong>Historial del expediente</strong><span>Creado: ${formatDate(row.opened_at)} · Última modificación: ${formatDate(row.updated_at)}</span></div>
                 <div class="trace-step"><div class="dot"></div><div><strong>Origen vertical</strong><span>${escapeHtml(row.source_system || "verticales-local")} · ${formatDate(row.updated_at)}</span></div></div>
                 <div class="trace-step"><div class="dot"></div><div><strong>NiFi</strong><span>Flujo de ingesta a staging y consolidación</span></div></div>
-                <div class="trace-step"><div class="dot"></div><div><strong>Datalake</strong><span>Ingestado ${formatDate(row.ingested_at)}</span></div></div>
+                <div class="trace-step"><div class="dot"></div><div><strong>Datalake</strong><span>Ingestado ${formatDate(row.ingested_at)} · retardo ${delayLabel(syncDelay(row))}</span></div></div>
                 <div class="trace-step"><div class="dot"></div><div><strong>API protegida</strong><span>PostgREST detrás de APISIX + Keycloak</span></div></div>
+              </div>
+              <div class="citizen-preview">
+                <h3>Vista ciudadana sugerida</h3>
+                <p>${escapeHtml(citizenMessage(row))}</p>
+                <p>Próximo paso: ${escapeHtml(nextStep(row))}</p>
+              </div>
+            `;
+            renderCompare(row);
+          }
+
+          function citizenMessage(row) {
+            if (row.status === "resuelto") return "Tu expediente está resuelto. Puedes descargar o consultar el justificante cuando esté disponible.";
+            if (row.status === "pendiente_documentacion") return "Tu expediente requiere documentación adicional para poder continuar la tramitación.";
+            if (row.status === "en_tramitacion") return "Tu expediente está siendo revisado por la administración competente.";
+            if (row.status === "archivado") return "Tu expediente está archivado. Si necesitas reabrirlo, contacta con el organismo responsable.";
+            return "Tu expediente está abierto y pendiente de las siguientes actuaciones administrativas.";
+          }
+
+          function nextStep(row) {
+            if (row.status === "pendiente_documentacion") return "aportar documentación pendiente";
+            if (row.status === "resuelto") return "revisar resolución";
+            if (row.status === "archivado") return "sin acciones previstas";
+            return "esperar actualización del organismo";
+          }
+
+          function renderCompare(row) {
+            if (!row) {
+              comparePanel.innerHTML = '<div class="empty">Selecciona un expediente.</div>';
+              return;
+            }
+            const simulated = simulatedChanges[row.expediente_code];
+            const rowsHtml = [
+              ["Estado", simulated?.status || row.status, row.status],
+              ["Importe", simulated?.amount_eur ? currency.format(Number(simulated.amount_eur)) : currency.format(Number(row.amount_eur || 0)), currency.format(Number(row.amount_eur || 0))],
+              ["Actualizado en origen", simulated?.updated_at ? formatDate(simulated.updated_at) : formatDate(row.updated_at), formatDate(row.updated_at)],
+              ["Ingestado en datalake", simulated ? "pendiente demo" : formatDate(row.ingested_at), formatDate(row.ingested_at)]
+            ].map(([label, origin, lake]) => {
+              const differs = origin !== lake;
+              return `
+                <div class="compare-row ${differs ? "warn" : "ok"}">
+                  <strong>${escapeHtml(label)}</strong>
+                  <span>Origen: ${escapeHtml(origin)}</span>
+                  <span>Datalake: ${escapeHtml(lake)}</span>
+                </div>
+              `;
+            }).join("");
+            comparePanel.innerHTML = `<div class="compare-list">${rowsHtml}</div>`;
+          }
+
+          function renderIncidentPanel() {
+            const items = visibleRows
+              .map((row) => ({ row, issues: rowIncidents(row) }))
+              .filter((item) => item.issues.length)
+              .slice(0, 8);
+            if (!items.length) {
+              incidentPanel.innerHTML = '<div class="empty">No hay incidencias para los resultados visibles.</div>';
+              return;
+            }
+            incidentPanel.innerHTML = `
+              <div class="notifications">
+                ${items.map(({ row, issues }) => `
+                  <div class="notification warn">
+                    <strong>${escapeHtml(row.expediente_code)} · ${escapeHtml(statusLabels[row.status] || row.status)}</strong>
+                    <span>${escapeHtml(issues.join(" · "))}</span>
+                  </div>
+                `).join("")}
+              </div>
+            `;
+          }
+
+          function addNotification(type, title, message) {
+            notifications.unshift({ type, title, message, at: new Date().toISOString() });
+            notifications = notifications.slice(0, 8);
+            renderNotifications();
+          }
+
+          function renderNotifications() {
+            if (!notifications.length) {
+              notificationPanel.innerHTML = '<div class="empty">Sin eventos todavía.</div>';
+              return;
+            }
+            notificationPanel.innerHTML = `
+              <div class="notifications">
+                ${notifications.map((note) => `
+                  <div class="notification ${escapeHtml(note.type)}">
+                    <strong>${escapeHtml(note.title)}</strong>
+                    <span>${escapeHtml(note.message)}</span>
+                    <span>${formatDate(note.at)}</span>
+                  </div>
+                `).join("")}
               </div>
             `;
           }
@@ -588,6 +894,24 @@ data:
               <div class="health-row"><strong>APISIX</strong><span>gateway respondió</span></div>
               <div class="health-row"><strong>PostgREST</strong><span>${dataOk ? "RPC operativa" : "pendiente"}</span></div>
               <div class="health-row"><strong>Datalake</strong><span>${rows.length} filas leídas</span></div>
+            `;
+            renderFlow(dataOk);
+          }
+
+          function renderFlow(dataOk = false) {
+            const claims = decodeJwt(session?.access_token);
+            const nodes = [
+              ["Admin", claims.preferred_username || "pendiente"],
+              ["APISIX", "gateway 200"],
+              ["Keycloak", session ? "token OK" : "pendiente"],
+              ["PostgREST", dataOk ? "RPC OK" : "pendiente"],
+              ["Datalake", `${rows.length} filas`],
+              ["NiFi", "sincronización activa"]
+            ];
+            flowPanel.innerHTML = `
+              <div class="flow-map">
+                ${nodes.map(([name, state]) => `<div class="flow-node"><strong>${escapeHtml(name)}</strong><span>${escapeHtml(state)}</span></div>`).join("")}
+              </div>
             `;
           }
 
@@ -625,12 +949,15 @@ data:
               visibleRows = rows;
               renderKpis(visibleRows);
               renderTable();
+              renderIncidentPanel();
               renderHealth(true);
               renderAudit(Math.round(performance.now() - started), body);
+              addNotification("ok", "Consulta completada", `${rows.length} expedientes recuperados desde la API DENA.`);
               setStatus(`Consola cargada: ${rows.length} expedientes.`, "ok");
             } catch (error) {
               tableWrap.innerHTML = `<div class="empty">${escapeHtml(error.message || error)}</div>`;
               renderHealth(false);
+              addNotification("bad", "Error de consulta", error.message || String(error));
               setStatus("No se pudo cargar la consola.", "bad");
             } finally {
               submitButton.disabled = false;
@@ -668,6 +995,44 @@ data:
             tableWrap.querySelectorAll("tr.selected").forEach((node) => node.classList.remove("selected"));
             row.classList.add("selected");
             renderDetail(visibleRows[selectedIndex]);
+          });
+
+          simulateButton.addEventListener("click", () => {
+            const row = visibleRows[selectedIndex ?? 0];
+            if (!row) return;
+            const nextStatus = row.status === "pendiente_documentacion" ? "en_tramitacion" : "pendiente_documentacion";
+            simulatedChanges[row.expediente_code] = {
+              status: nextStatus,
+              amount_eur: Number(row.amount_eur || 0) + 125,
+              updated_at: new Date().toISOString()
+            };
+            addNotification("warn", "Cambio simulado en origen", `${row.expediente_code} pasaría a ${statusLabels[nextStatus]}. No se persiste hasta validarlo.`);
+            renderDetail(row);
+            renderIncidentPanel();
+            setStatus("Cambio simulado generado. Revisa Origen vs datalake.", "warn");
+          });
+
+          document.querySelectorAll("[data-scenario]").forEach((button) => {
+            button.addEventListener("click", () => {
+              const scenario = button.dataset.scenario;
+              form.reset();
+              form.username.value = "adminuser";
+              form.password.value = "Admin1234!";
+              form.limit.value = "200";
+              if (scenario === "found") form.codeFilter.value = "EXP-0050";
+              if (scenario === "pending") form.statusFilter.value = "pendiente_documentacion";
+              if (scenario === "recent") form.limit.value = "10";
+              if (scenario === "empty") form.codeFilter.value = "EXP-SIN-RESULTADOS";
+              if (scenario === "permission") {
+                addNotification("ok", "Escenario permisos", "Compara ciudadano, operador y admin en el panel de permisos.");
+                renderPermissions(decodeJwt(session?.access_token).realm_access?.roles || []);
+              }
+              if (scenario === "sync") {
+                form.codeFilter.value = "EXP-0050";
+                addNotification("warn", "Escenario sincronización", "Carga EXP-0050 y usa Simular cambio para ver la diferencia origen/datalake.");
+              }
+              loadData();
+            });
           });
         </script>
       </body>

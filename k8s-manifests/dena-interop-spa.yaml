@@ -367,6 +367,44 @@ data:
           .detail-json {
             margin-top: 12px;
           }
+          .citizen-guide {
+            margin-top: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfdff;
+            padding: 12px;
+          }
+          .citizen-guide h4 {
+            margin: 0 0 7px;
+            font-size: .96rem;
+          }
+          .citizen-guide p {
+            margin: 6px 0;
+            color: var(--muted);
+            line-height: 1.45;
+            font-size: .9rem;
+          }
+          .citizen-guide ul {
+            margin: 8px 0 0;
+            padding-left: 18px;
+            color: var(--muted);
+            line-height: 1.45;
+            font-size: .88rem;
+          }
+          .notice {
+            margin-top: 10px;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: .9rem;
+            background: #eef9f2;
+            color: var(--ok);
+            border: 1px solid #b8ddc8;
+          }
+          .notice.warn {
+            background: #fff8e6;
+            color: var(--warn);
+            border-color: #f3d38b;
+          }
           @media (max-width: 980px) {
             .workspace, .visuals { grid-template-columns: 1fr; }
             .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -658,6 +696,12 @@ data:
             }
           }
 
+          function tokenIsUsable(tokenJson) {
+            const claims = decodeJwt(tokenJson?.access_token);
+            if (!claims.exp) return false;
+            return claims.exp * 1000 > Date.now() + 30000;
+          }
+
           function renderSession(tokenJson = null) {
             if (!tokenJson) {
               sessionLabel.textContent = "Aún no hay token emitido.";
@@ -732,6 +776,7 @@ data:
               detailPanel.innerHTML = '<div class="empty">Selecciona un expediente para ver su detalle.</div>';
               return;
             }
+            const guidance = citizenGuidance(row);
             detailPanel.innerHTML = `
               <div class="detail-head">
                 <h3>${escapeHtml(row.expediente_code || row.id || "Expediente")}</h3>
@@ -745,7 +790,62 @@ data:
                 <div class="detail-item"><span>Apertura</span><strong>${formatDateTime(row.opened_at)}</strong></div>
                 <div class="detail-item"><span>Actualización</span><strong>${formatDateTime(row.updated_at)}</strong></div>
               </div>
+              <div class="citizen-guide">
+                <h4>Resumen para el ciudadano</h4>
+                <p>${escapeHtml(guidance.message)}</p>
+                <p><strong>Próximo paso:</strong> ${escapeHtml(guidance.nextStep)}</p>
+                <ul>
+                  ${guidance.actions.map((action) => `<li>${escapeHtml(action)}</li>`).join("")}
+                </ul>
+                <div class="notice ${guidance.kind}">${escapeHtml(guidance.notice)}</div>
+              </div>
             `;
+          }
+
+          function citizenGuidance(row) {
+            if (row.status === "resuelto") {
+              return {
+                kind: "",
+                message: "El expediente ya tiene resolución registrada por la administración competente.",
+                nextStep: "Revisar la resolución y conservar el justificante.",
+                actions: ["Descargar justificante demo", "Consultar importe reconocido", "Contactar con el organismo si hay discrepancias"],
+                notice: "Notificación demo: tu expediente ha cambiado a resuelto."
+              };
+            }
+            if (row.status === "pendiente_documentacion") {
+              return {
+                kind: "warn",
+                message: "La tramitación está detenida hasta que se aporte documentación adicional.",
+                nextStep: "Preparar y presentar la documentación pendiente.",
+                actions: ["Revisar requisitos", "Preparar documentación", "Solicitar ayuda si no entiendes el requerimiento"],
+                notice: "Notificación demo: falta documentación para continuar."
+              };
+            }
+            if (row.status === "en_tramitacion") {
+              return {
+                kind: "",
+                message: "El expediente está siendo revisado. No tienes que realizar ninguna acción inmediata.",
+                nextStep: "Esperar nueva actualización.",
+                actions: ["Consultar estado periódicamente", "Guardar el número de expediente", "Ver organismo responsable"],
+                notice: "Notificación demo: expediente actualizado por la administración."
+              };
+            }
+            if (row.status === "archivado") {
+              return {
+                kind: "warn",
+                message: "El expediente está archivado y no tiene tramitación activa.",
+                nextStep: "Contactar con el organismo responsable si necesitas reabrirlo.",
+                actions: ["Revisar fecha de archivo", "Consultar organismo", "Solicitar reapertura si procede"],
+                notice: "Notificación demo: expediente archivado."
+              };
+            }
+            return {
+              kind: "",
+              message: "El expediente está abierto y pendiente de actuaciones administrativas.",
+              nextStep: "Esperar el inicio de la tramitación o nuevas comunicaciones.",
+              actions: ["Guardar el número de expediente", "Consultar actualizaciones", "Revisar datos básicos"],
+              notice: "Notificación demo: expediente abierto correctamente."
+            };
           }
 
           function renderTable(rows) {
@@ -836,7 +936,7 @@ data:
             lastRequestBody = filters.requestBody;
             setStatus("Iniciando sesión...");
             try {
-              const tokenJson = forceToken || !session ? await getToken(filters.credentials) : session;
+              const tokenJson = forceToken || !tokenIsUsable(session) ? await getToken(filters.credentials) : session;
               setStatus("Consultando expedientes...");
               const apiResponse = await fetch("/dena/admin-files", {
                 method: "POST",
@@ -846,6 +946,10 @@ data:
                 },
                 body: JSON.stringify(filters.requestBody)
               });
+              if ((apiResponse.status === 401 || apiResponse.status === 403) && !forceToken) {
+                session = null;
+                return runQuery(true);
+              }
               if (!apiResponse.ok) {
                 throw new Error(friendlyError("api", apiResponse));
               }
