@@ -14,5 +14,6 @@ Esta carpeta guarda el historico de validaciones del piloto. Son documentos de r
 | Fases 0-14 | [estado-fases-0-14.md](estado-fases-0-14.md) | Grafana gestionado por Terraform |
 | Fases 0-15 | [estado-fases-0-15.md](estado-fases-0-15.md) | SQL del datalake, staging y carga local |
 | Fases 0-17 | [estado-fases-0-17.md](estado-fases-0-17.md) | Estado consolidado actual hasta Portainer |
+| Fase 18 | [estado-fases-0-18.md](estado-fases-0-18.md) | MFA WebAuthn/FIDO2 en consola admin DENA |
 
 Para operacion diaria, usar el [runbook](../operacion/runbook.md) y la [guia de instalacion](../guias/guia-instalacion.md).

@@ -20,14 +20,16 @@ resource "keycloak_openid_client" "react_frontend" {
   enabled                      = true
   access_type                  = "PUBLIC"
   standard_flow_enabled        = true
-  direct_access_grants_enabled = false
+  direct_access_grants_enabled = true
   pkce_code_challenge_method   = "S256"
   valid_redirect_uris = [
     "${var.gateway_base_url}/*",
+    "http://localhost:30080/*",
     "http://localhost:3000/*"
   ]
   web_origins = [
     var.gateway_base_url,
+    "http://localhost:30080",
     "http://localhost:3000"
   ]
 }
@@ -39,7 +41,7 @@ resource "keycloak_openid_client" "apisix_gateway" {
   enabled                      = true
   access_type                  = "CONFIDENTIAL"
   standard_flow_enabled        = false
-  direct_access_grants_enabled = true
+  direct_access_grants_enabled = false
   service_accounts_enabled     = true
   full_scope_allowed           = true
 }
@@ -128,15 +130,17 @@ resource "keycloak_openid_client" "piloto_react_frontend" {
   enabled                      = true
   access_type                  = "PUBLIC"
   standard_flow_enabled        = true
-  direct_access_grants_enabled = true
+  direct_access_grants_enabled = false
   use_refresh_tokens           = true
   pkce_code_challenge_method   = "S256"
   valid_redirect_uris = [
     "${var.gateway_base_url}/*",
+    "http://localhost:30080/*",
     "http://localhost:3000/*"
   ]
   web_origins = [
     var.gateway_base_url,
+    "http://localhost:30080",
     "http://localhost:3000"
   ]
 }

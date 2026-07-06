@@ -7,7 +7,7 @@
     "proxy-rewrite": {
       "headers": {
         "set": {
-          "X-Forwarded-Host": "192.168.56.15",
+          "X-Forwarded-Host": "localhost",
           "X-Forwarded-Port": "30080",
           "X-Forwarded-Proto": "http"
         }

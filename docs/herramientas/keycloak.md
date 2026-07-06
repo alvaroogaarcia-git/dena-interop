@@ -14,7 +14,7 @@ Keycloak decide quién puede pedir datos. APISIX valida los tokens emitidos por 
 - Deployment: `keycloak`
 - Service: `keycloak`
 - Base de datos: PostgreSQL `auth`
-- URL admin: `http://192.168.56.15:30080/admin/`
+- URL admin por túnel MFA demo: `http://localhost:30080/admin/`
 - Realm operativo: `piloto`
 
 ## Cómo Se Usa
@@ -22,24 +22,36 @@ Keycloak decide quién puede pedir datos. APISIX valida los tokens emitidos por 
 Consola admin:
 
 ```text
-http://192.168.56.15:30080/admin/
+http://localhost:30080/admin/
+```
+
+Para acceder desde un PC operador sin tocar `hosts`, abrir primero un túnel SSH:
+
+```bash
+ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
 ```
 
 Discovery OIDC:
 
 ```text
-http://192.168.56.15:30080/realms/piloto/.well-known/openid-configuration
+http://localhost:30080/realms/piloto/.well-known/openid-configuration
 ```
 
-Token demo:
+La consola admin usa Authorization Code + PKCE. El cliente público `react-frontend` no permite `grant_type=password`, para evitar saltarse MFA.
 
 ```bash
-curl -X POST http://192.168.56.15:30080/realms/piloto/protocol/openid-connect/token \
+curl -X POST http://localhost:30080/realms/piloto/protocol/openid-connect/token \
   -d client_id=react-frontend \
   -d grant_type=password \
   -d username=testuser \
   -d password='Test1234!' \
   -d scope=openid
+```
+
+Resultado esperado:
+
+```json
+{"error":"unauthorized_client","error_description":"Client not allowed for direct access grants"}
 ```
 
 ## Qué Contiene En Este Caso
@@ -50,6 +62,9 @@ Realm `piloto`:
 - Cliente confidencial `apisix-gateway`.
 - Usuario `testuser`.
 - Roles `dena-reader`, `dena-writer`, `dena-admin`.
+- Flujo browser `browser-dena-webauthn`.
+- WebAuthn RP ID `localhost`, usado por la demo mediante túnel SSH.
+- Credencial WebAuthn registrada para `adminuser`.
 
 También existe realm histórico `dena`, pero el operativo del piloto es `piloto`.
 

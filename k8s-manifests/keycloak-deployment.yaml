@@ -51,7 +51,7 @@ spec:
             - name: KC_HOSTNAME_STRICT
               value: "false"
             - name: KC_HOSTNAME
-              value: http://192.168.56.15:30080
+              value: http://localhost:30080
             - name: KC_PROXY_HEADERS
               value: xforwarded
             - name: KC_HEALTH_ENABLED
@@ -82,9 +82,9 @@ spec:
           resources:
             requests:
               cpu: 10m
-              memory: 384Mi
+              memory: 512Mi
             limits:
-              memory: 640Mi
+              memory: 1Gi
 ---
 apiVersion: v1
 kind: Service

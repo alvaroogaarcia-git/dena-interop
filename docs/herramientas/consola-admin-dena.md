@@ -8,19 +8,20 @@ La consola admin DENA es una página web demo para personal interno. Complementa
 
 Demuestra la parte administrativa del flujo:
 
-1. Un usuario interno se autentica en Keycloak.
-2. La consola obtiene un token OIDC del realm `piloto`.
-3. La consola llama a `POST /dena/admin-files` mediante APISIX.
-4. APISIX valida el token.
-5. PostgREST ejecuta la RPC `dena_data_retrieve`.
-6. La consola muestra KPIs, resultados, trazabilidad, salud básica y auditoría de la consulta.
+1. Un usuario interno inicia sesión en Keycloak mediante Authorization Code + PKCE.
+2. Keycloak exige WebAuthn al usuario admin que tiene passkey registrada.
+3. La consola obtiene un token OIDC del realm `piloto`.
+4. La consola llama a `POST /dena/admin-files` mediante APISIX.
+5. APISIX valida el token.
+6. PostgREST ejecuta la RPC `dena_data_retrieve`.
+7. La consola muestra KPIs, resultados, trazabilidad, salud básica y auditoría de la consulta.
 
 ## Dónde Está
 
 - Namespace: `app`
 - Deployment: `dena-admin-console`
 - Service interno: `dena-admin-console`
-- URL pública: `http://192.168.56.15:30080/dena/admin-console`
+- URL demo MFA por túnel: `http://localhost:30080/dena/admin-console`
 - Manifiesto: `k8s-manifests/dena-admin-console.yaml`
 - Ruta APISIX: `apisix/routes/dena-admin-console.json`
 - Upstream APISIX: `apisix/upstreams/4-dena-admin-console.json`
@@ -30,13 +31,18 @@ Demuestra la parte administrativa del flujo:
 Abrir:
 
 ```text
-http://192.168.56.15:30080/dena/admin-console
+http://localhost:30080/dena/admin-console
 ```
 
-Credenciales demo:
+Antes de abrirla desde el PC operador, crear el túnel:
+
+```bash
+ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
+```
+
+El usuario demo es:
 
 - Usuario: `adminuser`
-- Password: `Admin1234!`
 
 El usuario `adminuser` se gestiona en Terraform y tiene el rol `dena-admin`. El rol `dena-admin` es compuesto e incluye `dena-reader` y `dena-writer`.
 
@@ -44,7 +50,9 @@ El usuario `adminuser` se gestiona en Terraform y tiene el rol `dena-admin`. El 
 
 La consola contiene:
 
-- Login OIDC contra Keycloak.
+- Login OIDC contra Keycloak con Authorization Code + PKCE.
+- MFA WebAuthn/FIDO2 para el usuario admin enrolado.
+- Botón `Cerrar sesión`, que limpia sesión local y llama al logout OIDC de Keycloak.
 - Filtros por estado, expediente, título y límite.
 - KPIs de expedientes, importe total, incidencias y última ingesta.
 - Tabla operativa de expedientes.
@@ -78,16 +86,14 @@ También devuelve `ingested_at` para enseñar la diferencia entre la actualizaci
 
 ```bash
 kubectl rollout status deployment/dena-admin-console -n app
-curl -i http://192.168.56.15:30080/dena/admin-console
-bash scripts/dena/test-curl.sh
-bash scripts/verify-stack.sh
+curl -H 'Host: localhost:30080' -i http://192.168.56.15:30080/dena/admin-console
 ```
 
 Validación esperada:
 
 ```text
-OK  Consola admin (200)
-6 OK · 0 KO
+La consola contiene code_challenge y grant_type=authorization_code.
+El password grant de react-frontend devuelve unauthorized_client.
 ```
 
 ## Por Qué Se Usa
