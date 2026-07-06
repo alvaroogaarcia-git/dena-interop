@@ -12,6 +12,7 @@ APISIX es la única puerta HTTP externa del flujo DENA:
 - Protege PostgREST con OIDC.
 - Publica la RPC DENA `POST /dena/admin-files`.
 - Sirve la SPA cliente demo en `/`.
+- Sirve la consola admin DENA en `/dena/admin-console`.
 
 ## Dónde Está
 
@@ -50,6 +51,7 @@ Upstreams:
 - `1`: PostgREST.
 - `2`: Keycloak.
 - `3`: SPA cliente DENA.
+- `4`: Consola admin DENA.
 
 Rutas:
 
@@ -58,6 +60,7 @@ Rutas:
 - `/admin/*`: consola admin Keycloak.
 - `/resources/*`: assets de Keycloak.
 - `POST /dena/admin-files`: RPC DENA protegida.
+- `/dena/admin-console`: consola admin DENA.
 - `/*`: fallback a la SPA.
 
 ## Cómo Verificarlo

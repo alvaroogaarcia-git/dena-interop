@@ -1127,18 +1127,22 @@ ADR-009: el laboratorio pasa de dejar preparado el origen a materializar un fluj
 
 ### 12.1 Estructura del flujo
 
-- Grupo de proceso: `Fase 12 - JDBC incremental`
+El flujo que se despliega hoy como sincronizacion operativa de NiFi corresponde a la Fase 15 del datalake:
+
+- Grupo de proceso: `Fase 15 - DENA staging incremental`
 - Fuente: `QueryDatabaseTableRecord`
 - Conexión JDBC: `Verticales DBCP`
 - Writer: `JSON Record Writer`
-- Nombres de fichero: `Stamp Output Filename`
-- Destino: `Persist Fase 12 Output`
+- Reader: `JSON Record Reader`
+- Destino: `dena.admin_file_staging`
+- Promoción: `dena.dena_staging_to_main()`
+- Intervalo de consulta: `30 sec`
 
 ### 12.2 Provisionamiento
 
 ```bash
 bash scripts/dena/install-nifi-postgresql-driver.sh
-bash scripts/dena/provision-fase12-nifi.sh
+bash scripts/dena/provision-fase15-nifi.sh
 ```
 
 El script:
@@ -1148,13 +1152,14 @@ El script:
 3. crea o reutiliza el grupo y los controller services
 4. reconcilia propiedades con la API de NiFi 2.9
 5. crea o reutiliza los tres procesadores
-6. evita conexiones duplicadas
-7. habilita y arranca el flujo
+6. fija `QueryDatabaseTableRecord` en `30 sec`
+7. evita conexiones duplicadas
+8. habilita y arranca el flujo
 
 ### 12.3 Verificación
 
 ```bash
-bash scripts/verify-fase12.sh
+bash scripts/verify-fase15-nifi.sh
 ```
 
 La verificación comprueba:
@@ -1162,12 +1167,12 @@ La verificación comprueba:
 - grupo de proceso presente
 - procesadores en `VALID/RUNNING`
 - controller services en `VALID/ENABLED`
-- directorio de salida accesible
+- sincronización activa entre `verticales` y `datalake`
 - driver JDBC presente en `extensions/`
 
 ### 12.4 Prueba incremental
 
-Actualizar una fila de `expedientes.admin_file` y comprobar que aparece un nuevo JSON en la salida del flujo:
+Actualizar una fila de `expedientes.admin_file` y comprobar que el cambio aparece en `datalake.dena.admin_file` tras el siguiente ciclo de consulta:
 
 ```bash
 export KUBECONFIG=/home/dietpi/.kube/dena-config
@@ -1180,8 +1185,6 @@ kubectl exec -n verticales postgresql-verticales-0 -- \
 ### 12.5 Notas operativas
 
 - Si el NodePort directo no responde, usar `kubectl port-forward -n datalake svc/nifi 8443:8443`.
-- El flujo escribe en `/opt/nifi/nifi-current/extensions/fase12-output`.
-- El directorio de salida vive dentro del PVC de NiFi, junto al driver JDBC.
 - `flow.json.gz` vive en `/persistent/conf/flow.json.gz` dentro del mismo PVC.
 - `NIFI_SENSITIVE_PROPS_KEY` usa el secreto de NiFi para conservar propiedades cifradas tras reinicios.
 - El procedimiento de optimización y recuperación de k3s queda en [optimizacion-k3s-4gb.md](../operacion/optimizacion-k3s-4gb.md).

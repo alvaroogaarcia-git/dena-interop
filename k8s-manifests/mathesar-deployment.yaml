@@ -7,6 +7,8 @@ metadata:
     app: mathesar
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mathesar
@@ -69,7 +71,7 @@ spec:
             failureThreshold: 6
           resources:
             requests:
-              cpu: 50m
+              cpu: 5m
               memory: 128Mi
             limits:
               memory: 256Mi

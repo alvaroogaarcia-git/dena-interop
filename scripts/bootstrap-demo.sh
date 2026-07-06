@@ -87,7 +87,7 @@ install_k3s() {
   else
     curl -sfL https://get.k3s.io | \
       INSTALL_K3S_VERSION="$K3S_VERSION" \
-      INSTALL_K3S_EXEC="server --disable traefik --disable servicelb --write-kubeconfig-mode 0644 --tls-san ${NODE_IP}" \
+      INSTALL_K3S_EXEC="server --disable traefik --disable servicelb --write-kubeconfig-mode 0644 --node-ip ${NODE_IP} --tls-san ${NODE_IP}" \
       sh -
   fi
 
@@ -411,10 +411,10 @@ install_verticales_mathesar() {
   kubectl rollout status deployment/mathesar -n verticales --timeout=300s
 }
 
-install_nifi_flow() {
-  log "Fase 12 - Flujo NiFi JDBC"
+install_nifi_sync() {
+  log "Fase 15 - Sincronizacion NiFi incremental"
   bash scripts/dena/install-nifi-postgresql-driver.sh
-  bash scripts/dena/provision-fase12-nifi.sh
+  bash scripts/dena/provision-fase15-nifi.sh
 }
 
 install_keycloak_terraform() {
@@ -444,6 +444,8 @@ install_spa_and_portainer() {
   log "Fase 17 - SPA y Portainer"
   kubectl apply -f k8s-manifests/dena-interop-spa.yaml
   kubectl rollout status deployment/dena-interop-spa -n app --timeout=240s
+  kubectl apply -f k8s-manifests/dena-admin-console.yaml
+  kubectl rollout status deployment/dena-admin-console -n app --timeout=240s
   bash scripts/dena/apply-route.sh
 
   kubectl apply -f k8s-manifests/portainer-deployment.yaml
@@ -501,11 +503,11 @@ user_stage() {
   install_postgrest
   install_nifi
   install_verticales_mathesar
-  install_nifi_flow
   install_keycloak_terraform
   install_apisix_dena_api
   install_grafana_terraform
   install_datalake_sql
+  install_nifi_sync
   install_spa_and_portainer
 
   log "Verificacion final"

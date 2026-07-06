@@ -21,13 +21,14 @@ kubectl rollout status deployment/nifi -n datalake --timeout=300s
 kubectl rollout status deployment/mathesar -n verticales --timeout=240s
 kubectl rollout status deployment/monitoring-grafana -n monitoring --timeout=180s
 kubectl rollout status deployment/dena-interop-spa -n app --timeout=180s
+kubectl rollout status deployment/dena-admin-console -n app --timeout=180s
 
 echo
 echo "[3/8] Verificaciones por fase"
 bash "$REPO_ROOT/scripts/verify-fase10.sh"
 bash "$REPO_ROOT/scripts/verify-fase11.sh"
 bash "$REPO_ROOT/scripts/verify-fase11b.sh"
-bash "$REPO_ROOT/scripts/verify-fase12.sh"
+bash "$REPO_ROOT/scripts/verify-fase15-nifi.sh"
 bash "$REPO_ROOT/scripts/verify-fase12-keycloak.sh"
 bash "$REPO_ROOT/scripts/verify-fase13.sh"
 bash "$REPO_ROOT/scripts/verify-fase14.sh"

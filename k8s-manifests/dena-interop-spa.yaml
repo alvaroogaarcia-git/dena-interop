@@ -27,6 +27,7 @@ data:
             --warn: #9a6700;
             --closed: #4f5d75;
             --bad: #a13d3d;
+            --blue: #245ca8;
           }
           * { box-sizing: border-box; }
           body {
@@ -37,20 +38,20 @@ data:
             background: var(--bg);
           }
           main {
-            width: min(1180px, calc(100% - 32px));
+            width: min(1380px, calc(100% - 32px));
             margin: 0 auto;
-            padding: 28px 0 42px;
+            padding: 24px 0 38px;
           }
-          .topbar {
+          .topbar, .brand, .session-actions, .panel-title, .detail-head {
             display: flex;
             align-items: center;
+          }
+          .topbar {
             justify-content: space-between;
             gap: 16px;
             margin-bottom: 18px;
           }
           .brand {
-            display: flex;
-            align-items: center;
             gap: 12px;
             min-width: 0;
           }
@@ -89,9 +90,10 @@ data:
           }
           .status.ok { color: var(--ok); border-color: #b8ddc8; background: #eef9f2; }
           .status.bad { color: var(--bad); border-color: #ecc6c6; background: #fff1f1; }
+          .status.warn { color: var(--warn); border-color: #f3d38b; background: #fff8e6; }
           .workspace {
             display: grid;
-            grid-template-columns: 300px minmax(0, 1fr);
+            grid-template-columns: 330px minmax(0, 1fr);
             gap: 18px;
             align-items: start;
           }
@@ -101,11 +103,12 @@ data:
             background: var(--surface);
             box-shadow: 0 10px 28px rgba(18, 32, 44, .06);
           }
+          .panel + .panel { margin-top: 14px; }
           .panel-head {
             border-bottom: 1px solid var(--line);
             padding: 16px 18px;
           }
-          .panel-head h2 {
+          .panel-head h2, .panel-title h2 {
             margin: 0;
             font-size: 1rem;
           }
@@ -114,6 +117,10 @@ data:
             color: var(--muted);
             font-size: .9rem;
             line-height: 1.4;
+          }
+          .panel-title {
+            justify-content: space-between;
+            gap: 12px;
           }
           form {
             padding: 4px 18px 18px;
@@ -126,17 +133,22 @@ data:
             font-weight: 650;
           }
           input, select, button {
-            width: 100%;
-            min-height: 42px;
+            min-height: 40px;
             border-radius: 8px;
             border: 1px solid var(--line);
             font: inherit;
-            padding: 10px 11px;
+            padding: 9px 11px;
           }
-          input, select { background: #fff; color: var(--ink); }
+          input, select {
+            width: 100%;
+            background: #fff;
+            color: var(--ink);
+          }
           button {
-            margin-top: 18px;
-            border: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
             background: var(--brand);
             color: white;
             cursor: pointer;
@@ -147,29 +159,74 @@ data:
             cursor: wait;
             opacity: .7;
           }
-          .flow {
-            padding: 0 18px 18px;
+          .button-secondary {
+            background: var(--surface);
+            color: var(--ink);
+            border: 1px solid var(--line);
+          }
+          .button-secondary:hover {
+            background: var(--surface-soft);
+          }
+          .button-danger {
+            background: #fff1f1;
+            color: var(--bad);
+            border: 1px solid #ecc6c6;
+          }
+          .button-danger:hover {
+            background: #ffe5e5;
+          }
+          .submit-button {
+            width: 100%;
+            margin-top: 18px;
+            border: 0;
+          }
+          .session-actions button {
+            width: auto;
+          }
+          .presets {
             display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            padding: 14px 18px 18px;
+          }
+          .presets button {
+            width: 100%;
+            min-height: 36px;
+            padding: 7px 9px;
+            font-size: .86rem;
+          }
+          .session-card {
+            padding: 14px 18px 18px;
+          }
+          .session-grid, .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
           }
-          .flow-step {
-            display: grid;
-            grid-template-columns: 28px 1fr;
-            gap: 10px;
-            align-items: center;
+          .session-item, .detail-item {
+            min-width: 0;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface-soft);
+            padding: 10px;
+          }
+          .session-item span, .detail-item span {
+            display: block;
             color: var(--muted);
-            font-size: .9rem;
-          }
-          .flow-step span {
-            display: grid;
-            width: 28px;
-            height: 28px;
-            place-items: center;
-            border-radius: 999px;
-            background: var(--brand-soft);
-            color: var(--brand);
+            font-size: .76rem;
             font-weight: 800;
-            font-size: .8rem;
+            text-transform: uppercase;
+          }
+          .session-item strong, .detail-item strong {
+            display: block;
+            margin-top: 4px;
+            overflow-wrap: anywhere;
+            font-size: .92rem;
+          }
+          .session-actions {
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
           }
           .results {
             min-width: 0;
@@ -178,7 +235,7 @@ data:
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 12px;
-            margin-bottom: 18px;
+            margin-bottom: 14px;
           }
           .metric {
             border: 1px solid var(--line);
@@ -198,6 +255,37 @@ data:
             margin-top: 6px;
             font-size: 1.5rem;
           }
+          .visuals {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 14px;
+            margin-bottom: 14px;
+          }
+          .bars {
+            display: grid;
+            gap: 11px;
+            padding: 14px 18px 18px;
+          }
+          .bar-row {
+            display: grid;
+            grid-template-columns: 145px minmax(0, 1fr) 44px;
+            gap: 10px;
+            align-items: center;
+            color: var(--muted);
+            font-size: .86rem;
+          }
+          .bar-track {
+            height: 10px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e8edf2;
+          }
+          .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--brand);
+          }
+          .bar-fill.amount { background: var(--blue); }
           .table-wrap {
             overflow: auto;
           }
@@ -219,8 +307,14 @@ data:
             text-transform: uppercase;
             letter-spacing: .02em;
           }
-          tbody tr:hover {
+          tbody tr {
+            cursor: pointer;
+          }
+          tbody tr:hover, tbody tr.selected {
             background: #fbfdff;
+          }
+          tbody tr.selected td:first-child {
+            box-shadow: inset 3px 0 0 var(--brand);
           }
           .code {
             font-family: "SFMono-Regular", Consolas, monospace;
@@ -249,7 +343,7 @@ data:
             white-space: nowrap;
           }
           .badge.abierto { background: #e8f6ef; color: var(--ok); }
-          .badge.en_tramitacion { background: #e6f0ff; color: #245ca8; }
+          .badge.en_tramitacion { background: #e6f0ff; color: var(--blue); }
           .badge.pendiente_documentacion { background: #fff5d8; color: var(--warn); }
           .badge.resuelto { background: #edf7e8; color: #4c7a1f; }
           .empty {
@@ -257,30 +351,55 @@ data:
             text-align: center;
             color: var(--muted);
           }
-          details {
+          .detail {
             border-top: 1px solid var(--line);
-          }
-          summary {
-            cursor: pointer;
-            padding: 14px 18px;
-            color: var(--muted);
-            font-weight: 700;
-          }
-          pre {
-            overflow: auto;
-            max-height: 320px;
-            margin: 0;
             padding: 16px 18px 18px;
-            background: #13221c;
-            color: #eef8ed;
-            font-family: "SFMono-Regular", Consolas, monospace;
-            font-size: .9rem;
           }
-          @media (max-width: 760px) {
+          .detail-head {
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+          }
+          .detail-head h3 {
+            margin: 0;
+            font-size: 1rem;
+          }
+          .detail-json {
+            margin-top: 12px;
+          }
+          @media (max-width: 980px) {
+            .workspace, .visuals { grid-template-columns: 1fr; }
+            .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          }
+          @media (max-width: 640px) {
+            main { width: min(100% - 20px, 1380px); padding-top: 14px; }
             .topbar { align-items: stretch; flex-direction: column; }
             .status { justify-content: flex-start; white-space: normal; }
-            .workspace { grid-template-columns: 1fr; }
-            .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .summary, .session-grid, .detail-grid, .presets { grid-template-columns: 1fr; }
+            .bar-row { grid-template-columns: 1fr; gap: 5px; }
+            .table-wrap { overflow: visible; }
+            table, thead, tbody, tr, td { display: block; min-width: 0; }
+            thead { display: none; }
+            tbody tr {
+              margin: 12px;
+              border: 1px solid var(--line);
+              border-radius: 8px;
+              background: var(--surface);
+            }
+            tbody tr.selected td:first-child { box-shadow: inset 3px 0 0 var(--brand); }
+            td {
+              display: grid;
+              grid-template-columns: 112px minmax(0, 1fr);
+              gap: 10px;
+              padding: 10px 12px;
+            }
+            td::before {
+              content: attr(data-label);
+              color: var(--muted);
+              font-size: .76rem;
+              font-weight: 800;
+              text-transform: uppercase;
+            }
           }
         </style>
       </head>
@@ -291,49 +410,80 @@ data:
               <div class="mark">D</div>
               <div>
                 <h1>DENA Interop</h1>
-                <p class="subtitle">Consulta demo de expedientes federados por OIDC</p>
+                <p class="subtitle">Consulta ciudadana de expedientes</p>
               </div>
             </div>
-            <div class="status" id="status">Listo para autenticar.</div>
+            <div class="status" id="status">Listo para iniciar sesión.</div>
           </header>
 
           <section class="workspace">
-            <aside class="panel">
-              <div class="panel-head">
-                <h2>Parámetros</h2>
-                <p>La consulta obtiene token en Keycloak y llama a la RPC DENA mediante APISIX.</p>
-              </div>
-              <form id="login">
-                <label for="username">Usuario</label>
-                <input id="username" name="username" value="testuser" autocomplete="username">
-                <label for="password">Password</label>
-                <input id="password" name="password" value="Test1234!" type="password" autocomplete="current-password">
-                <label for="statusFilter">Estado</label>
-                <select id="statusFilter" name="statusFilter">
-                  <option value="">Todos</option>
-                  <option value="abierto">Abierto</option>
-                  <option value="en_tramitacion">En tramitación</option>
-                  <option value="pendiente_documentacion">Pendiente documentación</option>
-                  <option value="resuelto">Resuelto</option>
-                  <option value="archivado">Archivado</option>
-                </select>
-                <label for="titleFilter">Título</label>
-                <input id="titleFilter" name="titleFilter" placeholder="Buscar en el título">
-                <label for="codeFilter">Número de expediente</label>
-                <input id="codeFilter" name="codeFilter" placeholder="Ej. EXP-0001">
-                <label for="dateFrom">Fecha desde</label>
-                <input id="dateFrom" name="dateFrom" type="date">
-                <label for="dateTo">Fecha hasta</label>
-                <input id="dateTo" name="dateTo" type="date">
-                <label for="limit">Expedientes a consultar</label>
-                <input id="limit" name="limit" value="10" type="number" min="1" max="50">
-                <button id="submitButton" type="submit">Consultar expedientes</button>
-              </form>
-              <div class="flow">
-                <div class="flow-step"><span>1</span><strong>Token OIDC</strong></div>
-                <div class="flow-step"><span>2</span><strong>Validación APISIX</strong></div>
-                <div class="flow-step"><span>3</span><strong>RPC PostgREST</strong></div>
-              </div>
+            <aside>
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Consulta</h2>
+                  <p>Inicia sesión y filtra los expedientes que quieres revisar.</p>
+                </div>
+                <form id="login">
+                  <label for="username">Usuario</label>
+                  <input id="username" name="username" value="testuser" autocomplete="username">
+                  <label for="password">Contraseña</label>
+                  <input id="password" name="password" value="Test1234!" type="password" autocomplete="current-password">
+                  <label for="statusFilter">Estado</label>
+                  <select id="statusFilter" name="statusFilter">
+                    <option value="">Todos</option>
+                    <option value="abierto">Abierto</option>
+                    <option value="en_tramitacion">En tramitación</option>
+                    <option value="pendiente_documentacion">Pendiente documentación</option>
+                    <option value="resuelto">Resuelto</option>
+                    <option value="archivado">Archivado</option>
+                  </select>
+                  <label for="titleFilter">Título</label>
+                  <input id="titleFilter" name="titleFilter" placeholder="Buscar en el título">
+                  <label for="codeFilter">Número de expediente</label>
+                  <input id="codeFilter" name="codeFilter" placeholder="Ej. EXP-0001">
+                  <label for="dateFrom">Fecha desde</label>
+                  <input id="dateFrom" name="dateFrom" type="date">
+                  <label for="dateTo">Fecha hasta</label>
+                  <input id="dateTo" name="dateTo" type="date">
+                  <label for="limit">Expedientes a consultar</label>
+                  <input id="limit" name="limit" value="10" type="number" min="1" max="50">
+                  <button class="submit-button" id="submitButton" type="submit">Consultar expedientes</button>
+                </form>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Filtros rápidos</h2>
+                  <p>Accesos directos para consultar los casos más habituales.</p>
+                </div>
+                <div class="presets">
+                  <button class="button-secondary" type="button" data-preset="all">Todos</button>
+                  <button class="button-secondary" type="button" data-preset="pending">Pendientes</button>
+                  <button class="button-secondary" type="button" data-preset="resolved">Resueltos</button>
+                  <button class="button-secondary" type="button" data-preset="recent">Últimos</button>
+                  <button class="button-secondary" type="button" data-preset="empty">Sin resultados</button>
+                  <button class="button-secondary" type="button" data-preset="auth-error">Error de acceso</button>
+                </div>
+              </section>
+
+              <section class="panel" id="sessionPanel">
+                <div class="panel-head">
+                  <h2>Sesión</h2>
+                  <p id="sessionLabel">Aún no hay token emitido.</p>
+                </div>
+                <div class="session-card">
+                  <div class="session-grid" id="sessionGrid">
+                    <div class="session-item"><span>Usuario</span><strong>-</strong></div>
+                    <div class="session-item"><span>Expira</span><strong>-</strong></div>
+                    <div class="session-item"><span>Estado</span><strong>Sin iniciar</strong></div>
+                    <div class="session-item"><span>Consulta</span><strong>-</strong></div>
+                  </div>
+                  <div class="session-actions">
+                    <button class="button-secondary" id="refreshSessionButton" type="button">Renovar</button>
+                    <button class="button-danger" id="logoutButton" type="button">Cerrar sesión</button>
+                  </div>
+                </div>
+              </section>
             </aside>
 
             <section class="results">
@@ -341,32 +491,59 @@ data:
                 <div class="metric"><span>Expedientes</span><strong>0</strong></div>
                 <div class="metric"><span>Importe total</span><strong>0 €</strong></div>
                 <div class="metric"><span>Última actualización</span><strong>-</strong></div>
-                <div class="metric"><span>Sistemas origen</span><strong>0</strong></div>
+                <div class="metric"><span>Organismos</span><strong>0</strong></div>
+              </div>
+              <div class="visuals">
+                <section class="panel">
+                  <div class="panel-head">
+                    <h2>Estados</h2>
+                    <p>Distribución de expedientes por estado.</p>
+                  </div>
+                  <div class="bars" id="statusChart">
+                    <div class="empty">Sin datos.</div>
+                  </div>
+                </section>
+                <section class="panel">
+                  <div class="panel-head">
+                    <h2>Importes</h2>
+                    <p>Total acumulado por estado.</p>
+                  </div>
+                  <div class="bars" id="amountChart">
+                    <div class="empty">Sin datos.</div>
+                  </div>
+                </section>
               </div>
               <div class="panel">
                 <div class="panel-head">
-                  <h2>Expedientes</h2>
+                  <div class="panel-title">
+                    <h2>Expedientes</h2>
+                  </div>
                   <p id="resultLabel">Ejecuta una consulta para ver resultados estructurados.</p>
                 </div>
                 <div class="table-wrap" id="tableWrap">
                   <div class="empty">Sin resultados todavía.</div>
                 </div>
-                <details>
-                  <summary>Ver respuesta JSON</summary>
-                  <pre id="output">Sin resultados todavía.</pre>
-                </details>
+                <div class="detail" id="detailPanel">
+                  <div class="empty">Selecciona un expediente para ver su detalle.</div>
+                </div>
               </div>
             </section>
           </section>
         </main>
         <script>
           const statusEl = document.querySelector("#status");
-          const outputEl = document.querySelector("#output");
           const summaryEl = document.querySelector("#summary");
           const tableWrap = document.querySelector("#tableWrap");
           const resultLabel = document.querySelector("#resultLabel");
           const form = document.querySelector("#login");
           const submitButton = document.querySelector("#submitButton");
+          const sessionLabel = document.querySelector("#sessionLabel");
+          const sessionGrid = document.querySelector("#sessionGrid");
+          const detailPanel = document.querySelector("#detailPanel");
+          const statusChart = document.querySelector("#statusChart");
+          const amountChart = document.querySelector("#amountChart");
+          const refreshSessionButton = document.querySelector("#refreshSessionButton");
+          const logoutButton = document.querySelector("#logoutButton");
 
           const statusLabels = {
             abierto: "Abierto",
@@ -378,6 +555,12 @@ data:
 
           const currency = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
           const shortDate = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
+          const dateTime = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" });
+          let session = null;
+          let lastRows = [];
+          let lastPayload = null;
+          let lastRequestBody = null;
+          let selectedIndex = null;
 
           function setStatus(message, kind = "") {
             statusEl.textContent = message;
@@ -397,6 +580,12 @@ data:
             if (!value) return "-";
             const date = new Date(value);
             return Number.isNaN(date.getTime()) ? value : shortDate.format(date);
+          }
+
+          function formatDateTime(value) {
+            if (!value) return "-";
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? value : dateTime.format(date);
           }
 
           function formatStatus(value) {
@@ -419,6 +608,28 @@ data:
             return new Date(date.getFullYear(), date.getMonth(), date.getDate());
           }
 
+          function readFilters() {
+            const data = new FormData(form);
+            const requestBody = { p_limit: Number(data.get("limit") || 10) };
+            const title = data.get("titleFilter");
+            const code = data.get("codeFilter");
+            const dateFrom = data.get("dateFrom");
+            const dateTo = data.get("dateTo");
+            if (data.get("statusFilter")) requestBody.p_status = data.get("statusFilter");
+            if (title) requestBody.p_title = title;
+            if (code) requestBody.p_code = code;
+            if (dateFrom) requestBody.p_opened_from = `${dateFrom}T00:00:00Z`;
+            if (dateTo) requestBody.p_opened_to = `${dateTo}T23:59:59Z`;
+            return {
+              credentials: {
+                username: data.get("username"),
+                password: data.get("password")
+              },
+              requestBody,
+              local: {}
+            };
+          }
+
           function applyLocalFilters(rows, filters) {
             const title = normalizeText(filters.title);
             const code = normalizeText(filters.code);
@@ -429,13 +640,44 @@ data:
               const rowTitle = normalizeText(row.title);
               const rowCode = normalizeText(row.expediente_code || row.id);
               const openedAt = dateOnly(row.opened_at);
-
               if (title && !rowTitle.includes(title)) return false;
               if (code && !rowCode.includes(code)) return false;
               if (from && (!openedAt || openedAt < from)) return false;
               if (to && (!openedAt || openedAt > to)) return false;
               return true;
             });
+          }
+
+          function decodeJwt(token) {
+            if (!token || !token.includes(".")) return {};
+            try {
+              const payload = token.split(".")[1].replaceAll("-", "+").replaceAll("_", "/");
+              return JSON.parse(atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, "=")));
+            } catch {
+              return {};
+            }
+          }
+
+          function renderSession(tokenJson = null) {
+            if (!tokenJson) {
+              sessionLabel.textContent = "Aún no hay token emitido.";
+              sessionGrid.innerHTML = `
+                <div class="session-item"><span>Usuario</span><strong>-</strong></div>
+                <div class="session-item"><span>Expira</span><strong>-</strong></div>
+                <div class="session-item"><span>Estado</span><strong>Sin iniciar</strong></div>
+                <div class="session-item"><span>Consulta</span><strong>-</strong></div>
+              `;
+              return;
+            }
+            const claims = decodeJwt(tokenJson.access_token);
+            const expiresAt = claims.exp ? new Date(claims.exp * 1000) : null;
+            sessionLabel.textContent = "Sesión iniciada para esta consulta.";
+            sessionGrid.innerHTML = `
+              <div class="session-item"><span>Usuario</span><strong>${escapeHtml(claims.preferred_username || claims.sub || "-")}</strong></div>
+              <div class="session-item"><span>Expira</span><strong>${expiresAt ? dateTime.format(expiresAt) : "-"}</strong></div>
+              <div class="session-item"><span>Estado</span><strong>Activa</strong></div>
+              <div class="session-item"><span>Consulta</span><strong>${lastRows.length ? `${lastRows.length} expedientes` : "-"}</strong></div>
+            `;
           }
 
           function renderSummary(rows) {
@@ -449,17 +691,72 @@ data:
               <div class="metric"><span>Expedientes</span><strong>${rows.length}</strong></div>
               <div class="metric"><span>Importe total</span><strong>${currency.format(totalAmount)}</strong></div>
               <div class="metric"><span>Última actualización</span><strong>${latest ? shortDate.format(latest) : "-"}</strong></div>
-              <div class="metric"><span>Sistemas origen</span><strong>${sources.size}</strong></div>
+              <div class="metric"><span>Organismos</span><strong>${sources.size}</strong></div>
+            `;
+          }
+
+          function groupRows(rows, valueFn) {
+            return rows.reduce((acc, row) => {
+              const key = row.status || "sin_estado";
+              acc[key] = (acc[key] || 0) + valueFn(row);
+              return acc;
+            }, {});
+          }
+
+          function renderBars(target, values, formatter, className = "") {
+            const entries = Object.entries(values).sort((a, b) => b[1] - a[1]);
+            if (!entries.length) {
+              target.innerHTML = '<div class="empty">Sin datos.</div>';
+              return;
+            }
+            const max = Math.max(...entries.map(([, value]) => value), 1);
+            target.innerHTML = entries.map(([key, value]) => {
+              const width = Math.max(4, Math.round((value / max) * 100));
+              return `
+                <div class="bar-row">
+                  <strong>${escapeHtml(statusLabels[key] || key)}</strong>
+                  <div class="bar-track"><div class="bar-fill ${className}" style="width:${width}%"></div></div>
+                  <span>${escapeHtml(formatter(value))}</span>
+                </div>
+              `;
+            }).join("");
+          }
+
+          function renderCharts(rows) {
+            renderBars(statusChart, groupRows(rows, () => 1), (value) => String(value));
+            renderBars(amountChart, groupRows(rows, (row) => Number(row.amount_eur || 0)), (value) => currency.format(value), "amount");
+          }
+
+          function renderDetail(row = null) {
+            if (!row) {
+              detailPanel.innerHTML = '<div class="empty">Selecciona un expediente para ver su detalle.</div>';
+              return;
+            }
+            detailPanel.innerHTML = `
+              <div class="detail-head">
+                <h3>${escapeHtml(row.expediente_code || row.id || "Expediente")}</h3>
+                ${formatStatus(row.status)}
+              </div>
+              <div class="detail-grid">
+                <div class="detail-item"><span>Título</span><strong>${escapeHtml(row.title || "-")}</strong></div>
+                <div class="detail-item"><span>Ciudadano</span><strong>${escapeHtml(row.citizen_id || "-")}</strong></div>
+                <div class="detail-item"><span>Organismo</span><strong>${escapeHtml(row.source_system || "-")}</strong></div>
+                <div class="detail-item"><span>Importe</span><strong>${currency.format(Number(row.amount_eur || 0))}</strong></div>
+                <div class="detail-item"><span>Apertura</span><strong>${formatDateTime(row.opened_at)}</strong></div>
+                <div class="detail-item"><span>Actualización</span><strong>${formatDateTime(row.updated_at)}</strong></div>
+              </div>
             `;
           }
 
           function renderTable(rows) {
+            selectedIndex = rows.length ? 0 : null;
             if (!rows.length) {
-              tableWrap.innerHTML = '<div class="empty">La consulta no devolvió expedientes.</div>';
+              tableWrap.innerHTML = '<div class="empty">La consulta no devolvió expedientes. Revisa filtros o usa otro escenario.</div>';
               resultLabel.textContent = "No hay expedientes para los filtros seleccionados.";
+              renderDetail(null);
               return;
             }
-            resultLabel.textContent = `${rows.length} expedientes recuperados desde la API DENA.`;
+            resultLabel.textContent = `${rows.length} expedientes encontrados. Pulsa una fila para ver el detalle.`;
             tableWrap.innerHTML = `
               <table>
                 <thead>
@@ -473,88 +770,153 @@ data:
                   </tr>
                 </thead>
                 <tbody>
-                  ${rows.map((row) => `
-                    <tr>
-                      <td class="code">${escapeHtml(row.expediente_code || row.id)}</td>
-                      <td class="title-cell">
+                  ${rows.map((row, index) => `
+                    <tr tabindex="0" data-index="${index}" class="${index === 0 ? "selected" : ""}">
+                      <td class="code" data-label="Expediente">${escapeHtml(row.expediente_code || row.id)}</td>
+                      <td class="title-cell" data-label="Título">
                         ${escapeHtml(row.title)}
                         <small>${escapeHtml(row.citizen_id)} · ${escapeHtml(row.source_system)}</small>
                       </td>
-                      <td>${formatStatus(row.status)}</td>
-                      <td>${currency.format(Number(row.amount_eur || 0))}</td>
-                      <td>${formatDate(row.opened_at)}</td>
-                      <td>${formatDate(row.updated_at)}</td>
+                      <td data-label="Estado">${formatStatus(row.status)}</td>
+                      <td data-label="Importe">${currency.format(Number(row.amount_eur || 0))}</td>
+                      <td data-label="Apertura">${formatDate(row.opened_at)}</td>
+                      <td data-label="Actualizado">${formatDate(row.updated_at)}</td>
                     </tr>
                   `).join("")}
                 </tbody>
               </table>
             `;
+            renderDetail(rows[0]);
           }
 
           function renderPayload(payload, filters = {}) {
             const rows = Array.isArray(payload) ? applyLocalFilters(payload, filters) : [];
+            lastRows = rows;
+            lastPayload = payload;
             renderSummary(rows);
+            renderCharts(rows);
             renderTable(rows);
-            outputEl.textContent = JSON.stringify(payload, null, 2);
+            renderSession(session);
           }
 
-          form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-            setStatus("Solicitando token...");
-            outputEl.textContent = "Esperando respuesta...";
+          function friendlyError(scope, response) {
+            if (scope === "token") {
+              if (response.status === 400 || response.status === 401) return "Credenciales rechazadas por Keycloak. Revisa usuario y password.";
+              return `Keycloak no pudo emitir token. HTTP ${response.status}.`;
+            }
+            if (response.status === 401 || response.status === 403) return "No tienes permiso para consultar estos expedientes.";
+            if (response.status >= 500) return "El servicio no está disponible en este momento. Inténtalo de nuevo más tarde.";
+            return `No se pudo completar la consulta. HTTP ${response.status}.`;
+          }
+
+          async function getToken(credentials) {
+            const tokenResponse = await fetch("/realms/piloto/protocol/openid-connect/token", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                client_id: "react-frontend",
+                grant_type: "password",
+                username: credentials.username,
+                password: credentials.password,
+                scope: "openid"
+              })
+            });
+            if (!tokenResponse.ok) {
+              throw new Error(friendlyError("token", tokenResponse));
+            }
+            const tokenJson = await tokenResponse.json();
+            session = tokenJson;
+            renderSession(tokenJson);
+            return tokenJson;
+          }
+
+          async function runQuery(forceToken = false) {
+            const filters = readFilters();
             submitButton.disabled = true;
-            const data = new FormData(form);
+            lastRequestBody = filters.requestBody;
+            setStatus("Iniciando sesión...");
             try {
-              const tokenResponse = await fetch("/realms/piloto/protocol/openid-connect/token", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({
-                  client_id: "react-frontend",
-                  grant_type: "password",
-                  username: data.get("username"),
-                  password: data.get("password"),
-                  scope: "openid"
-                })
-              });
-              if (!tokenResponse.ok) {
-                throw new Error(`Token HTTP ${tokenResponse.status}`);
-              }
-              const tokenJson = await tokenResponse.json();
-              setStatus("Token emitido. Consultando API...");
-              const requestBody = { p_limit: Number(data.get("limit") || 10) };
-              if (data.get("statusFilter")) {
-                requestBody.p_status = data.get("statusFilter");
-              }
-              const localFilters = {
-                title: data.get("titleFilter"),
-                code: data.get("codeFilter"),
-                dateFrom: data.get("dateFrom"),
-                dateTo: data.get("dateTo")
-              };
+              const tokenJson = forceToken || !session ? await getToken(filters.credentials) : session;
+              setStatus("Consultando expedientes...");
               const apiResponse = await fetch("/dena/admin-files", {
                 method: "POST",
                 headers: {
                   "Authorization": `Bearer ${tokenJson.access_token}`,
                   "Content-Type": "application/json"
                 },
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify(filters.requestBody)
               });
               if (!apiResponse.ok) {
-                throw new Error(`API HTTP ${apiResponse.status}`);
+                throw new Error(friendlyError("api", apiResponse));
               }
               const payload = await apiResponse.json();
-              renderPayload(payload, localFilters);
-              const filteredCount = Array.isArray(payload) ? applyLocalFilters(payload, localFilters).length : 0;
-              setStatus(`Consulta correcta: ${filteredCount} expedientes.`, "ok");
+              renderPayload(payload, filters.local);
+              setStatus(`Consulta correcta: ${lastRows.length} expedientes.`, lastRows.length ? "ok" : "warn");
             } catch (error) {
-              outputEl.textContent = String(error);
               tableWrap.innerHTML = `<div class="empty">${escapeHtml(error.message || error)}</div>`;
               resultLabel.textContent = "No se pudo completar la consulta.";
+              renderCharts([]);
+              renderDetail(null);
               setStatus("La consulta ha fallado.", "bad");
             } finally {
               submitButton.disabled = false;
             }
+          }
+
+          function applyPreset(name) {
+            form.reset();
+            form.username.value = "testuser";
+            form.password.value = "Test1234!";
+            form.limit.value = "10";
+            if (name === "pending") form.statusFilter.value = "pendiente_documentacion";
+            if (name === "resolved") form.statusFilter.value = "resuelto";
+            if (name === "recent") form.limit.value = "5";
+            if (name === "empty") form.codeFilter.value = "EXP-SIN-RESULTADOS";
+            if (name === "auth-error") form.password.value = "password-incorrecto";
+            runQuery(name !== "all" && name !== "recent" ? true : false);
+          }
+
+          form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            runQuery(false);
           });
+
+          tableWrap.addEventListener("click", (event) => {
+            const row = event.target.closest("tr[data-index]");
+            if (!row) return;
+            selectedIndex = Number(row.dataset.index);
+            tableWrap.querySelectorAll("tr.selected").forEach((node) => node.classList.remove("selected"));
+            row.classList.add("selected");
+            renderDetail(lastRows[selectedIndex]);
+          });
+
+          tableWrap.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            const row = event.target.closest("tr[data-index]");
+            if (!row) return;
+            event.preventDefault();
+            row.click();
+          });
+
+          document.querySelectorAll("[data-preset]").forEach((button) => {
+            button.addEventListener("click", () => applyPreset(button.dataset.preset));
+          });
+
+          refreshSessionButton.addEventListener("click", () => {
+            const filters = readFilters();
+            getToken(filters.credentials)
+              .then(() => setStatus("Sesión renovada.", "ok"))
+              .catch((error) => setStatus(error.message || String(error), "bad"));
+          });
+
+          logoutButton.addEventListener("click", () => {
+            session = null;
+            renderSession(null);
+        setStatus("Sesión cerrada.", "warn");
+          });
+
+          renderSession(null);
+          renderCharts([]);
         </script>
       </body>
     </html>
@@ -588,7 +950,7 @@ spec:
               readOnly: true
           resources:
             requests:
-              cpu: 10m
+              cpu: 5m
               memory: 32Mi
             limits:
               memory: 64Mi

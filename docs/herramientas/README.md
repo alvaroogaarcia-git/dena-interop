@@ -24,6 +24,7 @@ Esta carpeta explica las herramientas principales del piloto `dena-interop` desd
 | OTel Collector | [otel-collector.md](otel-collector.md) | Recolector de logs, métricas y trazas |
 | Portainer | [portainer.md](portainer.md) | Consola web para inspeccionar Kubernetes |
 | SPA cliente DENA | [spa-cliente-dena.md](spa-cliente-dena.md) | Cliente demo del flujo OIDC + API |
+| Consola admin DENA | [consola-admin-dena.md](consola-admin-dena.md) | Vista interna de operación, trazabilidad y auditoría |
 | NGINX | [nginx.md](nginx.md) | Servidor web estático de la SPA demo |
 | GitHub Actions | [github-actions.md](github-actions.md) | Automatización de verificaciones y operaciones |
 
@@ -35,4 +36,4 @@ Para entender el sistema completo:
 2. Leer [apisix.md](apisix.md) y [keycloak.md](keycloak.md).
 3. Leer [postgresql.md](postgresql.md), [postgrest.md](postgrest.md), [nifi.md](nifi.md) y [mathesar.md](mathesar.md).
 4. Leer [grafana.md](grafana.md), [prometheus.md](prometheus.md), [loki.md](loki.md), [tempo.md](tempo.md) y [otel-collector.md](otel-collector.md).
-5. Leer [portainer.md](portainer.md) y [spa-cliente-dena.md](spa-cliente-dena.md).
+5. Leer [portainer.md](portainer.md), [spa-cliente-dena.md](spa-cliente-dena.md) y [consola-admin-dena.md](consola-admin-dena.md).

@@ -1,0 +1,11 @@
+{
+  "name": "dena-admin-console",
+  "uris": ["/dena/admin-console", "/dena/admin-console/*"],
+  "priority": 20,
+  "upstream_id": "4",
+  "plugins": {
+    "proxy-rewrite": {
+      "regex_uri": ["^/dena/admin-console/?(.*)", "/$1"]
+    }
+  }
+}

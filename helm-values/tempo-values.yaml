@@ -4,7 +4,7 @@ tempo:
   retention: 24h
   resources:
     requests:
-      cpu: 25m
+      cpu: 5m
       memory: 64Mi
     limits:
       memory: 192Mi

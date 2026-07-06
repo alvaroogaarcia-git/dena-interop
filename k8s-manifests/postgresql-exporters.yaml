@@ -38,7 +38,7 @@ spec:
               containerPort: 9187
           resources:
             requests:
-              cpu: 10m
+              cpu: 5m
               memory: 16Mi
             limits:
               memory: 64Mi
@@ -117,7 +117,7 @@ spec:
               containerPort: 9187
           resources:
             requests:
-              cpu: 10m
+              cpu: 5m
               memory: 16Mi
             limits:
               memory: 64Mi
@@ -196,7 +196,7 @@ spec:
               containerPort: 9187
           resources:
             requests:
-              cpu: 10m
+              cpu: 5m
               memory: 16Mi
             limits:
               memory: 64Mi

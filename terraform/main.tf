@@ -84,6 +84,27 @@ resource "keycloak_user_roles" "testuser" {
   role_ids = [keycloak_role.reader.id, keycloak_role.writer.id]
 }
 
+resource "keycloak_user" "adminuser" {
+  realm_id       = keycloak_realm.dena.id
+  username       = "adminuser"
+  enabled        = true
+  email          = "adminuser@dena.local"
+  email_verified = true
+  first_name     = "Admin"
+  last_name      = "DENA"
+
+  initial_password {
+    value     = var.adminuser_password
+    temporary = false
+  }
+}
+
+resource "keycloak_user_roles" "adminuser" {
+  realm_id = keycloak_realm.dena.id
+  user_id  = keycloak_user.adminuser.id
+  role_ids = [keycloak_role.admin.id]
+}
+
 resource "keycloak_realm" "piloto" {
   realm                         = "piloto"
   display_name                  = "Piloto DENA Interoperabilidad"
@@ -171,4 +192,25 @@ resource "keycloak_user_roles" "piloto_testuser" {
   realm_id = keycloak_realm.piloto.id
   user_id  = keycloak_user.piloto_testuser.id
   role_ids = [keycloak_role.piloto_reader.id, keycloak_role.piloto_writer.id]
+}
+
+resource "keycloak_user" "piloto_adminuser" {
+  realm_id       = keycloak_realm.piloto.id
+  username       = "adminuser"
+  enabled        = true
+  email          = "adminuser@dena.local"
+  email_verified = true
+  first_name     = "Admin"
+  last_name      = "DENA"
+
+  initial_password {
+    value     = var.adminuser_password
+    temporary = false
+  }
+}
+
+resource "keycloak_user_roles" "piloto_adminuser" {
+  realm_id = keycloak_realm.piloto.id
+  user_id  = keycloak_user.piloto_adminuser.id
+  role_ids = [keycloak_role.piloto_admin.id]
 }

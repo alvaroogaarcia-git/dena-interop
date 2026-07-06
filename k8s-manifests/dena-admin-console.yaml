@@ -1,0 +1,728 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dena-admin-console
+  namespace: app
+data:
+  index.html: |
+    <!doctype html>
+    <html lang="es">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>DENA · Consola admin</title>
+        <style>
+          :root {
+            color-scheme: light;
+            --bg: #f3f5f7;
+            --surface: #fff;
+            --soft: #f8fafc;
+            --ink: #16212c;
+            --muted: #617080;
+            --line: #d9e1e8;
+            --brand: #234b6d;
+            --brand-soft: #e6eef5;
+            --ok: #147247;
+            --warn: #9a6700;
+            --bad: #a13d3d;
+            --blue: #245ca8;
+          }
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--ink);
+            background: var(--bg);
+          }
+          main {
+            width: min(1440px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 22px 0 34px;
+          }
+          .topbar, .brand, .toolbar, .panel-title, .trace-step, .health-row, .actions {
+            display: flex;
+            align-items: center;
+          }
+          .topbar {
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+          }
+          .brand { gap: 12px; min-width: 0; }
+          .mark {
+            display: grid;
+            width: 42px;
+            height: 42px;
+            place-items: center;
+            border-radius: 8px;
+            background: var(--brand);
+            color: white;
+            font-weight: 800;
+          }
+          h1 { margin: 0; font-size: 1.28rem; line-height: 1.1; }
+          .subtitle { margin: 3px 0 0; color: var(--muted); font-size: .9rem; }
+          .status {
+            min-height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 8px 12px;
+            background: var(--surface);
+            color: var(--muted);
+            font-size: .9rem;
+            white-space: nowrap;
+          }
+          .status.ok { color: var(--ok); border-color: #b8ddc8; background: #eef9f2; }
+          .status.warn { color: var(--warn); border-color: #f3d38b; background: #fff8e6; }
+          .status.bad { color: var(--bad); border-color: #ecc6c6; background: #fff1f1; }
+          .layout {
+            display: grid;
+            grid-template-columns: 320px minmax(0, 1fr) 340px;
+            gap: 14px;
+            align-items: start;
+          }
+          .panel {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: 0 8px 24px rgba(18, 32, 44, .05);
+            overflow: hidden;
+          }
+          .panel + .panel { margin-top: 14px; }
+          .panel-head {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+          }
+          .panel-title { justify-content: space-between; gap: 10px; }
+          .panel-head h2 { margin: 0; font-size: 1rem; }
+          .panel-head p { margin: 4px 0 0; color: var(--muted); font-size: .86rem; line-height: 1.4; }
+          form, .panel-body { padding: 14px 16px 16px; }
+          label {
+            display: block;
+            margin: 12px 0 6px;
+            color: var(--muted);
+            font-size: .78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+          }
+          input, select, button {
+            min-height: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            font: inherit;
+            padding: 9px 11px;
+          }
+          input, select { width: 100%; background: #fff; color: var(--ink); }
+          button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            background: var(--brand);
+            color: white;
+            cursor: pointer;
+            font-weight: 750;
+          }
+          button:disabled { opacity: .65; cursor: wait; }
+          .button-secondary { background: var(--surface); color: var(--ink); }
+          .button-danger { background: #fff1f1; color: var(--bad); border-color: #ecc6c6; }
+          .submit-button { width: 100%; margin-top: 16px; border: 0; }
+          .actions { gap: 8px; flex-wrap: wrap; }
+          .actions button { min-height: 36px; padding: 7px 10px; }
+          .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+          .kpis {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+          }
+          .metric {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface);
+            padding: 13px 14px;
+          }
+          .metric span { display: block; color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; }
+          .metric strong { display: block; margin-top: 5px; font-size: 1.35rem; overflow-wrap: anywhere; }
+          .toolbar { justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+          .toolbar input { max-width: 320px; }
+          .table-wrap { overflow: auto; }
+          table { width: 100%; border-collapse: collapse; min-width: 860px; }
+          th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+          th {
+            background: var(--soft);
+            color: var(--muted);
+            font-size: .76rem;
+            text-transform: uppercase;
+          }
+          tbody tr { cursor: pointer; }
+          tbody tr:hover, tbody tr.selected { background: #fbfdff; }
+          tbody tr.selected td:first-child { box-shadow: inset 3px 0 0 var(--brand); }
+          .code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .86rem; }
+          .muted { color: var(--muted); }
+          .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: .78rem;
+            font-weight: 800;
+            white-space: nowrap;
+          }
+          .badge.abierto { background: #e8f6ef; color: var(--ok); }
+          .badge.en_tramitacion { background: #e6f0ff; color: var(--blue); }
+          .badge.pendiente_documentacion { background: #fff5d8; color: var(--warn); }
+          .badge.resuelto { background: #edf7e8; color: #4c7a1f; }
+          .badge.archivado { background: #eef1f4; color: #4f5d75; }
+          .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+          }
+          .item {
+            min-width: 0;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+            padding: 10px;
+          }
+          .item span { display: block; color: var(--muted); font-size: .75rem; font-weight: 800; text-transform: uppercase; }
+          .item strong { display: block; margin-top: 4px; overflow-wrap: anywhere; font-size: .9rem; }
+          .trace { display: grid; gap: 9px; }
+          .trace-step { gap: 10px; }
+          .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            background: var(--ok);
+            box-shadow: 0 0 0 4px #e8f6ef;
+          }
+          .trace-step strong { display: block; font-size: .9rem; }
+          .trace-step span { display: block; color: var(--muted); font-size: .82rem; }
+          .health-row {
+            justify-content: space-between;
+            gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--line);
+          }
+          .health-row:last-child { border-bottom: 0; }
+          .health-row strong { font-size: .9rem; }
+          .health-row span { color: var(--muted); font-size: .82rem; }
+          pre {
+            overflow: auto;
+            max-height: 220px;
+            margin: 0;
+            padding: 12px;
+            border-radius: 8px;
+            background: #13202b;
+            color: #eef6ff;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: .8rem;
+          }
+          .empty { padding: 22px; text-align: center; color: var(--muted); }
+          a { color: var(--brand); font-weight: 750; text-decoration: none; }
+          @media (max-width: 1120px) {
+            .layout { grid-template-columns: 320px minmax(0, 1fr); }
+            .side-right { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+            .side-right .panel + .panel { margin-top: 0; }
+          }
+          @media (max-width: 760px) {
+            main { width: min(100% - 20px, 1440px); padding-top: 14px; }
+            .topbar, .toolbar { align-items: stretch; flex-direction: column; }
+            .layout, .side-right, .kpis, .grid2, .detail-grid { grid-template-columns: 1fr; }
+            table { min-width: 720px; }
+          }
+        </style>
+      </head>
+      <body>
+        <main>
+          <header class="topbar">
+            <div class="brand">
+              <div class="mark">DA</div>
+              <div>
+                <h1>Centro de Control DENA</h1>
+                <p class="subtitle">Consola administrativa de interoperabilidad y operación</p>
+              </div>
+            </div>
+            <div class="status" id="status">Listo para iniciar sesión.</div>
+          </header>
+
+          <section class="layout">
+            <aside>
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Acceso admin</h2>
+                  <p>Usa un usuario con rol funcional de administración.</p>
+                </div>
+                <form id="login">
+                  <label for="username">Usuario</label>
+                  <input id="username" name="username" value="adminuser" autocomplete="username">
+                  <label for="password">Contraseña</label>
+                  <input id="password" name="password" value="Admin1234!" type="password" autocomplete="current-password">
+                  <div class="grid2">
+                    <div>
+                      <label for="statusFilter">Estado</label>
+                      <select id="statusFilter" name="statusFilter">
+                        <option value="">Todos</option>
+                        <option value="abierto">Abierto</option>
+                        <option value="en_tramitacion">En tramitación</option>
+                        <option value="pendiente_documentacion">Pendiente documentación</option>
+                        <option value="resuelto">Resuelto</option>
+                        <option value="archivado">Archivado</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="limit">Límite</label>
+                      <input id="limit" name="limit" value="200" type="number" min="1" max="1000">
+                    </div>
+                  </div>
+                  <label for="codeFilter">Expediente</label>
+                  <input id="codeFilter" name="codeFilter" placeholder="EXP-0050">
+                  <label for="titleFilter">Título</label>
+                  <input id="titleFilter" name="titleFilter" placeholder="Texto del asunto">
+                  <button class="submit-button" id="submitButton" type="submit">Cargar consola</button>
+                </form>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Sesión</h2>
+                  <p id="sessionLabel">Sin token emitido.</p>
+                </div>
+                <div class="panel-body">
+                  <div class="detail-grid" id="sessionGrid">
+                    <div class="item"><span>Usuario</span><strong>-</strong></div>
+                    <div class="item"><span>Roles</span><strong>-</strong></div>
+                  </div>
+                </div>
+              </section>
+            </aside>
+
+            <section>
+              <div class="kpis" id="kpis">
+                <div class="metric"><span>Expedientes</span><strong>0</strong></div>
+                <div class="metric"><span>Importe total</span><strong>0 €</strong></div>
+                <div class="metric"><span>Incidencias</span><strong>0</strong></div>
+                <div class="metric"><span>Última ingesta</span><strong>-</strong></div>
+              </div>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title">
+                    <div>
+                      <h2>Expedientes administrativos</h2>
+                      <p id="resultLabel">Carga datos para revisar el estado operativo.</p>
+                    </div>
+                    <div class="actions">
+                      <button class="button-secondary" id="csvButton" type="button">CSV</button>
+                      <button class="button-secondary" id="jsonButton" type="button">JSON</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel-body">
+                  <div class="toolbar">
+                    <input id="quickSearch" placeholder="Filtro rápido en resultados cargados">
+                    <div class="actions">
+                      <button class="button-secondary" id="recentButton" type="button">Últimos cambios</button>
+                      <button class="button-secondary" id="incidentButton" type="button">Incidencias</button>
+                    </div>
+                  </div>
+                  <div class="table-wrap" id="tableWrap">
+                    <div class="empty">Sin resultados todavía.</div>
+                  </div>
+                </div>
+              </section>
+            </section>
+
+            <aside class="side-right">
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Detalle y trazabilidad</h2>
+                  <p>Origen, ingesta, publicación y seguridad de la fila seleccionada.</p>
+                </div>
+                <div class="panel-body" id="detailPanel">
+                  <div class="empty">Selecciona un expediente.</div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Salud del stack</h2>
+                  <p>Comprobaciones desde el gateway público.</p>
+                </div>
+                <div class="panel-body" id="healthPanel">
+                  <div class="health-row"><strong>Keycloak</strong><span>pendiente</span></div>
+                  <div class="health-row"><strong>APISIX</strong><span>pendiente</span></div>
+                  <div class="health-row"><strong>PostgREST</strong><span>pendiente</span></div>
+                  <div class="health-row"><strong>Datalake</strong><span>pendiente</span></div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Auditoría de consulta</h2>
+                  <p>Última operación ejecutada desde esta consola.</p>
+                </div>
+                <div class="panel-body">
+                  <pre id="auditPanel">{}</pre>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Herramientas</h2>
+                  <p>Accesos operativos de la plataforma.</p>
+                </div>
+                <div class="panel-body">
+                  <p><a href="/nifi/" target="_blank" rel="noreferrer">NiFi</a></p>
+                  <p><a href="http://192.168.56.15:31803/login" target="_blank" rel="noreferrer">Grafana</a></p>
+                  <p><a href="http://192.168.56.15:30900" target="_blank" rel="noreferrer">Mathesar</a></p>
+                  <p><a href="https://192.168.56.15:30779" target="_blank" rel="noreferrer">Portainer</a></p>
+                </div>
+              </section>
+            </aside>
+          </section>
+        </main>
+
+        <script>
+          const form = document.getElementById("login");
+          const statusEl = document.getElementById("status");
+          const submitButton = document.getElementById("submitButton");
+          const kpis = document.getElementById("kpis");
+          const tableWrap = document.getElementById("tableWrap");
+          const detailPanel = document.getElementById("detailPanel");
+          const healthPanel = document.getElementById("healthPanel");
+          const auditPanel = document.getElementById("auditPanel");
+          const resultLabel = document.getElementById("resultLabel");
+          const sessionLabel = document.getElementById("sessionLabel");
+          const sessionGrid = document.getElementById("sessionGrid");
+          const quickSearch = document.getElementById("quickSearch");
+          const csvButton = document.getElementById("csvButton");
+          const jsonButton = document.getElementById("jsonButton");
+          const recentButton = document.getElementById("recentButton");
+          const incidentButton = document.getElementById("incidentButton");
+          const statusLabels = {
+            abierto: "Abierto",
+            en_tramitacion: "En tramitación",
+            pendiente_documentacion: "Pendiente documentación",
+            resuelto: "Resuelto",
+            archivado: "Archivado"
+          };
+          const currency = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+          const dateTime = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" });
+          let session = null;
+          let rows = [];
+          let visibleRows = [];
+          let selectedIndex = null;
+          let lastAudit = {};
+
+          function escapeHtml(value) {
+            return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+              "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+            }[char]));
+          }
+
+          function normalize(value) {
+            return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+          }
+
+          function setStatus(message, type = "") {
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`.trim();
+          }
+
+          function formatDate(value) {
+            if (!value) return "-";
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? "-" : dateTime.format(date);
+          }
+
+          function badge(status) {
+            return `<span class="badge ${escapeHtml(status || "")}">${escapeHtml(statusLabels[status] || status || "-")}</span>`;
+          }
+
+          function decodeJwt(token) {
+            if (!token || !token.includes(".")) return {};
+            try {
+              const payload = token.split(".")[1].replaceAll("-", "+").replaceAll("_", "/");
+              return JSON.parse(atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, "=")));
+            } catch {
+              return {};
+            }
+          }
+
+          function requestBody() {
+            const data = new FormData(form);
+            const body = { p_limit: Number(data.get("limit") || 200) };
+            if (data.get("statusFilter")) body.p_status = data.get("statusFilter");
+            if (data.get("codeFilter")) body.p_code = data.get("codeFilter");
+            if (data.get("titleFilter")) body.p_title = data.get("titleFilter");
+            return body;
+          }
+
+          async function getToken() {
+            const data = new FormData(form);
+            const response = await fetch("/realms/piloto/protocol/openid-connect/token", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                client_id: "react-frontend",
+                grant_type: "password",
+                username: data.get("username"),
+                password: data.get("password"),
+                scope: "openid"
+              })
+            });
+            if (!response.ok) throw new Error(`Keycloak HTTP ${response.status}`);
+            session = await response.json();
+            renderSession();
+            return session.access_token;
+          }
+
+          function renderSession() {
+            const claims = decodeJwt(session?.access_token);
+            const roles = claims.realm_access?.roles || [];
+            const isAdmin = roles.includes("dena-admin");
+            sessionLabel.textContent = isAdmin ? "Sesión admin activa." : "Sesión activa sin rol dena-admin.";
+            sessionGrid.innerHTML = `
+              <div class="item"><span>Usuario</span><strong>${escapeHtml(claims.preferred_username || claims.sub || "-")}</strong></div>
+              <div class="item"><span>Roles</span><strong>${escapeHtml(roles.filter((role) => role.startsWith("dena-")).join(", ") || "-")}</strong></div>
+            `;
+            if (!isAdmin) setStatus("Usuario autenticado sin rol dena-admin.", "warn");
+          }
+
+          function incidentCount(data) {
+            const now = Date.now();
+            return data.filter((row) => {
+              const updated = new Date(row.updated_at).getTime();
+              return row.status === "pendiente_documentacion" || row.status === "abierto" && now - updated > 7 * 24 * 60 * 60 * 1000;
+            }).length;
+          }
+
+          function renderKpis(data) {
+            const total = data.reduce((sum, row) => sum + Number(row.amount_eur || 0), 0);
+            const latestIngest = data
+              .map((row) => new Date(row.ingested_at || row.updated_at))
+              .filter((date) => !Number.isNaN(date.getTime()))
+              .sort((a, b) => b - a)[0];
+            kpis.innerHTML = `
+              <div class="metric"><span>Expedientes</span><strong>${data.length}</strong></div>
+              <div class="metric"><span>Importe total</span><strong>${currency.format(total)}</strong></div>
+              <div class="metric"><span>Incidencias</span><strong>${incidentCount(data)}</strong></div>
+              <div class="metric"><span>Última ingesta</span><strong>${latestIngest ? formatDate(latestIngest) : "-"}</strong></div>
+            `;
+          }
+
+          function applyQuickFilter(mode = "") {
+            const query = normalize(quickSearch.value);
+            visibleRows = rows.filter((row) => {
+              const haystack = normalize([row.expediente_code, row.title, row.citizen_id, row.source_system, row.status].join(" "));
+              if (query && !haystack.includes(query)) return false;
+              if (mode === "incident") return row.status === "pendiente_documentacion" || row.status === "abierto";
+              return true;
+            });
+            if (mode === "recent") {
+              visibleRows = [...visibleRows].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 10);
+            }
+            renderKpis(visibleRows);
+            renderTable();
+          }
+
+          function renderTable() {
+            selectedIndex = visibleRows.length ? 0 : null;
+            resultLabel.textContent = visibleRows.length ? `${visibleRows.length} expedientes visibles.` : "No hay expedientes para los filtros seleccionados.";
+            if (!visibleRows.length) {
+              tableWrap.innerHTML = '<div class="empty">Sin resultados.</div>';
+              renderDetail(null);
+              return;
+            }
+            tableWrap.innerHTML = `
+              <table>
+                <thead>
+                  <tr>
+                    <th>Expediente</th><th>Estado</th><th>Título</th><th>Origen</th><th>Importe</th><th>Actualizado</th><th>Ingestado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${visibleRows.map((row, index) => `
+                    <tr data-index="${index}" class="${index === 0 ? "selected" : ""}">
+                      <td class="code">${escapeHtml(row.expediente_code || row.id)}</td>
+                      <td>${badge(row.status)}</td>
+                      <td>${escapeHtml(row.title)}<br><span class="muted">${escapeHtml(row.citizen_id || "-")}</span></td>
+                      <td>${escapeHtml(row.source_system || "-")}</td>
+                      <td>${currency.format(Number(row.amount_eur || 0))}</td>
+                      <td>${formatDate(row.updated_at)}</td>
+                      <td>${formatDate(row.ingested_at)}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            `;
+            renderDetail(visibleRows[0]);
+          }
+
+          function renderDetail(row) {
+            if (!row) {
+              detailPanel.innerHTML = '<div class="empty">Selecciona un expediente.</div>';
+              return;
+            }
+            detailPanel.innerHTML = `
+              <div class="detail-grid">
+                <div class="item"><span>Expediente</span><strong>${escapeHtml(row.expediente_code || row.id)}</strong></div>
+                <div class="item"><span>Estado</span><strong>${escapeHtml(statusLabels[row.status] || row.status || "-")}</strong></div>
+                <div class="item"><span>Ciudadano</span><strong>${escapeHtml(row.citizen_id || "-")}</strong></div>
+                <div class="item"><span>Importe</span><strong>${currency.format(Number(row.amount_eur || 0))}</strong></div>
+              </div>
+              <div class="trace" style="margin-top:14px">
+                <div class="trace-step"><div class="dot"></div><div><strong>Origen vertical</strong><span>${escapeHtml(row.source_system || "verticales-local")} · ${formatDate(row.updated_at)}</span></div></div>
+                <div class="trace-step"><div class="dot"></div><div><strong>NiFi</strong><span>Flujo de ingesta a staging y consolidación</span></div></div>
+                <div class="trace-step"><div class="dot"></div><div><strong>Datalake</strong><span>Ingestado ${formatDate(row.ingested_at)}</span></div></div>
+                <div class="trace-step"><div class="dot"></div><div><strong>API protegida</strong><span>PostgREST detrás de APISIX + Keycloak</span></div></div>
+              </div>
+            `;
+          }
+
+          function renderHealth(dataOk = false) {
+            healthPanel.innerHTML = `
+              <div class="health-row"><strong>Keycloak</strong><span class="${session ? "ok" : ""}">${session ? "token emitido" : "pendiente"}</span></div>
+              <div class="health-row"><strong>APISIX</strong><span>gateway respondió</span></div>
+              <div class="health-row"><strong>PostgREST</strong><span>${dataOk ? "RPC operativa" : "pendiente"}</span></div>
+              <div class="health-row"><strong>Datalake</strong><span>${rows.length} filas leídas</span></div>
+            `;
+          }
+
+          function renderAudit(durationMs, body) {
+            const claims = decodeJwt(session?.access_token);
+            lastAudit = {
+              usuario: claims.preferred_username || claims.sub || "-",
+              endpoint: "/dena/admin-files",
+              filtros: body,
+              filas: rows.length,
+              duracion_ms: durationMs,
+              fecha: new Date().toISOString()
+            };
+            auditPanel.textContent = JSON.stringify(lastAudit, null, 2);
+          }
+
+          async function loadData() {
+            submitButton.disabled = true;
+            setStatus("Autenticando admin...");
+            const started = performance.now();
+            const body = requestBody();
+            try {
+              const token = await getToken();
+              setStatus("Consultando datalake...");
+              const response = await fetch("/dena/admin-files", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+              });
+              if (!response.ok) throw new Error(`API HTTP ${response.status}`);
+              rows = await response.json();
+              visibleRows = rows;
+              renderKpis(visibleRows);
+              renderTable();
+              renderHealth(true);
+              renderAudit(Math.round(performance.now() - started), body);
+              setStatus(`Consola cargada: ${rows.length} expedientes.`, "ok");
+            } catch (error) {
+              tableWrap.innerHTML = `<div class="empty">${escapeHtml(error.message || error)}</div>`;
+              renderHealth(false);
+              setStatus("No se pudo cargar la consola.", "bad");
+            } finally {
+              submitButton.disabled = false;
+            }
+          }
+
+          function download(name, content, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = name;
+            link.click();
+            URL.revokeObjectURL(url);
+          }
+
+          function toCsv(data) {
+            const headers = ["expediente_code", "status", "title", "citizen_id", "source_system", "amount_eur", "updated_at", "ingested_at"];
+            return [headers.join(",")].concat(data.map((row) => headers.map((key) => `"${String(row[key] ?? "").replaceAll('"', '""')}"`).join(","))).join("\n");
+          }
+
+          form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            loadData();
+          });
+          quickSearch.addEventListener("input", () => applyQuickFilter());
+          recentButton.addEventListener("click", () => applyQuickFilter("recent"));
+          incidentButton.addEventListener("click", () => applyQuickFilter("incident"));
+          csvButton.addEventListener("click", () => download("dena-admin-expedientes.csv", toCsv(visibleRows), "text/csv"));
+          jsonButton.addEventListener("click", () => download("dena-admin-expedientes.json", JSON.stringify(visibleRows, null, 2), "application/json"));
+          tableWrap.addEventListener("click", (event) => {
+            const row = event.target.closest("tr[data-index]");
+            if (!row) return;
+            selectedIndex = Number(row.dataset.index);
+            tableWrap.querySelectorAll("tr.selected").forEach((node) => node.classList.remove("selected"));
+            row.classList.add("selected");
+            renderDetail(visibleRows[selectedIndex]);
+          });
+        </script>
+      </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dena-admin-console
+  namespace: app
+  labels:
+    app: dena-admin-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dena-admin-console
+  template:
+    metadata:
+      labels:
+        app: dena-admin-console
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html
+              readOnly: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: html
+          configMap:
+            name: dena-admin-console
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dena-admin-console
+  namespace: app
+  labels:
+    app: dena-admin-console
+spec:
+  type: ClusterIP
+  selector:
+    app: dena-admin-console
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

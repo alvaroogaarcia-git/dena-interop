@@ -55,5 +55,8 @@ check_status "RPC DENA" 200 \
 check_status "SPA cliente" 200 \
   curl -sS --max-time 10 "$BASE_URL/"
 
+check_status "Consola admin" 200 \
+  curl -sS --max-time 10 "$BASE_URL/dena/admin-console"
+
 echo "$ok OK · $ko KO"
 [[ "$ko" -eq 0 ]]

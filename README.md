@@ -4,7 +4,7 @@ Stack local de interoperabilidad desplegado sobre un nodo único DietPi x86_64 c
 
 ## Estado actual
 
-El entorno está validado hasta Fase 17 de la guía de instalación:
+El entorno está validado hasta Fase 18 de la guía de instalación:
 
 | Fase | Componente | Estado |
 | --- | --- | --- |
@@ -28,6 +28,7 @@ El entorno está validado hasta Fase 17 de la guía de instalación:
 | 15 | SQL del datalake, staging y carga local | Validado |
 | 16 | Cliente demo SPA servido por APISIX | Validado |
 | 17 | Portainer para inspección operativa | Validado |
+| 18 | Consola admin DENA para operación funcional | Validado |
 
 ## Qué hay desplegado
 
@@ -44,7 +45,9 @@ El entorno está validado hasta Fase 17 de la guía de instalación:
   - Interoperabilidad DENA publicada en `POST /dena/admin-files`.
 - Namespace `app`
   - SPA cliente demo `dena-interop-spa` servida por NGINX.
+  - Consola admin `dena-admin-console` servida por NGINX.
   - APISIX enruta `/*` como fallback hacia la SPA.
+  - APISIX enruta `/dena/admin-console` hacia la consola admin.
 - Namespace `monitoring`
   - Prometheus Operator mediante `kube-prometheus-stack`.
   - Grafana publicado en `NodePort 31803`.
@@ -70,7 +73,20 @@ El entorno está validado hasta Fase 17 de la guía de instalación:
   - Mathesar `0.11.0` publicado en `NodePort 30900`.
 - Namespace `portainer`
   - Portainer CE `2.39.3` publicado en HTTPS `NodePort 30779`.
-- El alcance definido hasta Fase 17 está completado.
+- El alcance definido hasta Fase 18 está completado.
+
+## Accesos Demo
+
+| Uso | URL | Credenciales |
+| --- | --- | --- |
+| Portal ciudadano | `http://192.168.56.15:30080/` | `testuser` / `Test1234!` |
+| Consola admin DENA | `http://192.168.56.15:30080/dena/admin-console` | `adminuser` / `Admin1234!` |
+| Grafana | `http://192.168.56.15:31803/login` | `admin` / secret `monitoring/grafana-admin` |
+| Mathesar | `http://192.168.56.15:30900` | Usuario creado en la UI |
+| Portainer | `https://192.168.56.15:30779` | `admin` / password local de Portainer |
+| NiFi | `https://192.168.56.15:30821/nifi/` | secret `datalake/nifi-secret` |
+
+La consola admin está pensada para personal interno. Permite revisar expedientes con filtros, KPIs, detalle, trazabilidad origen -> NiFi -> datalake -> API, salud básica del stack, auditoría de consulta y exportación CSV/JSON.
 
 ## Verificación rápida
 
@@ -128,6 +144,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Histórico de estados validados por fase](docs/estado-fases/README.md)
 - [Fase 15 - SQL del datalake y carga local](docs/guias/fase15-datalake.md)
 - [Flujo NiFi JDBC incremental (extensión 11c)](docs/guias/fase12-nifi-jdbc.md)
+- [Consola admin DENA](docs/herramientas/consola-admin-dena.md)
 - [Runbook operativo](docs/operacion/runbook.md)
 - [Arquitectura](docs/arquitectura/arquitectura.md)
 - [Documentación de herramientas](docs/herramientas/README.md)

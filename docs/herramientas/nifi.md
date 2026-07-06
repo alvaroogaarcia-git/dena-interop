@@ -6,7 +6,7 @@ Apache NiFi es una herramienta de flujos de datos. Permite mover, transformar y 
 
 ## Objetivo En Este Piloto
 
-NiFi sincroniza los cambios del origen `verticales` hacia el `datalake`. El flujo usa JDBC y consulta incremental basada en `updated_at`.
+NiFi sincroniza los cambios del origen `verticales` hacia el `datalake`. El flujo usa JDBC y consulta incremental basada en `updated_at`, con ejecución cada `30 sec`.
 
 ## Dónde Está
 
@@ -40,18 +40,21 @@ kubectl get secret -n datalake nifi-secret -o jsonpath='{.data.single-user-passw
 
 Flujo:
 
-- Grupo `Fase 12 - JDBC incremental`.
+- Grupo `Fase 15 - DENA staging incremental`.
 - Conexión JDBC a `postgresql-verticales`.
 - Procesador `Query Verticales Incremental`.
+- Procesador `Persist Staging Batch`.
+- Procesador `Promote Staging To Main`.
 - Writer JSON.
-- Persistencia de salida en PVC de NiFi.
+- Reader JSON.
+- Sincronización hacia `dena.admin_file_staging` y promoción a `dena.admin_file`.
 - Driver PostgreSQL JDBC en `extensions/`.
 
 ## Cómo Verificarlo
 
 ```bash
 bash scripts/verify-fase11.sh
-bash scripts/verify-fase12.sh
+bash scripts/verify-fase15-nifi.sh
 ```
 
 ## Por Qué Se Usa

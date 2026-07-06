@@ -21,6 +21,7 @@ class Processor:
     position: dict[str, float]
     properties: dict[str, str]
     auto_terminated_relationships: list[str]
+    scheduling_period: str | None = None
 
 
 @dataclass(frozen=True)
@@ -78,6 +79,7 @@ def build_flow(args: argparse.Namespace) -> dict:
                 "Record Writer": "JSON Record Writer",
             },
             auto_terminated_relationships=["failure", "retry"],
+            scheduling_period="30 sec",
         ),
         Processor(
             name="Persist Staging Batch",
@@ -86,13 +88,12 @@ def build_flow(args: argparse.Namespace) -> dict:
             properties={
                 "Database Connection Pooling Service": "Datalake DBCP",
                 "Table Name": f"{args.staging_schema}.{args.staging_table}",
-                "Unmatched Column Behavior": "Ignore",
+                "Unmatched Column Behavior": "Ignore Unmatched Columns",
                 "Translate Field Names": "false",
                 "Statement Type": "INSERT",
-                "Support Fragmented Transactions": "false",
                 "Record Reader": "JSON Record Reader",
             },
-            auto_terminated_relationships=["success", "failure"],
+            auto_terminated_relationships=["failure", "retry"],
         ),
         Processor(
             name="Promote Staging To Main",
@@ -190,7 +191,11 @@ def main() -> None:
         print()
         print("## Processors")
         for processor in flow["processors"]:
-            print(f"- {processor['name']} ({processor['type']})")
+            schedule = processor.get("scheduling_period")
+            if schedule:
+                print(f"- {processor['name']} ({processor['type']}) every {schedule}")
+            else:
+                print(f"- {processor['name']} ({processor['type']})")
         print()
         print("## Connections")
         for connection in flow["connections"]:

@@ -1,0 +1,7 @@
+{
+  "name": "dena-admin-console",
+  "type": "roundrobin",
+  "nodes": {
+    "dena-admin-console.app.svc.cluster.local:80": 1
+  }
+}

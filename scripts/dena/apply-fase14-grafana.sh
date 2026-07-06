@@ -37,6 +37,7 @@ TF_VAR_keycloak_admin_password="$(
   kubectl get secret keycloak-secret -n auth -o jsonpath='{.data.admin-password}' | base64 -d
 )"
 export TF_VAR_testuser_password="${TF_VAR_testuser_password:-unused-by-fase14}"
+export TF_VAR_adminuser_password="${TF_VAR_adminuser_password:-unused-by-fase14}"
 
 export TF_VAR_grafana_admin_username
 TF_VAR_grafana_admin_username="$(

@@ -48,6 +48,7 @@ Dentro del grupo, crear:
 - tabla: `expedientes.admin_file`
 - columnas maximas: `updated_at,id`
 - writer: `JSON Record Writer`
+- `Run Schedule`: `30 sec`
 
 `Persist Staging Batch`
 
@@ -78,5 +79,6 @@ Dentro del grupo, crear:
 ## Notas operativas
 
 - El flujo es incremental por `updated_at,id`.
+- La consulta a `verticales` se ejecuta cada `30 sec`.
 - La tabla de staging se vacia dentro de `dena.dena_staging_to_main()`.
 - Tras cambios de esquema, ejecutar `NOTIFY pgrst, 'reload schema';` en el datalake.

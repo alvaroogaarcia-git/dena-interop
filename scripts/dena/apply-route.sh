@@ -78,6 +78,7 @@ put_template() {
 put_file upstreams 1 "$REPO_ROOT/apisix/upstreams/1-postgrest.json"
 put_file upstreams 2 "$REPO_ROOT/apisix/upstreams/2-keycloak.json"
 put_file upstreams 3 "$REPO_ROOT/apisix/upstreams/3-dena-interop-spa.json"
+put_file upstreams 4 "$REPO_ROOT/apisix/upstreams/4-dena-admin-console.json"
 
 put_file routes keycloak-realms "$REPO_ROOT/apisix/routes/keycloak-realms.json"
 put_file routes keycloak-resources "$REPO_ROOT/apisix/routes/keycloak-resources.json"
@@ -86,6 +87,7 @@ put_file routes keycloak-auth-root "$REPO_ROOT/apisix/routes/keycloak-auth-root.
 put_file routes keycloak-auth-prefix "$REPO_ROOT/apisix/routes/keycloak-auth-prefix.json"
 put_template postgrest-api-oidc "$REPO_ROOT/apisix/routes/postgrest-api.template.json"
 put_template dena-admin-files-oidc "$REPO_ROOT/apisix/routes/dena-admin-files.template.json"
+put_file routes dena-admin-console "$REPO_ROOT/apisix/routes/dena-admin-console.json"
 put_file routes dena-interop-spa-fallback "$REPO_ROOT/apisix/routes/dena-interop-spa.json"
 
 curl -fsS -X DELETE -H "X-API-KEY: $admin_key" \

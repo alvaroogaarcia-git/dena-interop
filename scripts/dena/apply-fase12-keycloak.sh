@@ -31,6 +31,10 @@ if [[ ! -f "$LOCAL_ENV" ]]; then
   printf 'TF_VAR_testuser_password=%q\n' "$testuser_password" >"$LOCAL_ENV"
   chmod 600 "$LOCAL_ENV"
 fi
+if ! grep -q '^TF_VAR_adminuser_password=' "$LOCAL_ENV"; then
+  adminuser_password="${DENA_ADMINUSER_PASSWORD:-Admin1234!}"
+  printf 'TF_VAR_adminuser_password=%q\n' "$adminuser_password" >>"$LOCAL_ENV"
+fi
 
 set -a
 # shellcheck disable=SC1090
@@ -39,6 +43,7 @@ set +a
 
 export TF_VAR_keycloak_admin_password
 TF_VAR_keycloak_admin_password="$(kubectl get secret keycloak-secret -n auth -o jsonpath='{.data.admin-password}' | base64 -d)"
+export TF_VAR_grafana_admin_password="${TF_VAR_grafana_admin_password:-unused-by-fase12}"
 
 kubectl rollout status deployment/keycloak -n auth --timeout=300s >/dev/null
 kubectl port-forward -n auth svc/keycloak 18080:8080 --address 127.0.0.1 \
@@ -53,7 +58,27 @@ done
 curl -fsS http://127.0.0.1:18080/realms/master/.well-known/openid-configuration >/dev/null
 
 terraform -chdir="$TF_DIR" init
-terraform -chdir="$TF_DIR" apply -auto-approve
+terraform -chdir="$TF_DIR" apply -auto-approve \
+  -target=keycloak_realm.dena \
+  -target=keycloak_openid_client.react_frontend \
+  -target=keycloak_openid_client.apisix_gateway \
+  -target=keycloak_role.reader \
+  -target=keycloak_role.writer \
+  -target=keycloak_role.admin \
+  -target=keycloak_user.testuser \
+  -target=keycloak_user_roles.testuser \
+  -target=keycloak_user.adminuser \
+  -target=keycloak_user_roles.adminuser \
+  -target=keycloak_realm.piloto \
+  -target=keycloak_openid_client.piloto_react_frontend \
+  -target=keycloak_openid_client.piloto_apisix_gateway \
+  -target=keycloak_role.piloto_reader \
+  -target=keycloak_role.piloto_writer \
+  -target=keycloak_role.piloto_admin \
+  -target=keycloak_user.piloto_testuser \
+  -target=keycloak_user_roles.piloto_testuser \
+  -target=keycloak_user.piloto_adminuser \
+  -target=keycloak_user_roles.piloto_adminuser
 
 client_secret="$(terraform -chdir="$TF_DIR" output -raw apisix_client_secret)"
 kubectl create secret generic apisix-oidc -n gateway \
@@ -62,4 +87,4 @@ kubectl create secret generic apisix-oidc -n gateway \
   --dry-run=client -o yaml | kubectl apply -f - >/dev/null
 
 echo "Fase 12 aplicada: realm piloto, clientes, roles y testuser gestionados por Terraform."
-echo "Password de testuser guardada localmente en .local/fase12-keycloak.env."
+echo "Passwords de testuser y adminuser guardadas localmente en .local/fase12-keycloak.env."

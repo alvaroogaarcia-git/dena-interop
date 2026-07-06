@@ -33,6 +33,7 @@ disable:
   - servicelb
 tls-san:
   - "$tls_san"
+node-ip: "$tls_san"
 EOF
 
 /boot/dietpi/dietpi-software install 193

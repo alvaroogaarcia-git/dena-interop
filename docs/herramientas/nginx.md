@@ -6,15 +6,18 @@ NGINX es un servidor web. En este piloto se usa en su forma más simple: servir 
 
 ## Objetivo En Este Piloto
 
-NGINX sirve la SPA cliente DENA desde el namespace `app`. APISIX enruta `/` y cualquier ruta no específica hacia este servicio.
+NGINX sirve las dos páginas estáticas del namespace `app`: el portal ciudadano y la consola admin. APISIX enruta `/` hacia el portal ciudadano y `/dena/admin-console` hacia la consola admin.
 
 ## Dónde Está
 
 - Namespace: `app`
 - Deployment: `dena-interop-spa`
+- Deployment: `dena-admin-console`
 - Contenedor: `nginx:1.27-alpine`
 - Service interno: `dena-interop-spa:80`
+- Service interno: `dena-admin-console:80`
 - URL pública: `http://192.168.56.15:30080/`
+- URL admin: `http://192.168.56.15:30080/dena/admin-console`
 
 ## Cómo Se Usa
 
@@ -22,12 +25,14 @@ Normalmente no se entra a NGINX directamente. Se accede por APISIX:
 
 ```text
 http://192.168.56.15:30080/
+http://192.168.56.15:30080/dena/admin-console
 ```
 
 Ver logs:
 
 ```bash
 kubectl logs -n app deploy/dena-interop-spa --tail=80
+kubectl logs -n app deploy/dena-admin-console --tail=80
 ```
 
 ## Qué Contiene En Este Caso
@@ -36,6 +41,8 @@ El contenido web vive en un ConfigMap:
 
 - `k8s-manifests/dena-interop-spa.yaml`
 - `ConfigMap/dena-interop-spa`
+- `k8s-manifests/dena-admin-console.yaml`
+- `ConfigMap/dena-admin-console`
 - `index.html`
 
 La página hace:
@@ -43,12 +50,15 @@ La página hace:
 - Login demo contra Keycloak.
 - Petición a `POST /dena/admin-files`.
 - Render JSON de expedientes.
+- Panel admin con KPIs, trazabilidad, auditoría y export CSV/JSON.
 
 ## Cómo Verificarlo
 
 ```bash
 kubectl rollout status deployment/dena-interop-spa -n app
+kubectl rollout status deployment/dena-admin-console -n app
 curl -i http://192.168.56.15:30080/
+curl -i http://192.168.56.15:30080/dena/admin-console
 ```
 
 ## Por Qué Se Usa

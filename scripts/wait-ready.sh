@@ -17,6 +17,7 @@ deployments=(
   "monitoring/monitoring-grafana"
   "monitoring/monitoring-kube-prometheus-operator"
   "app/dena-interop-spa"
+  "app/dena-admin-console"
   "portainer/portainer"
 )
 
