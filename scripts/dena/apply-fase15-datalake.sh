@@ -21,6 +21,7 @@ sql_files=(
   "$REPO_ROOT/sql/01-dena-admin-file.sql"
   "$REPO_ROOT/sql/02-dena-rpc.sql"
   "$REPO_ROOT/sql/03-dena-staging.sql"
+  "$REPO_ROOT/sql/04-dena-recovery.sql"
 )
 
 kubectl rollout status statefulset/postgresql-datalake -n datalake --timeout=180s >/dev/null

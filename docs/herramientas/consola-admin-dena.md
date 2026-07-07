@@ -55,6 +55,7 @@ La consola contiene:
 - Login OIDC contra Keycloak con Authorization Code + PKCE.
 - MFA WebAuthn/FIDO2 para el usuario admin enrolado.
 - Recuperación operativa mediante `recovery-operator` para generar una password temporal y forzar una nueva passkey.
+- Recuperación mediante backup codes de un solo uso y registro persistente de cada recuperación.
 - Botón `Cerrar sesión`, que limpia sesión local y llama al logout OIDC de Keycloak.
 - Filtros por estado, expediente, título y límite.
 - KPIs de expedientes, importe total, incidencias y última ingesta.

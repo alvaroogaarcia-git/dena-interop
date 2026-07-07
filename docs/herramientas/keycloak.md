@@ -79,6 +79,8 @@ Puntos clave:
 - Tiene los roles `view-users`, `query-users` y `manage-users` sobre `realm-management`.
 - Su password se guarda fuera de Git en `.local/fase12-keycloak.env`.
 - La password temporal del usuario afectado solo debe servir para reenrolar una nueva passkey.
+- El usuario puede recibir backup codes de un solo uso generados con `scripts/dena/generate-recovery-backup-codes.sh`.
+- Cada emisión y cada consumo se registra en `dena.recovery_event` dentro del datalake.
 
 ## Por Qué Se Usa
 

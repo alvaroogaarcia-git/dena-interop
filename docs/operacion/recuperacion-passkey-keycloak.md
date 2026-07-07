@@ -31,11 +31,18 @@ El flujo se compone de estas piezas:
 6. Fuerza al usuario a registrar una nueva passkey.
 7. El usuario vuelve al estado normal de acceso con WebAuthn.
 
+El piloto añade además:
+
+- códigos de respaldo de un solo uso para el usuario
+- registro persistente de cada emisión y cada consumo de esos códigos
+
 ## Componentes Implicados
 
 - Consola admin de Keycloak: `http://localhost:30080/admin/piloto/console/`
 - Consola admin DENA: `http://localhost:30080/dena/admin-console`
 - Script de alta del operador: [scripts/dena/apply-recovery-operator.sh](/home/dietpi/dena-interop/scripts/dena/apply-recovery-operator.sh)
+- Script de generación de backup codes: [scripts/dena/generate-recovery-backup-codes.sh](/home/dietpi/dena-interop/scripts/dena/generate-recovery-backup-codes.sh)
+- Script de consumo de backup code y alta temporal: [scripts/dena/use-recovery-backup-code.sh](/home/dietpi/dena-interop/scripts/dena/use-recovery-backup-code.sh)
 - Script principal de Fase 12: [scripts/dena/apply-fase12-keycloak.sh](/home/dietpi/dena-interop/scripts/dena/apply-fase12-keycloak.sh)
 - Password local no versionada: `.local/fase12-keycloak.env`
 
@@ -87,6 +94,23 @@ No puede:
 
 ## Procedimiento Operativo
 
+### 0. Generar Y Entregar Códigos De Respaldo
+
+Primero se generan los códigos de respaldo para `adminuser`:
+
+```bash
+bash scripts/dena/generate-recovery-backup-codes.sh
+```
+
+Por defecto el script:
+
+- crea 10 códigos de un solo uso
+- los guarda en `/home/dietpi/dena-interop/.local/recovery/piloto-adminuser-backup-codes.txt`
+- deja el hash en la tabla `dena.recovery_backup_code`
+- crea un evento `backup_codes_issued` en `dena.recovery_event`
+
+El fichero local debe entregarse al usuario por un canal seguro y guardarse fuera de Git.
+
 ### 1. Entrar En Keycloak Con El Operador
 
 Abre la consola:
@@ -137,6 +161,20 @@ En el mismo usuario:
 4. Marca `Temporary` si la UI lo permite.
 
 La password temporal debe ser solo de uso puente.
+
+Si quieres usar un backup code en lugar de inventar una password manualmente, usa:
+
+```bash
+export DENA_RECOVERY_CODE='XXXX-XXXX-XXXX-XXXX'
+bash scripts/dena/use-recovery-backup-code.sh
+```
+
+Ese script:
+
+- valida que el código sea uno de los emitidos
+- marca el código como usado
+- aplica el mismo código como password temporal de Keycloak
+- deja un evento `backup_code_consumed` en `dena.recovery_event`
 
 ### 6. Forzar El Reenrolado
 
@@ -208,6 +246,14 @@ kubectl exec -n auth deploy/keycloak -- /opt/keycloak/bin/kcadm.sh set-password 
   --temporary=true
 ```
 
+Generar y consumir códigos de respaldo de forma automatizada:
+
+```bash
+bash scripts/dena/generate-recovery-backup-codes.sh
+export DENA_RECOVERY_CODE='XXXX-XXXX-XXXX-XXXX'
+bash scripts/dena/use-recovery-backup-code.sh
+```
+
 Asignar el operador de recuperacion se automatiza con:
 
 ```bash
@@ -248,12 +294,26 @@ kubectl exec -n auth deploy/keycloak -- /opt/keycloak/bin/kcadm.sh get users -r 
   --password "$TF_VAR_recovery_operator_password"
 ```
 
+Consultar el registro de recuperaciones:
+
+```bash
+kubectl exec -i -n datalake postgresql-datalake-0 -- \
+  env PGPASSWORD="$(kubectl get secret -n datalake postgresql-datalake -o jsonpath='{.data.postgres-password}' | base64 -d)" \
+  psql -U postgres -d datalake -c "
+    select id, realm, username, event_type, operator_username, created_at
+    from dena.recovery_event
+    order by created_at desc
+    limit 20;
+  "
+```
+
 ## Riesgos Y Criterio Operativo
 
 - La password temporal debe expirar o dejar de ser util cuanto antes.
 - La passkey vieja debe revocarse si hay sospecha de perdida fisica.
 - El operador de recuperacion no debe convertirse en el camino normal de acceso.
 - El acceso normal del admin debe volver a ser WebAuthn.
+- Los backup codes deben entregarse y custodiarse como credenciales, no como documentación.
 
 ## Dónde Encaja En El Repo
 
@@ -263,4 +323,3 @@ Esta guia complementa:
 - [Consola admin DENA](../herramientas/consola-admin-dena.md)
 - [Runbook operativo](runbook.md)
 - [Guia completa de instalacion](../guias/guia-instalacion.md)
-
