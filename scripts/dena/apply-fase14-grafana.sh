@@ -38,6 +38,7 @@ TF_VAR_keycloak_admin_password="$(
 )"
 export TF_VAR_testuser_password="${TF_VAR_testuser_password:-unused-by-fase14}"
 export TF_VAR_adminuser_password="${TF_VAR_adminuser_password:-unused-by-fase14}"
+export TF_VAR_recovery_operator_password="${TF_VAR_recovery_operator_password:-unused-by-fase14}"
 
 export TF_VAR_grafana_admin_username
 TF_VAR_grafana_admin_username="$(

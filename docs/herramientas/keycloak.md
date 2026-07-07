@@ -55,6 +55,7 @@ Realm `piloto`:
 - Cliente público `react-frontend`.
 - Cliente confidencial `apisix-gateway`.
 - Usuario `testuser`.
+- Usuario `recovery-operator`, operador limitado para recuperar credenciales.
 - Roles `dena-reader`, `dena-writer`, `dena-admin`.
 - Flujo browser `browser-dena-webauthn`.
 - WebAuthn RP ID `localhost`, usado por la demo mediante túnel SSH.
@@ -67,6 +68,17 @@ También existe realm histórico `dena`, pero el operativo del piloto es `piloto
 ```bash
 bash scripts/verify-fase12-keycloak.sh
 ```
+
+## Recuperación De Passkey
+
+La guía operativa detallada está en [recuperacion-passkey-keycloak.md](../operacion/recuperacion-passkey-keycloak.md).
+
+Puntos clave:
+
+- `recovery-operator` existe solo en el realm `piloto`.
+- Tiene los roles `view-users`, `query-users` y `manage-users` sobre `realm-management`.
+- Su password se guarda fuera de Git en `.local/fase12-keycloak.env`.
+- La password temporal del usuario afectado solo debe servir para reenrolar una nueva passkey.
 
 ## Por Qué Se Usa
 

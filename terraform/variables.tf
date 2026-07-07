@@ -28,6 +28,12 @@ variable "adminuser_password" {
   sensitive   = true
 }
 
+variable "recovery_operator_password" {
+  description = "Password estable del operador de recuperacion de credenciales del realm piloto."
+  type        = string
+  sensitive   = true
+}
+
 variable "gateway_base_url" {
   description = "URL publica del gateway usada en redirects OIDC."
   type        = string

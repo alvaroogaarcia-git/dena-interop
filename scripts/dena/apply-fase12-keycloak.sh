@@ -35,6 +35,10 @@ if ! grep -q '^TF_VAR_adminuser_password=' "$LOCAL_ENV"; then
   adminuser_password="${DENA_ADMINUSER_PASSWORD:-Admin1234!}"
   printf 'TF_VAR_adminuser_password=%q\n' "$adminuser_password" >>"$LOCAL_ENV"
 fi
+if ! grep -q '^TF_VAR_recovery_operator_password=' "$LOCAL_ENV"; then
+  recovery_operator_password="${DENA_RECOVERY_OPERATOR_PASSWORD:-$(openssl rand -base64 24)}"
+  printf 'TF_VAR_recovery_operator_password=%q\n' "$recovery_operator_password" >>"$LOCAL_ENV"
+fi
 
 set -a
 # shellcheck disable=SC1090
@@ -80,6 +84,8 @@ terraform -chdir="$TF_DIR" apply -auto-approve \
   -target=keycloak_user.piloto_adminuser \
   -target=keycloak_user_roles.piloto_adminuser
 
+bash "$REPO_ROOT/scripts/dena/apply-recovery-operator.sh"
+
 client_secret="$(terraform -chdir="$TF_DIR" output -raw apisix_client_secret)"
 kubectl create secret generic apisix-oidc -n gateway \
   --from-literal=client-id=apisix-gateway \
@@ -87,4 +93,4 @@ kubectl create secret generic apisix-oidc -n gateway \
   --dry-run=client -o yaml | kubectl apply -f - >/dev/null
 
 echo "Fase 12 aplicada: realm piloto, clientes, roles y testuser gestionados por Terraform."
-echo "Passwords de testuser y adminuser guardadas localmente en .local/fase12-keycloak.env."
+echo "Passwords de testuser, adminuser y recovery-operator guardadas localmente en .local/fase12-keycloak.env."

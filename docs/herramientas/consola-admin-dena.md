@@ -46,12 +46,15 @@ El usuario demo es:
 
 El usuario `adminuser` se gestiona en Terraform y tiene el rol `dena-admin`. El rol `dena-admin` es compuesto e incluye `dena-reader` y `dena-writer`.
 
+Si pierde la passkey, se usa el operador limitado `recovery-operator` en la consola Keycloak del realm `piloto`. El procedimiento completo está en [recuperacion-passkey-keycloak.md](../operacion/recuperacion-passkey-keycloak.md).
+
 ## Qué Contiene En Este Caso
 
 La consola contiene:
 
 - Login OIDC contra Keycloak con Authorization Code + PKCE.
 - MFA WebAuthn/FIDO2 para el usuario admin enrolado.
+- Recuperación operativa mediante `recovery-operator` para generar una password temporal y forzar una nueva passkey.
 - Botón `Cerrar sesión`, que limpia sesión local y llama al logout OIDC de Keycloak.
 - Filtros por estado, expediente, título y límite.
 - KPIs de expedientes, importe total, incidencias y última ingesta.

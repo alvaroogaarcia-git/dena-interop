@@ -56,6 +56,23 @@ Portainer ve el cluster: namespaces=11 deployments=16.
 
 En la UI abre `Environments` y selecciona `local`.
 
+## Recuperacion De Passkey
+
+Si un usuario del realm `piloto` pierde la passkey, usa el operador limitado `recovery-operator` y sigue la guia completa:
+
+```text
+docs/operacion/recuperacion-passkey-keycloak.md
+```
+
+Resumen minimo:
+
+1. Entrar en `http://localhost:30080/admin/piloto/console/`.
+2. Autenticarse con `recovery-operator`.
+3. Ir al usuario afectado.
+4. Revocar la credencial `webauthn` perdida si procede.
+5. Crear password temporal.
+6. Registrar nueva passkey.
+
 ## Riesgos Operativos
 
 - R1: credenciales demo en claro. Solo válido para piloto.
