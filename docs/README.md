@@ -21,6 +21,7 @@ La documentacion esta organizada por uso para que sea facil encontrar el documen
 - [Recuperacion de passkey en Keycloak](operacion/recuperacion-passkey-keycloak.md): recuperacion controlada cuando un usuario pierde su passkey.
 - [GitHub Actions](operacion/github-actions.md): automatizaciones y ejecuciones desde CI.
 - [Optimizacion k3s 4GB](operacion/optimizacion-k3s-4gb.md): ajustes y recuperacion en nodos pequenos.
+- [Acceso a bases de datos](acceso-bd/README.md): comandos exactos para entrar en cada PostgreSQL del piloto.
 
 ## Arquitectura
 

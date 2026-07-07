@@ -37,6 +37,13 @@ kubectl exec -n datalake postgresql-datalake-0 -- \
   psql -U postgres -d datalake -c 'select count(*) from dena.admin_file;'
 ```
 
+Accesos detallados por base:
+
+- [auth / keycloak](../acceso-bd/auth-keycloak.md)
+- [verticales / expedientes](../acceso-bd/verticales-expedientes.md)
+- [verticales / mathesar_django](../acceso-bd/verticales-mathesar-django.md)
+- [datalake / dena](../acceso-bd/datalake-dena.md)
+
 ## Qué Contiene En Este Caso
 
 `auth`:
