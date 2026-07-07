@@ -13,6 +13,12 @@ K3S_VERSION="${DENA_K3S_VERSION:-v1.35.5+k3s1}"
 HELM_VERSION="${DENA_HELM_VERSION:-3.14.2}"
 TERRAFORM_VERSION="${DENA_TERRAFORM_VERSION:-1.8.0}"
 
+TF_VAR_postgres_password=""
+TF_VAR_postgres_replication_password=""
+TF_VAR_keycloak_admin_password=""
+TF_VAR_grafana_admin_password=""
+TF_VAR_postgrest_db_password=""
+
 log() {
   printf '\n==> %s\n' "$*"
 }
@@ -207,6 +213,20 @@ load_demo_env() {
   . "$REPO_DIR/.local/demo.env"
   set +a
   export KUBECONFIG="$KUBECONFIG_PATH"
+}
+
+require_demo_env() {
+  local name
+  for name in \
+    TF_VAR_postgres_password \
+    TF_VAR_postgres_replication_password \
+    TF_VAR_keycloak_admin_password \
+    TF_VAR_grafana_admin_password \
+    TF_VAR_postgrest_db_password \
+    NIFI_SINGLE_USER_PASSWORD \
+    PORTAINER_ADMIN_PASSWORD; do
+    [[ -n "${!name:-}" ]] || fail "Falta $name en $REPO_DIR/.local/demo.env"
+  done
 }
 
 configure_helm() {
@@ -492,6 +512,7 @@ user_stage() {
 
   write_demo_env
   load_demo_env
+  require_demo_env
   configure_helm
   create_namespaces
   install_postgresql_auth
