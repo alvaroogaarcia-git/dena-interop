@@ -35,7 +35,7 @@ jobs:
 
       - name: Validate JSON assets with jq
         run: |
-          find apisix -type f -name '*.json' -print0 | xargs -0 -n1 jq empty
+          find apisix terraform/dashboards -type f -name '*.json' -print0 | xargs -0 -n1 jq empty
 
       - name: Validate GitHub workflow syntax
         uses: raven-actions/actionlint@v2

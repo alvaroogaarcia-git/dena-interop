@@ -1,16 +1,12 @@
 # Extensión 11c - NiFi JDBC incremental
 
-Nota de numeración: este flujo se implementó originalmente con el nombre interno `Fase 12`. En el plan consolidado queda como extensión 11c; la Fase 12 corresponde a Terraform y Keycloak. Se conservan nombres de scripts y del grupo NiFi por compatibilidad.
+Nota de numeración: este flujo se implementó originalmente con el nombre interno `Fase 12`. En el plan consolidado queda como extensión 11c; la Fase 12 corresponde a Terraform y Keycloak. El stack actual usa el flujo consolidado de staging (`provision-fase15-nifi.sh` y `verify-fase15-nifi.sh`); los nombres `fase12` quedan como referencia histórica.
 
-Esta fase deja preparado un flujo NiFi reproducible para leer incrementalmente `expedientes.admin_file` y persistir la salida en disco dentro del PVC de NiFi.
+Esta fase deja preparado un flujo NiFi reproducible para leer incrementalmente `expedientes.admin_file`, escribir lotes en `dena.admin_file_staging` y promocionarlos a `dena.admin_file`.
 
 ## Objetivo
 
-Tomar como fuente el PostgreSQL de `verticales`, consultar la tabla `expedientes.admin_file` y guardar cada extracción incremental como JSON en:
-
-```text
-/opt/nifi/nifi-current/extensions/fase12-output
-```
+Tomar como fuente el PostgreSQL de `verticales`, consultar la tabla `expedientes.admin_file`, persistir cada lote en staging del datalake y ejecutar la función de promoción.
 
 La lectura incremental se apoya en:
 
@@ -19,14 +15,16 @@ La lectura incremental se apoya en:
 
 ## Piezas que crea la fase
 
-- Grupo de proceso `Fase 12 - JDBC incremental`
+- Grupo de proceso `Fase 15 - DENA staging incremental`
 - Controller service `Verticales DBCP`
+- Controller service `Datalake DBCP`
 - Controller service `JSON Record Writer`
+- Controller service `JSON Record Reader`
 - Processor `Query Verticales Incremental`
-- Processor `Stamp Output Filename`
-- Processor `Persist Fase 12 Output`
+- Processor `Persist Staging Batch`
+- Processor `Promote Staging To Main`
 
-En la raíz de NiFi se ve un solo bloque de grupo; al abrirlo aparecen los tres procesadores y los dos controller services de la fase.
+En la raíz de NiFi se ve un solo bloque de grupo; al abrirlo aparecen los tres procesadores y los cuatro controller services de la fase.
 
 ## Requisitos previos
 
@@ -35,13 +33,15 @@ En la raíz de NiFi se ve un solo bloque de grupo; al abrirlo aparecen los tres 
 - driver `postgresql-42.7.4.jar` copiado a `extensions/` con `bash scripts/dena/install-nifi-postgresql-driver.sh`
 - secret `nifi-secret` operativo
 - PostgreSQL de `verticales` en `Running`
+- PostgreSQL de `datalake` en `Running`
+- SQL de la Fase 15 aplicado (`dena.admin_file_staging` y `dena.dena_staging_to_main()`)
 
 ## Aprovisionamiento
 
 Ejecutar:
 
 ```bash
-bash scripts/dena/provision-fase12-nifi.sh
+bash scripts/dena/provision-fase15-nifi.sh
 ```
 
 El script:
@@ -58,18 +58,16 @@ El aprovisionamiento es idempotente: puede repetirse para reparar o reconciliar 
 ## Verificación
 
 ```bash
-bash scripts/verify-fase12.sh
+bash scripts/verify-fase15-nifi.sh
 ```
 
 La verificación comprueba:
 
 - presencia del grupo de proceso
 - los tres procesadores en `VALID/RUNNING`
-- DBCP y Record Writer en `VALID/ENABLED`
-- disponibilidad del directorio de salida
+- DBCP, Record Writer y Record Reader en `VALID/ENABLED`
+- igualdad de datos sincronizados entre `verticales` y `datalake`
 - presencia del driver JDBC en NiFi
-
-La validación realizada generó un fichero `fase12-*.json` en el PVC.
 
 ## Persistencia
 
@@ -80,7 +78,7 @@ Prueba validada:
 ```bash
 kubectl rollout restart deployment/nifi -n datalake
 kubectl rollout status deployment/nifi -n datalake --timeout=15m
-bash scripts/verify-fase12.sh
+bash scripts/verify-fase15-nifi.sh
 ```
 
 El grupo mantuvo el mismo identificador y todos los componentes continuaron operativos sin reprovisionar.
@@ -97,7 +95,14 @@ kubectl exec -n verticales postgresql-verticales-0 -- \
   psql -U postgres -d expedientes -c "update expedientes.admin_file set status = 'archivado', updated_at = now() where id = 1;"
 ```
 
-Después, reejecutar el flujo o esperar al siguiente ciclo de NiFi y revisar que aparece un nuevo JSON en el directorio de salida.
+Después, esperar al siguiente ciclo de NiFi y comprobar que el cambio aparece en `datalake.dena.admin_file`:
+
+```bash
+DL_PASS="$(kubectl get secret -n datalake postgresql-datalake -o jsonpath='{.data.postgres-password}' | base64 -d)"
+kubectl exec -n datalake postgresql-datalake-0 -- \
+  env PGPASSWORD="$DL_PASS" \
+  psql -U postgres -d datalake -c "select source_id, status, updated_at from dena.admin_file where source_id = 1;"
+```
 
 ## Acceso a NiFi
 

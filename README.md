@@ -79,14 +79,22 @@ El entorno está validado hasta Fase 18 de la guía de instalación:
 
 | Uso | URL | Credenciales |
 | --- | --- | --- |
-| Portal ciudadano | `http://192.168.56.15:30080/` | `testuser` / `Test1234!` |
-| Consola admin DENA | `http://192.168.56.15:30080/dena/admin-console` | `adminuser` / `Admin1234!` |
+| Portal ciudadano con login OIDC | `http://localhost:30080/` via tunel SSH | `testuser` / `Test1234!` |
+| Consola admin DENA con passkey | `http://localhost:30080/dena/admin-console` via tunel SSH | `adminuser` / `Admin1234!` + passkey |
 | Grafana | `http://192.168.56.15:31803/login` | `admin` / secret `monitoring/grafana-admin` |
 | Mathesar | `http://192.168.56.15:30900` | Usuario creado en la UI |
 | Portainer | `https://192.168.56.15:30779` | `admin` / password local de Portainer |
 | NiFi | `https://192.168.56.15:30821/nifi/` | secret `datalake/nifi-secret` |
 
 La consola admin está pensada para personal interno. Permite revisar expedientes con filtros, KPIs, detalle, trazabilidad origen -> NiFi -> datalake -> API, salud básica del stack, auditoría de consulta y exportación CSV/JSON.
+
+Para los flujos web con OIDC y passkey, abrir primero un tunel local desde el PC operador:
+
+```bash
+ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
+```
+
+WebAuthn/passkey requiere origen seguro. En esta demo HTTP se usa `localhost:30080`; no usar la IP directa para la consola admin con passkey.
 
 ## Verificación rápida
 
@@ -108,7 +116,7 @@ curl -i http://192.168.56.15:31803/login
 bash scripts/verify-fase10.sh
 bash scripts/verify-fase11.sh
 bash scripts/verify-fase11b.sh
-bash scripts/verify-fase12.sh              # flujo NiFi, nombre legado
+bash scripts/verify-fase15-nifi.sh         # flujo NiFi incremental consolidado
 bash scripts/verify-fase12-keycloak.sh     # Fase 12 del plan consolidado
 bash scripts/verify-fase13.sh
 bash scripts/verify-fase14.sh
@@ -143,7 +151,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [GitHub Actions](docs/operacion/github-actions.md)
 - [Histórico de estados validados por fase](docs/estado-fases/README.md)
 - [Fase 15 - SQL del datalake y carga local](docs/guias/fase15-datalake.md)
-- [Flujo NiFi JDBC incremental (extensión 11c)](docs/guias/fase12-nifi-jdbc.md)
+- [Flujo NiFi JDBC incremental actual, Fase 15](docs/guias/fase12-nifi-jdbc.md)
 - [Consola admin DENA](docs/herramientas/consola-admin-dena.md)
 - [Runbook operativo](docs/operacion/runbook.md)
 - [Arquitectura](docs/arquitectura/arquitectura.md)

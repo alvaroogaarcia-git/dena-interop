@@ -14,7 +14,7 @@ Keycloak decide quién puede pedir datos. APISIX valida los tokens emitidos por 
 - Deployment: `keycloak`
 - Service: `keycloak`
 - Base de datos: PostgreSQL `auth`
-- URL admin por túnel MFA demo: `http://localhost:30080/admin/`
+- URL MFA vía túnel local: `http://localhost:30080/admin/`
 - Realm operativo: `piloto`
 
 ## Cómo Se Usa
@@ -23,12 +23,6 @@ Consola admin:
 
 ```text
 http://localhost:30080/admin/
-```
-
-Para acceder desde un PC operador sin tocar `hosts`, abrir primero un túnel SSH:
-
-```bash
-ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
 ```
 
 Discovery OIDC:

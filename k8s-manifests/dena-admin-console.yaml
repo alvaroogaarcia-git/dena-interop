@@ -570,10 +570,10 @@ data:
           const dateTime = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" });
           const oidc = {
             clientId: "react-frontend",
-            authUrl: "/realms/piloto/protocol/openid-connect/auth",
-            tokenUrl: "/realms/piloto/protocol/openid-connect/token",
-            logoutUrl: "/realms/piloto/protocol/openid-connect/logout",
-            redirectUri: `${window.location.origin}/dena/admin-console`
+            authUrl: "http://localhost:30080/realms/piloto/protocol/openid-connect/auth",
+            tokenUrl: "http://localhost:30080/realms/piloto/protocol/openid-connect/token",
+            logoutUrl: "http://localhost:30080/realms/piloto/protocol/openid-connect/logout",
+            redirectUri: "http://localhost:30080/dena/admin-console"
           };
           let session = loadStoredSession();
           let rows = [];
@@ -1061,6 +1061,10 @@ data:
               addNotification("ok", "Consulta completada", `${rows.length} expedientes recuperados desde la API DENA.`);
               setStatus(`Consola cargada: ${rows.length} expedientes.`, "ok");
             } catch (error) {
+              if (error.message === "Redirección a Keycloak iniciada.") {
+                setStatus("Redirigiendo a Keycloak...");
+                return;
+              }
               tableWrap.innerHTML = `<div class="empty">${escapeHtml(error.message || error)}</div>`;
               renderHealth(false);
               addNotification("bad", "Error de consulta", error.message || String(error));

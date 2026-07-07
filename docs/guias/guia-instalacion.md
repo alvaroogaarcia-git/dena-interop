@@ -1121,11 +1121,11 @@ Y la UI:
 https://localhost:8443/nifi
 ```
 
-## Fase 12 - NiFi JDBC incremental
+## Fase 11c - NiFi JDBC incremental
 
 ADR-009: el laboratorio pasa de dejar preparado el origen a materializar un flujo NiFi incremental contra `expedientes.admin_file`. El flujo queda versionado en este repositorio y usa el driver PostgreSQL persistido en el PVC de NiFi.
 
-### 12.1 Estructura del flujo
+### 11c.1 Estructura del flujo
 
 El flujo que se despliega hoy como sincronizacion operativa de NiFi corresponde a la Fase 15 del datalake:
 
@@ -1138,7 +1138,7 @@ El flujo que se despliega hoy como sincronizacion operativa de NiFi corresponde 
 - Promoción: `dena.dena_staging_to_main()`
 - Intervalo de consulta: `30 sec`
 
-### 12.2 Provisionamiento
+### 11c.2 Provisionamiento
 
 ```bash
 bash scripts/dena/install-nifi-postgresql-driver.sh
@@ -1156,7 +1156,7 @@ El script:
 7. evita conexiones duplicadas
 8. habilita y arranca el flujo
 
-### 12.3 Verificación
+### 11c.3 Verificación
 
 ```bash
 bash scripts/verify-fase15-nifi.sh
@@ -1170,7 +1170,7 @@ La verificación comprueba:
 - sincronización activa entre `verticales` y `datalake`
 - driver JDBC presente en `extensions/`
 
-### 12.4 Prueba incremental
+### 11c.4 Prueba incremental
 
 Actualizar una fila de `expedientes.admin_file` y comprobar que el cambio aparece en `datalake.dena.admin_file` tras el siguiente ciclo de consulta:
 
@@ -1214,7 +1214,7 @@ El password demo de `testuser` es `Test1234!` salvo que se overridee con `DENA_T
 
 ## Fase 14 - APISIX OIDC e interoperabilidad DENA
 
-ADR-011: APISIX es la única entrada HTTP. Keycloak conserva URL pública fija `http://192.168.56.15:30080`, PostgREST sigue como `ClusterIP` y las rutas de datos requieren un bearer token validado mediante introspección OIDC.
+ADR-011: APISIX es la única entrada HTTP. Las rutas de datos quedan accesibles por `http://192.168.56.15:30080`, pero los flujos de navegador con OIDC/WebAuthn usan `http://localhost:30080` mediante tunel SSH porque WebAuthn requiere origen seguro. PostgREST sigue como `ClusterIP` y las rutas de datos requieren un bearer token validado mediante introspección OIDC.
 
 Antes de crear las rutas se aplica la función SQL y se sincronizan los 50 expedientes actuales:
 
@@ -1239,7 +1239,7 @@ bash scripts/verify-fase13.sh
 
 La prueba valida discovery público, rechazo `401` sin token, emisión de token para `testuser`, acceso autorizado a `/api` y respuesta con expedientes reales desde `POST /dena/admin-files`.
 
-## Fase 15 - Terraform y Grafana
+## Fase 14 - Terraform y Grafana
 
 ADR-012: Grafana se mantiene desplegado por Helm, pero su configuración funcional queda gestionada por Terraform mediante el provider oficial `grafana/grafana`. Terraform se conecta por port-forward local usando las credenciales del Secret `monitoring/grafana-admin`.
 
@@ -1258,9 +1258,9 @@ bash scripts/verify-fase14.sh
 
 El script actualiza primero el release `monitoring` para desactivar el provisioning read-only de datasources de Grafana. Después Terraform crea o actualiza datasources, carpeta y dashboards por API. Los dashboards viven en `terraform/dashboards/` y no dependen del sidecar de ConfigMaps para quedar reproducidos.
 
-## Fase 16 - SQL del datalake y carga local
+## Fase 15 - SQL del datalake y carga local
 
-La Fase 16 consolida el esquema DENA del datalake y deja una carga reproducible hacia staging:
+La Fase 15 consolida el esquema DENA del datalake y deja una carga reproducible hacia staging:
 
 - tabla principal `dena.admin_file`
 - vista camelCase `dena."adminFile"`
@@ -1283,9 +1283,21 @@ bash scripts/dena/load-csv.sh --file expedientes.csv --promote
 
 El detalle operativo queda en [fase15-datalake.md](fase15-datalake.md).
 
-## Fase 17 - Cliente demo SPA
+## Fase 16 - Cliente demo SPA
 
 La SPA demo queda servida por NGINX en el namespace `app` y APISIX la publica como fallback de `/`.
+
+Para usar login OIDC desde navegador, abrir primero:
+
+```bash
+ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
+```
+
+Y acceder a:
+
+```text
+http://localhost:30080/
+```
 
 Aplicación:
 

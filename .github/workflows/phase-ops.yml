@@ -13,7 +13,7 @@ on:
           - verify-fase10
           - verify-fase11
           - verify-fase11b
-          - verify-fase12-nifi
+          - verify-fase15-nifi
           - verify-fase12-keycloak
           - verify-fase13
           - verify-fase14
@@ -21,7 +21,7 @@ on:
           - apply-fase12-keycloak
           - apply-fase14-grafana
           - apply-fase15-datalake
-          - provision-fase12-nifi
+          - provision-fase15-nifi
           - load-expedientes
           - apply-dena-api
           - apply-fase13-apisix
@@ -87,7 +87,7 @@ jobs:
               bash scripts/verify-fase10.sh          # Verifica datalake y PostgREST.
               bash scripts/verify-fase11.sh          # Verifica NiFi.
               bash scripts/verify-fase11b.sh         # Verifica verticales y Mathesar.
-              bash scripts/verify-fase12.sh          # Verifica flujo incremental de NiFi.
+              bash scripts/verify-fase15-nifi.sh     # Verifica flujo incremental de NiFi.
               bash scripts/verify-fase12-keycloak.sh # Verifica Keycloak.
               bash scripts/verify-fase13.sh          # Verifica APISIX OIDC y API DENA.
               bash scripts/verify-fase14.sh          # Verifica Grafana en Terraform.
@@ -102,8 +102,8 @@ jobs:
             verify-fase11b)
               bash scripts/verify-fase11b.sh         # Comprueba verticales, Mathesar y JDBC.
               ;;
-            verify-fase12-nifi)
-              bash scripts/verify-fase12.sh          # Comprueba el flujo incremental de NiFi.
+            verify-fase15-nifi)
+              bash scripts/verify-fase15-nifi.sh     # Comprueba el flujo incremental de NiFi.
               ;;
             verify-fase12-keycloak)
               bash scripts/verify-fase12-keycloak.sh # Comprueba configuracion y tokens de Keycloak.
@@ -129,9 +129,9 @@ jobs:
               bash scripts/dena/apply-fase15-datalake.sh # Aplica SQL DENA del datalake.
               bash scripts/verify-fase15.sh              # Verifica el resultado.
               ;;
-            provision-fase12-nifi)
-              bash scripts/dena/provision-fase12-nifi.sh # Crea el flujo incremental de NiFi.
-              bash scripts/verify-fase12.sh              # Verifica que quede operativo.
+            provision-fase15-nifi)
+              bash scripts/dena/provision-fase15-nifi.sh # Crea el flujo incremental de NiFi.
+              bash scripts/verify-fase15-nifi.sh         # Verifica que quede operativo.
               ;;
             load-expedientes)
               bash scripts/dena/load-expedientes.sh      # Carga o refresca expedientes demo.

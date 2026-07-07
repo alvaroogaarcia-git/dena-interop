@@ -462,10 +462,7 @@ data:
                   <p>Inicia sesión y filtra los expedientes que quieres revisar.</p>
                 </div>
                 <form id="login">
-                  <label for="username">Usuario</label>
-                  <input id="username" name="username" value="testuser" autocomplete="username">
-                  <label for="password">Contraseña</label>
-                  <input id="password" name="password" value="Test1234!" type="password" autocomplete="current-password">
+                  <div class="empty">La autenticación se realiza en Keycloak. Usa testuser / Test1234! cuando se abra la pantalla de login.</div>
                   <label for="statusFilter">Estado</label>
                   <select id="statusFilter" name="statusFilter">
                     <option value="">Todos</option>
@@ -500,7 +497,6 @@ data:
                   <button class="button-secondary" type="button" data-preset="resolved">Resueltos</button>
                   <button class="button-secondary" type="button" data-preset="recent">Últimos</button>
                   <button class="button-secondary" type="button" data-preset="empty">Sin resultados</button>
-                  <button class="button-secondary" type="button" data-preset="auth-error">Error de acceso</button>
                 </div>
               </section>
 
@@ -594,7 +590,14 @@ data:
           const currency = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
           const shortDate = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
           const dateTime = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" });
-          let session = null;
+          const oidc = {
+            clientId: "react-frontend",
+            authUrl: "http://localhost:30080/realms/piloto/protocol/openid-connect/auth",
+            tokenUrl: "http://localhost:30080/realms/piloto/protocol/openid-connect/token",
+            logoutUrl: "http://localhost:30080/realms/piloto/protocol/openid-connect/logout",
+            redirectUri: "http://localhost:30080/"
+          };
+          let session = loadStoredSession();
           let lastRows = [];
           let lastPayload = null;
           let lastRequestBody = null;
@@ -659,10 +662,6 @@ data:
             if (dateFrom) requestBody.p_opened_from = `${dateFrom}T00:00:00Z`;
             if (dateTo) requestBody.p_opened_to = `${dateTo}T23:59:59Z`;
             return {
-              credentials: {
-                username: data.get("username"),
-                password: data.get("password")
-              },
               requestBody,
               local: {}
             };
@@ -694,6 +693,156 @@ data:
             } catch {
               return {};
             }
+          }
+
+          function loadStoredSession() {
+            try {
+              return JSON.parse(sessionStorage.getItem("denaClientSession") || "null");
+            } catch {
+              return null;
+            }
+          }
+
+          function storeSession(nextSession) {
+            session = nextSession;
+            sessionStorage.setItem("denaClientSession", JSON.stringify(nextSession));
+            renderSession(nextSession);
+          }
+
+          function clearLocalSession() {
+            session = null;
+            sessionStorage.removeItem("denaClientSession");
+            sessionStorage.removeItem("denaClientPkceVerifier");
+            sessionStorage.removeItem("denaClientPkceState");
+            sessionStorage.removeItem("denaClientPendingQuery");
+          }
+
+          function randomBase64Url(bytes = 32) {
+            const values = new Uint8Array(bytes);
+            crypto.getRandomValues(values);
+            return btoa(String.fromCharCode(...values)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+          }
+
+          function base64UrlFromBytes(bytes) {
+            return btoa(String.fromCharCode(...bytes)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+          }
+
+          function rightRotate(value, amount) {
+            return (value >>> amount) | (value << (32 - amount));
+          }
+
+          function sha256Bytes(messageBytes) {
+            const constants = [
+              0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+              0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+              0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+              0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+              0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+              0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+              0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+              0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+            ];
+            const hash = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+            const bitLength = messageBytes.length * 8;
+            const totalLength = messageBytes.length + 1 + ((64 - ((messageBytes.length + 1 + 8) % 64)) % 64) + 8;
+            const bytes = new Uint8Array(totalLength);
+            bytes.set(messageBytes);
+            bytes[messageBytes.length] = 0x80;
+            const view = new DataView(bytes.buffer);
+            view.setUint32(totalLength - 8, Math.floor(bitLength / 0x100000000));
+            view.setUint32(totalLength - 4, bitLength >>> 0);
+            const words = new Uint32Array(64);
+            for (let offset = 0; offset < totalLength; offset += 64) {
+              for (let index = 0; index < 16; index += 1) words[index] = view.getUint32(offset + index * 4);
+              for (let index = 16; index < 64; index += 1) {
+                const s0 = rightRotate(words[index - 15], 7) ^ rightRotate(words[index - 15], 18) ^ (words[index - 15] >>> 3);
+                const s1 = rightRotate(words[index - 2], 17) ^ rightRotate(words[index - 2], 19) ^ (words[index - 2] >>> 10);
+                words[index] = (words[index - 16] + s0 + words[index - 7] + s1) >>> 0;
+              }
+              let [a, b, c, d, e, f, g, h] = hash;
+              for (let index = 0; index < 64; index += 1) {
+                const s1 = rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25);
+                const ch = (e & f) ^ (~e & g);
+                const temp1 = (h + s1 + ch + constants[index] + words[index]) >>> 0;
+                const s0 = rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22);
+                const maj = (a & b) ^ (a & c) ^ (b & c);
+                const temp2 = (s0 + maj) >>> 0;
+                h = g; g = f; f = e; e = (d + temp1) >>> 0; d = c; c = b; b = a; a = (temp1 + temp2) >>> 0;
+              }
+              [a, b, c, d, e, f, g, h].forEach((value, index) => { hash[index] = (hash[index] + value) >>> 0; });
+            }
+            const digest = new Uint8Array(32);
+            const digestView = new DataView(digest.buffer);
+            hash.forEach((value, index) => digestView.setUint32(index * 4, value));
+            return digest;
+          }
+
+          async function sha256Base64Url(value) {
+            const data = new TextEncoder().encode(value);
+            if (crypto.subtle) {
+              const digest = await crypto.subtle.digest("SHA-256", data);
+              return base64UrlFromBytes(new Uint8Array(digest));
+            }
+            return base64UrlFromBytes(sha256Bytes(data));
+          }
+
+          async function startLogin() {
+            const verifier = randomBase64Url(64);
+            const state = randomBase64Url(24);
+            const challenge = await sha256Base64Url(verifier);
+            sessionStorage.setItem("denaClientPkceVerifier", verifier);
+            sessionStorage.setItem("denaClientPkceState", state);
+            sessionStorage.setItem("denaClientPendingQuery", "1");
+            const params = new URLSearchParams({
+              client_id: oidc.clientId,
+              redirect_uri: oidc.redirectUri,
+              response_type: "code",
+              scope: "openid",
+              state,
+              code_challenge: challenge,
+              code_challenge_method: "S256"
+            });
+            window.location.assign(`${oidc.authUrl}?${params}`);
+          }
+
+          async function exchangeCode(code, state) {
+            const expectedState = sessionStorage.getItem("denaClientPkceState");
+            const verifier = sessionStorage.getItem("denaClientPkceVerifier");
+            if (!expectedState || !verifier || state !== expectedState) throw new Error("Estado OIDC inválido.");
+            const response = await fetch(oidc.tokenUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                client_id: oidc.clientId,
+                grant_type: "authorization_code",
+                code,
+                redirect_uri: oidc.redirectUri,
+                code_verifier: verifier
+              })
+            });
+            if (!response.ok) throw new Error(`Keycloak no pudo completar el login. HTTP ${response.status}.`);
+            sessionStorage.removeItem("denaClientPkceVerifier");
+            sessionStorage.removeItem("denaClientPkceState");
+            storeSession(await response.json());
+            window.history.replaceState({}, document.title, oidc.redirectUri);
+          }
+
+          async function handleAuthCallback() {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get("code");
+            const state = params.get("state");
+            const error = params.get("error");
+            if (error) {
+              window.history.replaceState({}, document.title, oidc.redirectUri);
+              throw new Error(params.get("error_description") || error);
+            }
+            if (!code) return false;
+            setStatus("Completando autenticación OIDC...");
+            await exchangeCode(code, state);
+            const shouldQuery = sessionStorage.getItem("denaClientPendingQuery") === "1";
+            sessionStorage.removeItem("denaClientPendingQuery");
+            if (shouldQuery) await runQuery(false);
+            return true;
           }
 
           function tokenIsUsable(tokenJson) {
@@ -901,7 +1050,7 @@ data:
 
           function friendlyError(scope, response) {
             if (scope === "token") {
-              if (response.status === 400 || response.status === 401) return "Credenciales rechazadas por Keycloak. Revisa usuario y password.";
+              if (response.status === 400 || response.status === 401) return "Keycloak no pudo completar el login.";
               return `Keycloak no pudo emitir token. HTTP ${response.status}.`;
             }
             if (response.status === 401 || response.status === 403) return "No tienes permiso para consultar estos expedientes.";
@@ -909,25 +1058,11 @@ data:
             return `No se pudo completar la consulta. HTTP ${response.status}.`;
           }
 
-          async function getToken(credentials) {
-            const tokenResponse = await fetch("/realms/piloto/protocol/openid-connect/token", {
-              method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: new URLSearchParams({
-                client_id: "react-frontend",
-                grant_type: "password",
-                username: credentials.username,
-                password: credentials.password,
-                scope: "openid"
-              })
-            });
-            if (!tokenResponse.ok) {
-              throw new Error(friendlyError("token", tokenResponse));
-            }
-            const tokenJson = await tokenResponse.json();
-            session = tokenJson;
-            renderSession(tokenJson);
-            return tokenJson;
+          async function getToken() {
+            if (tokenIsUsable(session)) return session;
+            setStatus("Redirigiendo a Keycloak...");
+            await startLogin();
+            throw new Error("Redirección a Keycloak iniciada.");
           }
 
           async function runQuery(forceToken = false) {
@@ -936,7 +1071,7 @@ data:
             lastRequestBody = filters.requestBody;
             setStatus("Iniciando sesión...");
             try {
-              const tokenJson = forceToken || !tokenIsUsable(session) ? await getToken(filters.credentials) : session;
+              const tokenJson = forceToken || !tokenIsUsable(session) ? await getToken() : session;
               setStatus("Consultando expedientes...");
               const apiResponse = await fetch("/dena/admin-files", {
                 method: "POST",
@@ -969,14 +1104,11 @@ data:
 
           function applyPreset(name) {
             form.reset();
-            form.username.value = "testuser";
-            form.password.value = "Test1234!";
             form.limit.value = "10";
             if (name === "pending") form.statusFilter.value = "pendiente_documentacion";
             if (name === "resolved") form.statusFilter.value = "resuelto";
             if (name === "recent") form.limit.value = "5";
             if (name === "empty") form.codeFilter.value = "EXP-SIN-RESULTADOS";
-            if (name === "auth-error") form.password.value = "password-incorrecto";
             runQuery(name !== "all" && name !== "recent" ? true : false);
           }
 
@@ -1007,19 +1139,28 @@ data:
           });
 
           refreshSessionButton.addEventListener("click", () => {
-            const filters = readFilters();
-            getToken(filters.credentials)
+            clearLocalSession();
+            getToken()
               .then(() => setStatus("Sesión renovada.", "ok"))
               .catch((error) => setStatus(error.message || String(error), "bad"));
           });
 
           logoutButton.addEventListener("click", () => {
-            session = null;
+            const idToken = session?.id_token;
+            clearLocalSession();
             renderSession(null);
-        setStatus("Sesión cerrada.", "warn");
+            setStatus("Sesión cerrada.", "warn");
+            const params = new URLSearchParams({
+              client_id: oidc.clientId,
+              post_logout_redirect_uri: oidc.redirectUri
+            });
+            if (idToken) params.set("id_token_hint", idToken);
+            window.location.assign(`${oidc.logoutUrl}?${params}`);
           });
 
-          renderSession(null);
+          handleAuthCallback()
+            .catch((error) => setStatus(error.message || String(error), "bad"))
+            .finally(() => renderSession(session));
           renderCharts([]);
         </script>
       </body>

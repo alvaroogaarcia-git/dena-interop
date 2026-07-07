@@ -1,6 +1,7 @@
 .local/
 *.local
 *.secret
+__pycache__/
 terraform/.terraform/
 terraform/*.tfstate
 terraform/*.tfstate.*

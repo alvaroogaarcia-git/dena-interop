@@ -11,7 +11,7 @@ La documentacion esta organizada por uso para que sea facil encontrar el documen
 ## Guias Tecnicas
 
 - [Preparacion de Fase 8](guias/fase8-preparacion.md): base para observabilidad y OTel Collector.
-- [Flujo NiFi JDBC incremental](guias/fase12-nifi-jdbc.md): sincronizacion desde verticales hacia el datalake.
+- [Flujo NiFi JDBC incremental](guias/fase12-nifi-jdbc.md): flujo operativo actual de staging/promocion de Fase 15; el nombre `fase12` se conserva como referencia historica.
 - [Fase 15 - SQL del datalake y carga local](guias/fase15-datalake.md): esquema DENA, staging y carga manual.
 - [Guia UI de NiFi](guias/nifi-flujo-ui-guia.md): referencia visual para revisar el flujo en la interfaz.
 

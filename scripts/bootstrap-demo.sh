@@ -412,36 +412,36 @@ install_verticales_mathesar() {
 }
 
 install_nifi_sync() {
-  log "Fase 15 - Sincronizacion NiFi incremental"
+  log "Fase 11c - Sincronizacion NiFi incremental"
   bash scripts/dena/install-nifi-postgresql-driver.sh
   bash scripts/dena/provision-fase15-nifi.sh
 }
 
 install_keycloak_terraform() {
-  log "Fase 13 - Keycloak por Terraform"
+  log "Fase 12 - Keycloak por Terraform"
   bash scripts/dena/apply-fase12-keycloak.sh
 }
 
 install_apisix_dena_api() {
-  log "Fase 14 - API DENA y rutas APISIX"
+  log "Fase 13 - API DENA y rutas APISIX"
   bash scripts/dena/apply-dena-api.sh
   bash scripts/dena/apply-route.sh
 }
 
 install_grafana_terraform() {
-  log "Fase 15 - Grafana por Terraform"
+  log "Fase 14 - Grafana por Terraform"
   kubectl apply -f k8s-manifests/keycloak-servicemonitor.yaml
   kubectl apply -f k8s-manifests/postgresql-exporters.yaml
   bash scripts/dena/apply-fase14-grafana.sh
 }
 
 install_datalake_sql() {
-  log "Fase 16 - SQL datalake y staging"
+  log "Fase 15 - SQL datalake y staging"
   bash scripts/dena/apply-fase15-datalake.sh
 }
 
 install_spa_and_portainer() {
-  log "Fase 17 - SPA y Portainer"
+  log "Fases 16-18 - SPA, Portainer y consola admin"
   kubectl apply -f k8s-manifests/dena-interop-spa.yaml
   kubectl rollout status deployment/dena-interop-spa -n app --timeout=240s
   kubectl apply -f k8s-manifests/dena-admin-console.yaml

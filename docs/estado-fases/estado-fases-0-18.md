@@ -23,7 +23,7 @@ Se habilito MFA WebAuthn/FIDO2 para la consola admin DENA. El usuario `adminuser
   - redirect y web origin `http://localhost:30080`.
 
 - `k8s-manifests/keycloak-deployment.yaml`
-  - `KC_HOSTNAME=http://localhost:30080` para que Keycloak emita URLs coherentes con el tunel.
+  - `KC_HOSTNAME=http://localhost:30080` para que Keycloak emita URLs coherentes con el origen seguro de WebAuthn por túnel.
   - memoria aumentada a `512Mi` request y `1Gi` limit para evitar timeouts durante login/MFA.
 
 - Rutas APISIX de Keycloak

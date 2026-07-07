@@ -1,6 +1,6 @@
 # GitHub Actions
 
-Este repositorio incluye dos workflows:
+Este repositorio incluye tres workflows:
 
 - `Repo CI`: valida cambios de código y configuración en cada push a `main`, ramas `fases/**`, pull request y ejecución manual.
 - `Cluster Verify`: ejecuta manualmente las verificaciones de fases contra el clúster k3s desplegado.
@@ -12,7 +12,7 @@ El workflow `.github/workflows/repo-ci.yml` ejecuta:
 
 - `bash -n` sobre todos los scripts.
 - `shellcheck` sobre todos los scripts.
-- `jq empty` sobre los JSON de APISIX.
+- `jq empty` sobre los JSON de APISIX y dashboards de Grafana.
 - `actionlint` sobre workflows de GitHub Actions.
 - `yamllint` sobre configuración GitHub, values Helm y manifiestos Kubernetes.
 - `terraform fmt -check`, `terraform init -backend=false` y `terraform validate`.
@@ -39,7 +39,7 @@ base64 -w0 /home/dietpi/.kube/dena-config
 base64 -w0 .local/fase12-keycloak.env
 ```
 
-El input `phase` permite ejecutar todo (`all`) o una verificación concreta: `fase10`, `fase11`, `fase11b`, `fase12-nifi`, `fase12-keycloak`, `fase13`, `fase14` o `fase15`.
+El input `phase` permite ejecutar todo (`all`) o una verificación concreta: `fase10`, `fase11`, `fase11b`, `fase15-nifi`, `fase12-keycloak`, `fase13`, `fase14` o `fase15`.
 
 ## Phase Ops
 
@@ -49,7 +49,7 @@ El workflow `.github/workflows/phase-ops.yml` centraliza operaciones manuales so
 - `apply-fase12-keycloak`
 - `apply-fase14-grafana`
 - `apply-fase15-datalake`
-- `provision-fase12-nifi`
+- `provision-fase15-nifi`
 - `load-expedientes`
 - `apply-dena-api`
 - `apply-fase13-apisix`

@@ -16,8 +16,9 @@ NGINX sirve las dos páginas estáticas del namespace `app`: el portal ciudadano
 - Contenedor: `nginx:1.27-alpine`
 - Service interno: `dena-interop-spa:80`
 - Service interno: `dena-admin-console:80`
-- URL pública: `http://192.168.56.15:30080/`
-- URL admin: `http://192.168.56.15:30080/dena/admin-console`
+- URL gateway directa: `http://192.168.56.15:30080/`
+- URL web OIDC por tunel: `http://localhost:30080/`
+- URL admin con passkey por tunel: `http://localhost:30080/dena/admin-console`
 
 ## Cómo Se Usa
 
@@ -25,8 +26,11 @@ Normalmente no se entra a NGINX directamente. Se accede por APISIX:
 
 ```text
 http://192.168.56.15:30080/
-http://192.168.56.15:30080/dena/admin-console
+http://localhost:30080/
+http://localhost:30080/dena/admin-console
 ```
+
+Los logins de navegador usan `localhost:30080` porque WebAuthn/passkey solo funciona en origen seguro. En esta demo HTTP, `localhost` es el origen seguro; la IP directa se mantiene para comprobaciones de gateway/API.
 
 Ver logs:
 
@@ -58,7 +62,7 @@ La página hace:
 kubectl rollout status deployment/dena-interop-spa -n app
 kubectl rollout status deployment/dena-admin-console -n app
 curl -i http://192.168.56.15:30080/
-curl -i http://192.168.56.15:30080/dena/admin-console
+curl -H 'Host: localhost:30080' -i http://192.168.56.15:30080/dena/admin-console
 ```
 
 ## Por Qué Se Usa
