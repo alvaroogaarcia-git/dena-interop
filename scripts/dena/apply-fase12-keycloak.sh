@@ -84,6 +84,51 @@ terraform -chdir="$TF_DIR" apply -auto-approve \
   -target=keycloak_user.piloto_adminuser \
   -target=keycloak_user_roles.piloto_adminuser
 
+reconcile_keycloak_user() {
+  local username="$1"
+  local password="$2"
+  local realm="${3:-piloto}"
+  local user_id
+
+  user_id="$(
+    kubectl exec -n auth deploy/keycloak -- /opt/keycloak/bin/kcadm.sh get users \
+      -r "$realm" \
+      -q username="$username" \
+      --fields id \
+      --format csv \
+      --noquotes \
+      --server http://localhost:8080 \
+      --realm master \
+      --user admin \
+      --password "$TF_VAR_keycloak_admin_password" | tail -n 1 | tr -d '\r'
+  )"
+  [[ -n "$user_id" ]] || {
+    echo "No se encontro el usuario $username en el realm $realm" >&2
+    exit 1
+  }
+
+  kubectl exec -n auth deploy/keycloak -- /opt/keycloak/bin/kcadm.sh set-password \
+    -r "$realm" \
+    --username "$username" \
+    --new-password "$password" \
+    --temporary=false \
+    --server http://localhost:8080 \
+    --realm master \
+    --user admin \
+    --password "$TF_VAR_keycloak_admin_password" >/dev/null
+
+  kubectl exec -n auth deploy/keycloak -- /opt/keycloak/bin/kcadm.sh update "users/$user_id" \
+    -r "$realm" \
+    -s 'requiredActions=[]' \
+    --server http://localhost:8080 \
+    --realm master \
+    --user admin \
+    --password "$TF_VAR_keycloak_admin_password" >/dev/null
+}
+
+reconcile_keycloak_user testuser "$TF_VAR_testuser_password"
+reconcile_keycloak_user adminuser "$TF_VAR_adminuser_password"
+
 bash "$REPO_ROOT/scripts/dena/apply-recovery-operator.sh"
 
 client_secret="$(terraform -chdir="$TF_DIR" output -raw apisix_client_secret)"

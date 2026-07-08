@@ -81,6 +81,7 @@ El entorno está validado hasta Fase 18 de la guía de instalación:
 | --- | --- | --- |
 | Portal ciudadano con login OIDC | `http://localhost:30080/` via tunel SSH | `testuser` / `Test1234!` |
 | Consola admin DENA con passkey | `http://localhost:30080/dena/admin-console` via tunel SSH | `adminuser` / `Admin1234!` + passkey |
+| Recuperacion de passkey Keycloak | `http://localhost:30080/admin/piloto/console/` via tunel SSH | `recovery-operator` / password local en `.local/fase12-keycloak.env` |
 | Grafana | `http://192.168.56.15:31803/login` | `admin` / secret `monitoring/grafana-admin` |
 | Mathesar | `http://192.168.56.15:30900` | Usuario creado en la UI |
 | Portainer | `https://192.168.56.15:30779` | `admin` / password local de Portainer |
@@ -95,6 +96,24 @@ ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
 ```
 
 WebAuthn/passkey requiere origen seguro. En esta demo HTTP se usa `localhost:30080`; no usar la IP directa para la consola admin con passkey.
+
+## Recuperacion De Passkey
+
+Si `adminuser` pierde la passkey, entrar en Keycloak con `recovery-operator` y seguir la guia operativa:
+
+```bash
+grep '^TF_VAR_recovery_operator_password=' .local/fase12-keycloak.env
+```
+
+La guia documenta como revocar la credencial WebAuthn perdida, emitir una password temporal, forzar el reenrolado y generar/consumir backup codes:
+
+```bash
+bash scripts/dena/generate-recovery-backup-codes.sh
+export DENA_RECOVERY_CODE='XXXX-XXXX-XXXX-XXXX'
+bash scripts/dena/use-recovery-backup-code.sh
+```
+
+Referencia completa: [Recuperacion de passkey en Keycloak](docs/operacion/recuperacion-passkey-keycloak.md).
 
 ## Verificación rápida
 
@@ -153,6 +172,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Fase 15 - SQL del datalake y carga local](docs/guias/fase15-datalake.md)
 - [Flujo NiFi JDBC incremental actual, Fase 15](docs/guias/fase12-nifi-jdbc.md)
 - [Consola admin DENA](docs/herramientas/consola-admin-dena.md)
+- [Recuperacion de passkey en Keycloak](docs/operacion/recuperacion-passkey-keycloak.md)
 - [Runbook operativo](docs/operacion/runbook.md)
 - [Arquitectura](docs/arquitectura/arquitectura.md)
 - [Documentación de herramientas](docs/herramientas/README.md)

@@ -65,6 +65,9 @@ kcadm set-password -r "$REALM" \
   --new-password "$TF_VAR_recovery_operator_password" \
   --temporary=false >/dev/null
 
+user_id="$(kcadm get users -r "$REALM" -q username="$USERNAME" --fields id --format csv --noquotes | tail -n 1 | tr -d '\r')"
+kcadm update "users/$user_id" -r "$REALM" -s 'requiredActions=[]' >/dev/null
+
 kcadm add-roles -r "$REALM" \
   --uusername "$USERNAME" \
   --cclientid realm-management \
