@@ -75,7 +75,7 @@ def build_flow(args: argparse.Namespace) -> dict:
             properties={
                 "Database Connection Pooling Service": "Verticales DBCP",
                 "Table Name": f"{args.source_schema}.{args.source_table}",
-                "Maximum-value Columns": "updated_at,id",
+                "Maximum-value Columns": "updated_at",
                 "Record Writer": "JSON Record Writer",
             },
             auto_terminated_relationships=["failure", "retry"],
@@ -87,7 +87,8 @@ def build_flow(args: argparse.Namespace) -> dict:
             position={"x": 480.0, "y": 220.0},
             properties={
                 "Database Connection Pooling Service": "Datalake DBCP",
-                "Table Name": f"{args.staging_schema}.{args.staging_table}",
+                "Schema Name": args.staging_schema,
+                "Table Name": args.staging_table,
                 "Unmatched Column Behavior": "Ignore Unmatched Columns",
                 "Translate Field Names": "false",
                 "Statement Type": "INSERT",
@@ -125,7 +126,7 @@ def build_flow(args: argparse.Namespace) -> dict:
         "source": {
             "schema": args.source_schema,
             "table": args.source_table,
-            "incremental_columns": ["updated_at", "id"],
+            "incremental_columns": ["updated_at"],
         },
         "staging": {
             "schema": args.staging_schema,
@@ -155,7 +156,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Build the DENA Fase 15 NiFi flow spec.")
     parser.add_argument("--group-name", default="Fase 15 - DENA staging incremental")
     parser.add_argument("--source-schema", default="expedientes")
-    parser.add_argument("--source-table", default="admin_file")
+    parser.add_argument("--source-table", default="admin_file_nifi")
     parser.add_argument("--source-host", default="postgresql-verticales.verticales.svc.cluster.local")
     parser.add_argument("--source-port", default="5432")
     parser.add_argument("--source-db", default="expedientes")
@@ -179,7 +180,7 @@ def main() -> None:
         print()
         print("## Source")
         print(f"- {flow['source']['schema']}.{flow['source']['table']}")
-        print("- Incremental columns: updated_at, id")
+        print("- Incremental columns: updated_at")
         print()
         print("## Staging")
         print(f"- {flow['staging']['schema']}.{flow['staging']['table']}")

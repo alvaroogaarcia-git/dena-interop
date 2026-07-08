@@ -12,7 +12,7 @@ NIFI_PASSWORD="${NIFI_PASSWORD:-$(kubectl get secret -n datalake nifi-secret -o 
 GROUP_NAME="${GROUP_NAME:-Fase 15 - DENA staging incremental}"
 DB_NAME="${DB_NAME:-expedientes}"
 DB_SCHEMA="${DB_SCHEMA:-expedientes}"
-DB_TABLE="${DB_TABLE:-admin_file}"
+DB_TABLE="${DB_TABLE:-admin_file_nifi}"
 STAGING_DB_NAME="${STAGING_DB_NAME:-datalake}"
 STAGING_DB_SCHEMA="${STAGING_DB_SCHEMA:-dena}"
 STAGING_DB_TABLE="${STAGING_DB_TABLE:-admin_file_staging}"
@@ -281,7 +281,7 @@ if [[ -z "$query_id" ]]; then
       "Query Verticales Incremental" \
       "org.apache.nifi.processors.standard.QueryDatabaseTableRecord" \
       150.0 220.0 \
-      "{\"Database Connection Pooling Service\":\"$dbcp_id\",\"Table Name\":\"$DB_SCHEMA.$DB_TABLE\",\"Maximum-value Columns\":\"updated_at,id\",\"Record Writer\":\"$writer_id\"}" \
+      "{\"Database Connection Pooling Service\":\"$dbcp_id\",\"Table Name\":\"$DB_SCHEMA.$DB_TABLE\",\"Maximum-value Columns\":\"updated_at\",\"Record Writer\":\"$writer_id\"}" \
       "[\"failure\",\"retry\"]")" | json_get_id
   )"
 fi
@@ -293,7 +293,7 @@ if [[ -z "$staging_id" ]]; then
       "Persist Staging Batch" \
       "org.apache.nifi.processors.standard.PutDatabaseRecord" \
       480.0 220.0 \
-      "{\"Database Connection Pooling Service\":\"$staging_dbcp_id\",\"Table Name\":\"$STAGING_DB_SCHEMA.$STAGING_DB_TABLE\",\"Unmatched Column Behavior\":\"Ignore Unmatched Columns\",\"Translate Field Names\":\"false\",\"Statement Type\":\"INSERT\",\"Record Reader\":\"$reader_id\",\"Support Fragmented Transactions\":null}" \
+      "{\"Database Connection Pooling Service\":\"$staging_dbcp_id\",\"Schema Name\":\"$STAGING_DB_SCHEMA\",\"Table Name\":\"$STAGING_DB_TABLE\",\"Unmatched Column Behavior\":\"Ignore Unmatched Columns\",\"Translate Field Names\":\"false\",\"Statement Type\":\"INSERT\",\"Record Reader\":\"$reader_id\",\"Support Fragmented Transactions\":null}" \
       "[\"failure\",\"retry\"]")" | json_get_id
   )"
 fi
@@ -410,11 +410,11 @@ enable_service "$reader_id"
 
 echo "Aplicando propiedades de procesadores"
 configure_processor "$query_id" \
-  "{\"Database Connection Pooling Service\":\"$dbcp_id\",\"Table Name\":\"$DB_SCHEMA.$DB_TABLE\",\"Maximum-value Columns\":\"updated_at,id\",\"Record Writer\":\"$writer_id\"}" \
+  "{\"Database Connection Pooling Service\":\"$dbcp_id\",\"Table Name\":\"$DB_SCHEMA.$DB_TABLE\",\"Maximum-value Columns\":\"updated_at\",\"Record Writer\":\"$writer_id\"}" \
   "[\"failure\",\"retry\"]" \
   "30 sec"
 configure_processor "$staging_id" \
-  "{\"Database Connection Pooling Service\":\"$staging_dbcp_id\",\"Table Name\":\"$STAGING_DB_SCHEMA.$STAGING_DB_TABLE\",\"Unmatched Column Behavior\":\"Ignore Unmatched Columns\",\"Translate Field Names\":\"false\",\"Statement Type\":\"INSERT\",\"Record Reader\":\"$reader_id\",\"Support Fragmented Transactions\":null}" \
+  "{\"Database Connection Pooling Service\":\"$staging_dbcp_id\",\"Schema Name\":\"$STAGING_DB_SCHEMA\",\"Table Name\":\"$STAGING_DB_TABLE\",\"Unmatched Column Behavior\":\"Ignore Unmatched Columns\",\"Translate Field Names\":\"false\",\"Statement Type\":\"INSERT\",\"Record Reader\":\"$reader_id\",\"Support Fragmented Transactions\":null}" \
   "[\"failure\",\"retry\"]"
 configure_processor "$promote_id" \
   "{\"Database Connection Pooling Service\":\"$staging_dbcp_id\",\"SQL select query\":\"SELECT dena.dena_staging_to_main();\"}" \
@@ -471,4 +471,4 @@ start_processor "$promote_id"
 
 echo "Fase 15 aprovisionada."
 echo "Grupo: $GROUP_NAME"
-echo "Sincronizacion incremental: cada 30 sec por updated_at,id"
+echo "Sincronizacion incremental: cada 30 sec por updated_at"

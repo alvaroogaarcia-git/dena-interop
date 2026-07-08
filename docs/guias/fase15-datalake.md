@@ -55,7 +55,7 @@ El flujo incremental usa:
 - `PutDatabaseRecord` hacia `dena.admin_file_staging`
 - `ExecuteSQL` con `SELECT dena.dena_staging_to_main();`
 
-El `QueryDatabaseTableRecord` se ejecuta cada `30 sec` y compara `updated_at,id` para traer solo cambios.
+El `QueryDatabaseTableRecord` se ejecuta cada `30 sec` y compara `updated_at` para traer altas y ediciones.
 
 Generar el resumen del flujo:
 

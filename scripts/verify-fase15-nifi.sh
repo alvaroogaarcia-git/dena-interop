@@ -164,12 +164,12 @@ datalake_pw="$(kubectl get secret -n datalake postgresql-datalake -o jsonpath='{
 source_row="$(
   kubectl exec -i -n verticales postgresql-verticales-0 -- \
     env PGPASSWORD="$verticales_pw" \
-    psql -U postgres -d expedientes -Atc "SELECT status, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.US TZ') FROM expedientes.admin_file WHERE id = 1;"
+    psql -U postgres -d expedientes -Atc "SELECT status, to_char(date_trunc('milliseconds', updated_at), 'YYYY-MM-DD HH24:MI:SS.MS TZ') FROM expedientes.admin_file WHERE id = 1;"
 )"
 target_row="$(
   kubectl exec -i -n datalake postgresql-datalake-0 -- \
     env PGPASSWORD="$datalake_pw" \
-    psql -U postgres -d datalake -Atc "SELECT status, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.US TZ') FROM dena.admin_file WHERE source_id = 1;"
+    psql -U postgres -d datalake -Atc "SELECT status, to_char(date_trunc('milliseconds', updated_at), 'YYYY-MM-DD HH24:MI:SS.MS TZ') FROM dena.admin_file WHERE source_id = 1;"
 )"
 echo "verticales: $source_row"
 echo "datalake:   $target_row"

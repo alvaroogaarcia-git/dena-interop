@@ -2,11 +2,11 @@
 
 Nota de numeración: este flujo se implementó originalmente con el nombre interno `Fase 12`. En el plan consolidado queda como extensión 11c; la Fase 12 corresponde a Terraform y Keycloak. El stack actual usa el flujo consolidado de staging (`provision-fase15-nifi.sh` y `verify-fase15-nifi.sh`); los nombres `fase12` quedan como referencia histórica.
 
-Esta fase deja preparado un flujo NiFi reproducible para leer incrementalmente `expedientes.admin_file`, escribir lotes en `dena.admin_file_staging` y promocionarlos a `dena.admin_file`.
+Esta fase deja preparado un flujo NiFi reproducible para leer incrementalmente `expedientes.admin_file_nifi`, escribir lotes en `dena.admin_file_staging` y promocionarlos a `dena.admin_file`.
 
 ## Objetivo
 
-Tomar como fuente el PostgreSQL de `verticales`, consultar la tabla `expedientes.admin_file`, persistir cada lote en staging del datalake y ejecutar la función de promoción.
+Tomar como fuente el PostgreSQL de `verticales`, consultar la vista `expedientes.admin_file_nifi`, persistir cada lote en staging del datalake y ejecutar la función de promoción. Mathesar sigue editando la tabla real `expedientes.admin_file`; la vista solo aliasa `id` como `source_id` para el datalake.
 
 La lectura incremental se apoya en:
 

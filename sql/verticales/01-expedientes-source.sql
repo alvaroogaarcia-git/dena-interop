@@ -31,3 +31,16 @@ CREATE TRIGGER trg_touch_admin_file_updated_at
 BEFORE UPDATE ON expedientes.admin_file
 FOR EACH ROW
 EXECUTE FUNCTION expedientes.touch_admin_file_updated_at();
+
+CREATE OR REPLACE VIEW expedientes.admin_file_nifi AS
+SELECT
+  id AS source_id,
+  expediente_code,
+  title,
+  citizen_id,
+  source_system,
+  status,
+  amount_eur,
+  opened_at,
+  updated_at
+FROM expedientes.admin_file;

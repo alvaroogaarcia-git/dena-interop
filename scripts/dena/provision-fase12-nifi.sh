@@ -258,7 +258,7 @@ if [[ -z "$query_id" ]]; then
       "Query Verticales Incremental" \
       "org.apache.nifi.processors.standard.QueryDatabaseTableRecord" \
       150.0 220.0 \
-      "{\"Database Connection Pooling Service\":\"$dbcp_id\",\"Table Name\":\"$DB_SCHEMA.$DB_TABLE\",\"Maximum-value Columns\":\"updated_at,id\",\"Record Writer\":\"$writer_id\"}" \
+      "{\"Database Connection Pooling Service\":\"$dbcp_id\",\"Table Name\":\"$DB_SCHEMA.$DB_TABLE\",\"Maximum-value Columns\":\"updated_at\",\"Record Writer\":\"$writer_id\"}" \
       "[\"failure\",\"retry\"]")" | json_get_id
   )"
 fi
@@ -377,7 +377,7 @@ enable_service "$writer_id"
 
 echo "Aplicando propiedades de procesadores"
 configure_processor "$query_id" \
-  "{\"Database Connection Pooling Service\":\"$dbcp_id\",\"Table Name\":\"$DB_SCHEMA.$DB_TABLE\",\"Maximum-value Columns\":\"updated_at,id\",\"Record Writer\":\"$writer_id\"}" \
+  "{\"Database Connection Pooling Service\":\"$dbcp_id\",\"Table Name\":\"$DB_SCHEMA.$DB_TABLE\",\"Maximum-value Columns\":\"updated_at\",\"Record Writer\":\"$writer_id\"}" \
   "[\"failure\",\"retry\"]"
 configure_processor "$stamp_id" \
   "{\"filename\":\"fase12-\${now():format('yyyyMMdd-HHmmss')}-\${UUID()}.json\"}" \
