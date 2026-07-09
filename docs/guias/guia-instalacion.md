@@ -25,7 +25,7 @@ Convención de comandos:
 
 - `Servidor`: comando ejecutado dentro de la VM DietPi.
 - `Local`: comando ejecutado en la máquina de operador.
-- En este laboratorio, Codex opera desde `/home/dietpi`, que actúa como máquina de operador local contra el API server de k3s.
+- En este laboratorio, `/home/dietpi` actúa como máquina de operador local contra el API server de k3s.
 
 ## 1. Requisitos previos
 
