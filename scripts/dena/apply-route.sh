@@ -28,6 +28,9 @@ done
 kubectl rollout status deployment/apisix -n gateway --timeout=180s >/dev/null
 kubectl rollout status deployment/keycloak -n auth --timeout=300s >/dev/null
 kubectl rollout status deployment/postgrest -n datalake --timeout=180s >/dev/null
+if kubectl get deployment/postgrest-datos-externos -n datos-externos >/dev/null 2>&1; then
+  kubectl rollout status deployment/postgrest-datos-externos -n datos-externos --timeout=180s >/dev/null
+fi
 
 apisix_config="$(kubectl get configmap apisix -n gateway -o jsonpath='{.data.config\.yaml}')"
 admin_key="$(
@@ -79,6 +82,9 @@ put_file upstreams 1 "$REPO_ROOT/apisix/upstreams/1-postgrest.json"
 put_file upstreams 2 "$REPO_ROOT/apisix/upstreams/2-keycloak.json"
 put_file upstreams 3 "$REPO_ROOT/apisix/upstreams/3-dena-interop-spa.json"
 put_file upstreams 4 "$REPO_ROOT/apisix/upstreams/4-dena-admin-console.json"
+if [[ -r "$REPO_ROOT/apisix/upstreams/5-postgrest-datos-externos.json" ]]; then
+  put_file upstreams 5 "$REPO_ROOT/apisix/upstreams/5-postgrest-datos-externos.json"
+fi
 
 put_file routes keycloak-realms "$REPO_ROOT/apisix/routes/keycloak-realms.json"
 put_file routes keycloak-resources "$REPO_ROOT/apisix/routes/keycloak-resources.json"
@@ -87,6 +93,9 @@ put_file routes keycloak-auth-root "$REPO_ROOT/apisix/routes/keycloak-auth-root.
 put_file routes keycloak-auth-prefix "$REPO_ROOT/apisix/routes/keycloak-auth-prefix.json"
 put_template postgrest-api-oidc "$REPO_ROOT/apisix/routes/postgrest-api.template.json"
 put_template dena-admin-files-oidc "$REPO_ROOT/apisix/routes/dena-admin-files.template.json"
+if [[ -r "$REPO_ROOT/apisix/routes/dena-external-data.template.json" ]]; then
+  put_template dena-external-data-oidc "$REPO_ROOT/apisix/routes/dena-external-data.template.json"
+fi
 put_file routes dena-admin-console "$REPO_ROOT/apisix/routes/dena-admin-console.json"
 put_file routes dena-interop-spa-fallback "$REPO_ROOT/apisix/routes/dena-interop-spa.json"
 

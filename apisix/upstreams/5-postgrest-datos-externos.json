@@ -1,0 +1,8 @@
+{
+  "name": "postgrest-datos-externos",
+  "type": "roundrobin",
+  "scheme": "http",
+  "nodes": {
+    "postgrest-datos-externos.datos-externos.svc.cluster.local:3000": 1
+  }
+}

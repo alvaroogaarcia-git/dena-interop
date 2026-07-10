@@ -1,0 +1,25 @@
+{
+  "name": "dena-external-data-oidc",
+  "uris": ["/dena/external", "/dena/external/*"],
+  "methods": ["GET", "HEAD", "OPTIONS"],
+  "upstream_id": "5",
+  "plugins": {
+    "openid-connect": {
+      "client_id": "apisix-gateway",
+      "client_secret": "__OIDC_CLIENT_SECRET__",
+      "discovery": "http://192.168.56.15:30080/realms/piloto/.well-known/openid-configuration",
+      "introspection_endpoint": "http://192.168.56.15:30080/realms/piloto/protocol/openid-connect/token/introspect",
+      "introspection_endpoint_auth_method": "client_secret_basic",
+      "bearer_only": true,
+      "realm": "piloto",
+      "ssl_verify": false,
+      "timeout": 10
+    },
+    "proxy-rewrite": {
+      "regex_uri": ["^/dena/external/?(.*)", "/$1"],
+      "headers": {
+        "remove": ["Authorization"]
+      }
+    }
+  }
+}
