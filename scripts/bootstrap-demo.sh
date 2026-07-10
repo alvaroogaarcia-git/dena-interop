@@ -473,6 +473,11 @@ install_spa_and_portainer() {
   PORTAINER_ADMIN_PASSWORD="$PORTAINER_ADMIN_PASSWORD" bash scripts/dena/init-portainer.sh
 }
 
+install_datos_externos() {
+  log "Fase 19 - PostgreSQL datos externos DENA"
+  bash scripts/dena/apply-fase19-datos-externos.sh
+}
+
 print_summary() {
   cat <<EOF
 
@@ -530,9 +535,11 @@ user_stage() {
   install_datalake_sql
   install_nifi_sync
   install_spa_and_portainer
+  install_datos_externos
 
   log "Verificacion final"
   bash scripts/wait-ready.sh
+  bash scripts/verify-fase19-datos-externos.sh
   bash scripts/verify-stack.sh
   print_summary
 }

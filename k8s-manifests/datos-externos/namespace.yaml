@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: datos-externos
+  labels:
+    app.kubernetes.io/part-of: ena-interop
+    dena.euskadi/component: datos-externos

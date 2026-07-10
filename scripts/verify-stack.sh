@@ -33,6 +33,7 @@ bash "$REPO_ROOT/scripts/verify-fase12-keycloak.sh"
 bash "$REPO_ROOT/scripts/verify-fase13.sh"
 bash "$REPO_ROOT/scripts/verify-fase14.sh"
 bash "$REPO_ROOT/scripts/verify-fase15.sh"
+bash "$REPO_ROOT/scripts/verify-fase19-datos-externos.sh"
 
 echo
 echo "[4/8] Cliente SPA"

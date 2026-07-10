@@ -14,6 +14,7 @@ Formato recomendado:
 - [verticales / expedientes](verticales-expedientes.md)
 - [verticales / mathesar_django](verticales-mathesar-django.md)
 - [datalake / dena](datalake-dena.md)
+- [datos-externos / datos_externos](datos-externos-dena.md)
 
 ## Comando Base
 
@@ -36,4 +37,3 @@ kubectl exec -i -n <namespace> <pod> -- \
 - Los valores demo que sí están fijados aparecen en los documentos individuales.
 - Los secretos que no están fijados en Git se leen desde `kubectl get secret`.
 - Si quieres solo consultar una tabla concreta, usa `-c "select ..."` en lugar de abrir la consola interactiva.
-

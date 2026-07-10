@@ -29,6 +29,7 @@ El entorno está validado hasta Fase 18 de la guía de instalación:
 | 16 | Cliente demo SPA servido por APISIX | Validado |
 | 17 | Portainer para inspección operativa | Validado |
 | 18 | Consola admin DENA para operación funcional | Validado |
+| 19 | PostgreSQL aislado para datos externos Markdown DENA | Validado |
 
 ## Qué hay desplegado
 
@@ -73,7 +74,12 @@ El entorno está validado hasta Fase 18 de la guía de instalación:
   - Mathesar `0.11.0` publicado en `NodePort 30900`.
 - Namespace `portainer`
   - Portainer CE `2.39.3` publicado en HTTPS `NodePort 30779`.
-- El alcance definido hasta Fase 18 está completado.
+- Namespace `datos-externos`
+  - PostgreSQL independiente preparado mediante chart Bitnami.
+  - Base `datos_externos` para el modelo semantico DENA derivado de Markdown.
+  - Seed demo con 50 expedientes, notificaciones, pagos, citas, personas y trazas REST.
+  - Sin exposicion externa, APISIX, Ingress ni NodePort.
+- El alcance definido hasta Fase 19 está completado.
 
 ## Accesos Demo
 
@@ -141,6 +147,7 @@ bash scripts/verify-fase13.sh
 bash scripts/verify-fase14.sh
 bash scripts/verify-fase15.sh
 bash scripts/dena/test-curl.sh
+bash scripts/verify-fase19-datos-externos.sh
 bash scripts/verify-stack.sh
 ```
 
@@ -170,6 +177,8 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [GitHub Actions](docs/operacion/github-actions.md)
 - [Histórico de estados validados por fase](docs/estado-fases/README.md)
 - [Fase 15 - SQL del datalake y carga local](docs/guias/fase15-datalake.md)
+- [Fase 19 - PostgreSQL datos externos desde Markdown DENA](docs/guias/fase19-datos-externos.md)
+- [Acceso a datos-externos / datos_externos](docs/acceso-bd/datos-externos-dena.md)
 - [Flujo NiFi JDBC incremental actual, Fase 15](docs/guias/fase12-nifi-jdbc.md)
 - [Consola admin DENA](docs/herramientas/consola-admin-dena.md)
 - [Recuperacion de passkey en Keycloak](docs/operacion/recuperacion-passkey-keycloak.md)
