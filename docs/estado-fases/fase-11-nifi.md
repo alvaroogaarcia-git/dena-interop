@@ -32,5 +32,5 @@ bash scripts/verify-fase11.sh
 
 ## Referencias
 
-- [Historico 0-11](estado-fases-0-11.md)
+- [Historico 0-11](historico/estado-fases-0-11.md)
 - [Manifiesto NiFi](../../k8s-manifests/nifi-deployment.yaml)

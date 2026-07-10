@@ -32,4 +32,4 @@ Todos deben aparecer con estado `Active`.
 
 ## Referencias
 
-- [Historico 0-3](estado-fases-0-3.md)
+- [Historico 0-3](historico/estado-fases-0-3.md)

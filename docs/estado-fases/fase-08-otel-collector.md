@@ -31,5 +31,5 @@ kubectl get daemonset,pods -n monitoring -l app.kubernetes.io/instance=otel-coll
 
 ## Referencias
 
-- [Historico 0-10](estado-fases-0-10.md)
+- [Historico 0-10](historico/estado-fases-0-10.md)
 - [OTel Collector](../herramientas/otel-collector.md)

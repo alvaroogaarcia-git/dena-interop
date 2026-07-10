@@ -35,5 +35,5 @@ bash scripts/verify-fase10.sh
 
 ## Referencias
 
-- [Historico 0-10](estado-fases-0-10.md)
+- [Historico 0-10](historico/estado-fases-0-10.md)
 - [Manifiesto PostgREST](../../k8s-manifests/postgrest-deployment.yaml)

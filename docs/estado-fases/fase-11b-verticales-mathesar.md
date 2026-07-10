@@ -42,5 +42,5 @@ bash scripts/verify-fase11b.sh
 
 ## Referencias
 
-- [Historico 0-11b](estado-fases-0-11b.md)
+- [Historico 0-11b](historico/estado-fases-0-11b.md)
 - [Mathesar](../herramientas/mathesar.md)

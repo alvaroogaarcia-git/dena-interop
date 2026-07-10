@@ -30,5 +30,5 @@ kubectl logs -n auth deploy/keycloak --tail=80
 
 ## Referencias
 
-- [Historico 0-6](estado-fases-0-6.md)
+- [Historico 0-6](historico/estado-fases-0-6.md)
 - [Manifiesto Keycloak](../../k8s-manifests/keycloak-deployment.yaml)

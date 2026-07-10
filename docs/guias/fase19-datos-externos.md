@@ -42,7 +42,7 @@ sql/datos-externos/003_demo_data.sql
 sql/datos-externos/004_nifi_staging.sql
 sql/datos-externos/README.md
 docs/guias/fase19-datos-externos.md
-docs/estado-fases/estado-fases-0-19.md
+docs/estado-fases/historico/estado-fases-0-19.md
 docs/acceso-bd/datos-externos-dena.md
 ```
 

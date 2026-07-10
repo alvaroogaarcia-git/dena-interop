@@ -41,5 +41,5 @@ curl -i http://192.168.56.15:31803/login
 
 ## Referencias
 
-- [Historico 0-7](estado-fases-0-7.md)
+- [Historico 0-7](historico/estado-fases-0-7.md)
 - [Grafana observabilidad](../arquitectura/grafana-observabilidad.md)

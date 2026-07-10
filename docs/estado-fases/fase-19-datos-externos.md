@@ -28,5 +28,5 @@ bash scripts/verify-fase19-datos-externos.sh
 
 ## Referencias
 
-- [Historico fase 19](estado-fases-0-19.md)
+- [Historico fase 19](historico/estado-fases-0-19.md)
 - [Guia Fase 19](../guias/fase19-datos-externos.md)

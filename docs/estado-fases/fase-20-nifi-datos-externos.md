@@ -27,5 +27,5 @@ bash scripts/verify-fase20-datos-externos-nifi.sh
 
 ## Referencias
 
-- [Historico fase 20](estado-fases-0-20.md)
+- [Historico fase 20](historico/estado-fases-0-20.md)
 - [Guia Fase 20](../guias/fase20-nifi-datos-externos.md)

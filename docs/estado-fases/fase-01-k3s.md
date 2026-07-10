@@ -36,4 +36,4 @@ El nodo debe aparecer `Ready`.
 
 ## Referencias
 
-- [Historico 0-3](estado-fases-0-3.md)
+- [Historico 0-3](historico/estado-fases-0-3.md)

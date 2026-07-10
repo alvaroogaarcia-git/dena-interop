@@ -30,5 +30,5 @@ curl -kI https://192.168.56.15:30779
 
 ## Referencias
 
-- [Historico 0-17](estado-fases-0-17.md)
+- [Historico 0-17](historico/estado-fases-0-17.md)
 - [Portainer](../herramientas/portainer.md)

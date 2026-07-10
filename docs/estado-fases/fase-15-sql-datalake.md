@@ -28,5 +28,5 @@ bash scripts/verify-fase15.sh
 
 ## Referencias
 
-- [Historico 0-15](estado-fases-0-15.md)
+- [Historico 0-15](historico/estado-fases-0-15.md)
 - [Guia Fase 15](../guias/fase15-datalake.md)

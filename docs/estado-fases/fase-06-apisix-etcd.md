@@ -38,5 +38,5 @@ En esta fase es normal no tener rutas funcionales todavia.
 
 ## Referencias
 
-- [Historico 0-6](estado-fases-0-6.md)
+- [Historico 0-6](historico/estado-fases-0-6.md)
 - [Valores APISIX](../../helm-values/apisix-values.yaml)

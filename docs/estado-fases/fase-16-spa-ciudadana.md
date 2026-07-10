@@ -30,5 +30,5 @@ curl -i http://192.168.56.15:30080/
 
 ## Referencias
 
-- [Historico 0-17](estado-fases-0-17.md)
+- [Historico 0-17](historico/estado-fases-0-17.md)
 - [SPA cliente](../herramientas/spa-cliente-dena.md)

@@ -36,6 +36,6 @@ http://localhost:30080/dena/admin-console
 
 ## Referencias
 
-- [Historico fase 18](estado-fases-0-18.md)
+- [Historico fase 18](historico/estado-fases-0-18.md)
 - [Consola admin DENA](../herramientas/consola-admin-dena.md)
 - [Recuperacion passkey](../operacion/recuperacion-passkey-keycloak.md)

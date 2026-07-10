@@ -29,5 +29,5 @@ bash scripts/verify-fase14.sh
 
 ## Referencias
 
-- [Historico 0-14](estado-fases-0-14.md)
+- [Historico 0-14](historico/estado-fases-0-14.md)
 - [Grafana observabilidad](../arquitectura/grafana-observabilidad.md)

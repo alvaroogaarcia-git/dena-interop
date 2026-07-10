@@ -33,5 +33,5 @@ bash scripts/verify-fase13.sh
 
 ## Referencias
 
-- [Historico 0-13](estado-fases-0-13.md)
+- [Historico 0-13](historico/estado-fases-0-13.md)
 - [APISIX](../herramientas/apisix.md)

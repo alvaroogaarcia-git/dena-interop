@@ -33,5 +33,5 @@ kubectl get pods,svc,pvc -n auth -l app.kubernetes.io/name=postgresql -o wide
 
 ## Referencias
 
-- [Historico 0-6](estado-fases-0-6.md)
+- [Historico 0-6](historico/estado-fases-0-6.md)
 - [Valores Helm](../../helm-values/postgresql-values.yaml)

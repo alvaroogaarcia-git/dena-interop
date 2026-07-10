@@ -49,4 +49,4 @@ Debe responder `root`, mostrar la IP host-only, tener memoria suficiente y disco
 ## Referencias
 
 - [Guia de replicacion de VM](../operacion/configuracion-vm-previa.md)
-- [Historico 0-3](estado-fases-0-3.md)
+- [Historico 0-3](historico/estado-fases-0-3.md)

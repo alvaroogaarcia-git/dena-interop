@@ -30,4 +30,4 @@ Debe terminar sin procesadores invalidos ni conexiones duplicadas.
 ## Referencias
 
 - [Flujo NiFi JDBC](../guias/fase12-nifi-jdbc.md)
-- [Historico 0-11b](estado-fases-0-11b.md)
+- [Historico 0-11b](historico/estado-fases-0-11b.md)

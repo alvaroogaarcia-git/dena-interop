@@ -30,5 +30,5 @@ kubectl get pods,svc,pvc -n datalake -l app.kubernetes.io/name=postgresql -o wid
 
 ## Referencias
 
-- [Historico 0-10](estado-fases-0-10.md)
+- [Historico 0-10](historico/estado-fases-0-10.md)
 - [Valores datalake](../../helm-values/postgresql-datalake-values.yaml)

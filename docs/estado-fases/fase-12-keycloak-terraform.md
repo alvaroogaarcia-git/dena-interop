@@ -32,5 +32,5 @@ Algunos scripts conservan `fase12` en el nombre por compatibilidad historica. Es
 
 ## Referencias
 
-- [Historico 0-13](estado-fases-0-13.md)
+- [Historico 0-13](historico/estado-fases-0-13.md)
 - [Recuperacion passkey](../operacion/recuperacion-passkey-keycloak.md)

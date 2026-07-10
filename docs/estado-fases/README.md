@@ -34,18 +34,18 @@ Los documentos antiguos se conservan como cortes de validacion historicos:
 
 | Corte | Archivo |
 | --- | --- |
-| Fases 0-3 | [estado-fases-0-3.md](estado-fases-0-3.md) |
-| Fases 0-6 | [estado-fases-0-6.md](estado-fases-0-6.md) |
-| Fases 0-7 | [estado-fases-0-7.md](estado-fases-0-7.md) |
-| Fases 0-10 | [estado-fases-0-10.md](estado-fases-0-10.md) |
-| Fases 0-11 | [estado-fases-0-11.md](estado-fases-0-11.md) |
-| Fases 0-11b | [estado-fases-0-11b.md](estado-fases-0-11b.md) |
-| Fases 0-13 | [estado-fases-0-13.md](estado-fases-0-13.md) |
-| Fases 0-14 | [estado-fases-0-14.md](estado-fases-0-14.md) |
-| Fases 0-15 | [estado-fases-0-15.md](estado-fases-0-15.md) |
-| Fases 0-17 | [estado-fases-0-17.md](estado-fases-0-17.md) |
-| Fase 18 | [estado-fases-0-18.md](estado-fases-0-18.md) |
-| Fase 19 | [estado-fases-0-19.md](estado-fases-0-19.md) |
-| Fase 20 | [estado-fases-0-20.md](estado-fases-0-20.md) |
+| Fases 0-3 | [estado-fases-0-3.md](historico/estado-fases-0-3.md) |
+| Fases 0-6 | [estado-fases-0-6.md](historico/estado-fases-0-6.md) |
+| Fases 0-7 | [estado-fases-0-7.md](historico/estado-fases-0-7.md) |
+| Fases 0-10 | [estado-fases-0-10.md](historico/estado-fases-0-10.md) |
+| Fases 0-11 | [estado-fases-0-11.md](historico/estado-fases-0-11.md) |
+| Fases 0-11b | [estado-fases-0-11b.md](historico/estado-fases-0-11b.md) |
+| Fases 0-13 | [estado-fases-0-13.md](historico/estado-fases-0-13.md) |
+| Fases 0-14 | [estado-fases-0-14.md](historico/estado-fases-0-14.md) |
+| Fases 0-15 | [estado-fases-0-15.md](historico/estado-fases-0-15.md) |
+| Fases 0-17 | [estado-fases-0-17.md](historico/estado-fases-0-17.md) |
+| Fase 18 | [estado-fases-0-18.md](historico/estado-fases-0-18.md) |
+| Fase 19 | [estado-fases-0-19.md](historico/estado-fases-0-19.md) |
+| Fase 20 | [estado-fases-0-20.md](historico/estado-fases-0-20.md) |
 
 Para reconstruir una VM completa desde cero, usar tambien la [guia paso a paso de replicacion](../operacion/configuracion-vm-previa.md).
