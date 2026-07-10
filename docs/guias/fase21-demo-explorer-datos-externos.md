@@ -34,6 +34,8 @@ Esta fase añade una vista navegable en la consola admin para consultar la Postg
   - Campo `Identificador ciudadano`.
   - Panel `Mis carpetas`.
   - Panel `Mis datos conectados`.
+  - Panel `Requiere mi atención` con avisos prioritarios.
+  - Panel `Línea de vida` con actividad consolidada.
   - Carpetas filtradas por ciudadano: expedientes, notificaciones, pagos, citas y datos personales.
 
 ## Despliegue
@@ -70,7 +72,17 @@ En la demo cliente:
 - Usar `testuser / Test1234!`.
 - Mantener `CIT-10001` para ver el ciudadano demo con datos enlazados.
 - Pulsar `Consultar expedientes`.
+- Revisar `Requiere mi atención` y `Línea de vida`.
 - Usar `Mis carpetas` para alternar entre expedientes, notificaciones, pagos, citas y datos personales.
+
+`Requiere mi atención` agrega avisos de:
+
+- Expedientes en espera de respuesta.
+- Notificaciones pendientes de lectura.
+- Pagos pendientes, rechazados o con error.
+- Citas próximas o de prioridad alta.
+
+`Línea de vida` mezcla las carpetas ciudadanas y ordena los eventos por fecha para mostrar una historia única del ciudadano.
 
 ## Comprobación rápida
 
@@ -96,6 +108,7 @@ Comprobaciones realizadas tras el despliegue:
 - `GET /dena/external/dena_external_folders` devuelve 6 carpetas.
 - `GET /dena/external/dena_external_expedientes` devuelve expedientes desde `datos_externos`.
 - En la demo cliente, `CIT-10001` devuelve 1 fila en cada carpeta ciudadana: expedientes, notificaciones, pagos, citas y datos personales.
+- Para `CIT-10001`, `Requiere mi atención` muestra la notificación pendiente `NOT-0001`.
 
 ## Relacion con NiFi
 

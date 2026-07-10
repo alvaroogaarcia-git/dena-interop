@@ -51,11 +51,22 @@ El campo `Identificador ciudadano` filtra la demo por ciudadano. El valor inicia
 
 Tras iniciar sesión se muestran:
 
+- Bandeja `Requiere mi atención` con avisos prioritarios.
+- `Línea de vida` unificada ordenada por fecha.
 - Expedientes del ciudadano.
 - Notificaciones relacionadas.
 - Pagos relacionados.
 - Citas relacionadas.
 - Datos personales consolidados.
+
+La bandeja `Requiere mi atención` se calcula en navegador a partir de las carpetas ciudadanas:
+
+- Expedientes en espera de respuesta del interesado.
+- Notificaciones pendientes de lectura.
+- Pagos pendientes, rechazados o con error.
+- Citas próximas o de prioridad alta.
+
+La `Línea de vida` combina todos los registros del ciudadano y los ordena por fecha para enseñar la actividad completa sin tener que abrir cada carpeta por separado.
 
 ## Qué Contiene En Este Caso
 
@@ -74,6 +85,19 @@ Comprobaciones adicionales de las carpetas ciudadanas:
 curl -H "Authorization: Bearer $TOKEN" \
   "http://192.168.56.15:30080/dena/external/dena_external_expedientes?select=id,titulo,estado&persona_id=eq.CIT-10001&limit=2"
 ```
+
+Para `CIT-10001`, la demo debe mostrar:
+
+- Una notificación pendiente en `Requiere mi atención`.
+- Eventos en la línea de vida para expediente, notificación, pago, cita y datos personales.
+
+Comprobación manual desde navegador:
+
+1. Abrir `http://localhost:30080/` con el túnel activo.
+2. Mantener `CIT-10001`.
+3. Pulsar `Consultar expedientes`.
+4. Confirmar que `Requiere mi atención` muestra `NOT-0001`.
+5. Confirmar que `Línea de vida` mezcla expediente, notificación, pago, cita y datos personales.
 
 ## Por Qué Se Usa
 

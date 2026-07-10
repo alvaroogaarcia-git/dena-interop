@@ -401,6 +401,53 @@ data:
             font-family: "SFMono-Regular", Consolas, monospace;
             font-size: .8rem;
           }
+          .citizen-overview {
+            display: grid;
+            grid-template-columns: 360px minmax(0, 1fr);
+            gap: 14px;
+            margin-bottom: 14px;
+          }
+          .attention-list, .timeline-list {
+            display: grid;
+            gap: 10px;
+            padding: 14px 18px 18px;
+          }
+          .attention-card, .timeline-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface-soft);
+            padding: 11px;
+          }
+          .attention-card.warn {
+            border-color: #f3d38b;
+            background: #fff8e6;
+          }
+          .attention-card.bad {
+            border-color: #ecc6c6;
+            background: #fff1f1;
+          }
+          .attention-card strong, .timeline-card strong {
+            display: block;
+            font-size: .92rem;
+          }
+          .attention-card span, .timeline-card span {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: .84rem;
+            line-height: 1.35;
+          }
+          .timeline-card {
+            display: grid;
+            grid-template-columns: 94px minmax(0, 1fr);
+            gap: 12px;
+          }
+          .timeline-date {
+            color: var(--muted);
+            font-size: .78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+          }
           .detail-head {
             justify-content: space-between;
             gap: 12px;
@@ -452,7 +499,7 @@ data:
             border-color: #f3d38b;
           }
           @media (max-width: 980px) {
-            .workspace, .visuals, .citizen-data-grid { grid-template-columns: 1fr; }
+            .workspace, .visuals, .citizen-data-grid, .citizen-overview { grid-template-columns: 1fr; }
             .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           }
           @media (max-width: 640px) {
@@ -589,6 +636,26 @@ data:
                 <div class="metric"><span>Última actualización</span><strong>-</strong></div>
                 <div class="metric"><span>Organismos</span><strong>0</strong></div>
               </div>
+              <div class="citizen-overview">
+                <section class="panel">
+                  <div class="panel-head">
+                    <h2>Requiere mi atención</h2>
+                    <p>Pagos, notificaciones, citas o expedientes que necesitan revisión.</p>
+                  </div>
+                  <div class="attention-list" id="attentionList">
+                    <div class="empty">Consulta un ciudadano para ver avisos.</div>
+                  </div>
+                </section>
+                <section class="panel">
+                  <div class="panel-head">
+                    <h2>Línea de vida</h2>
+                    <p>Actividad consolidada de expedientes, notificaciones, pagos, citas y datos personales.</p>
+                  </div>
+                  <div class="timeline-list" id="timelineList">
+                    <div class="empty">Consulta un ciudadano para ver su línea de vida.</div>
+                  </div>
+                </section>
+              </div>
               <div class="visuals">
                 <section class="panel">
                   <div class="panel-head">
@@ -665,6 +732,8 @@ data:
           const citizenDataWrap = document.querySelector("#citizenDataWrap");
           const citizenDataDetail = document.querySelector("#citizenDataDetail");
           const citizenDataLabel = document.querySelector("#citizenDataLabel");
+          const attentionList = document.querySelector("#attentionList");
+          const timelineList = document.querySelector("#timelineList");
 
           const statusLabels = {
             abierto: "Abierto",
@@ -692,6 +761,7 @@ data:
           let selectedIndex = null;
           let activeCitizenFolder = "expedientes";
           let citizenRows = [];
+          let citizenFolderData = {};
           const citizenFolders = {
             expedientes: { title: "Mis expedientes", endpoint: "dena_external_expedientes", filterKey: "persona_id" },
             notificaciones: { title: "Notificaciones", endpoint: "dena_external_notificaciones", filterKey: "persona_id" },
@@ -1194,7 +1264,7 @@ data:
               }
               const payload = await apiResponse.json();
               renderPayload(payload, filters.local);
-              await loadCitizenData(tokenJson);
+              await loadCitizenOverview(tokenJson);
               setStatus(`Consulta correcta: ${lastRows.length} expedientes.`, lastRows.length ? "ok" : "warn");
             } catch (error) {
               tableWrap.innerHTML = `<div class="empty">${escapeHtml(error.message || error)}</div>`;
@@ -1297,10 +1367,119 @@ data:
             const tokenJson = existingToken || await getToken();
             const query = `${folder.endpoint}?select=*&${folder.filterKey}=eq.${encodeURIComponent(citizenId)}&order=fecha.desc.nullslast&limit=50`;
             citizenRows = await fetchCitizenEndpoint(tokenJson, query);
+            citizenFolderData[activeCitizenFolder] = citizenRows;
             renderCitizenDataTable(citizenRows);
             const button = citizenFolderList.querySelector(`[data-folder="${activeCitizenFolder}"]`);
             if (button) button.dataset.total = String(citizenRows.length);
             renderCitizenFolderButtons();
+          }
+
+          function eventDate(row) {
+            const value = externalValue(row, ["fecha", "sincronizado_en", "creado_en"], "");
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? null : date;
+          }
+
+          function addTimelineEvent(events, folder, row, label) {
+            const date = eventDate(row) || new Date(0);
+            events.push({
+              folder,
+              date,
+              title: externalValue(row, ["titulo", "id"], label),
+              subtitle: `${label} · ${externalValue(row, ["estado", "tipo", "prioridad", "grupo"], "sin estado")}`,
+              related: externalValue(row, ["expediente_id", "persona_id", "id"], "")
+            });
+          }
+
+          function attentionFromData(data) {
+            const items = [];
+            (data.expedientes || []).forEach((row) => {
+              if (["WAITING_FOR_INTERESTED_PARTY_RESPONSE", "OPENED"].includes(row.estado)) {
+                items.push({
+                  kind: row.estado === "WAITING_FOR_INTERESTED_PARTY_RESPONSE" ? "bad" : "warn",
+                  title: `${row.id}: expediente requiere revisión`,
+                  text: row.estado === "WAITING_FOR_INTERESTED_PARTY_RESPONSE"
+                    ? "La administración espera una respuesta o documentación del ciudadano."
+                    : "El expediente está abierto y pendiente de avance administrativo."
+                });
+              }
+            });
+            (data.notificaciones || []).forEach((row) => {
+              if (row.estado === "PENDING_TO_BE_READED_BY_DESTINATION") {
+                items.push({ kind: "bad", title: `${row.id}: notificación pendiente`, text: "Hay una notificación pendiente de lectura." });
+              }
+            });
+            (data.pagos || []).forEach((row) => {
+              if (["PENDING", "REJECTED_BY_PAYMENT_PROCESSOR", "ERROR_WHEN_PROCESSING_PAYMENT"].includes(row.estado)) {
+                items.push({ kind: "bad", title: `${row.id}: pago pendiente`, text: `${externalValue(row, ["titulo"], "Pago")} · ${currency.format(Number(row.importe_eur || 0))}` });
+              }
+            });
+            (data.citas || []).forEach((row) => {
+              const date = eventDate(row);
+              const upcoming = date && date.getTime() > Date.now() && date.getTime() < Date.now() + 30 * 24 * 60 * 60 * 1000;
+              if (upcoming || row.prioridad === "HIGH") {
+                items.push({ kind: row.prioridad === "HIGH" ? "bad" : "warn", title: `${row.id}: cita próxima`, text: `${formatDateTime(row.fecha)} · ${externalValue(row, ["ubicacion"], "ubicación pendiente")}` });
+              }
+            });
+            return items.slice(0, 8);
+          }
+
+          function renderAttention(data) {
+            const items = attentionFromData(data);
+            if (!items.length) {
+              attentionList.innerHTML = '<div class="empty">No hay avisos prioritarios para este ciudadano.</div>';
+              return;
+            }
+            attentionList.innerHTML = items.map((item) => `
+              <div class="attention-card ${escapeHtml(item.kind)}">
+                <strong>${escapeHtml(item.title)}</strong>
+                <span>${escapeHtml(item.text)}</span>
+              </div>
+            `).join("");
+          }
+
+          function renderTimeline(data) {
+            const events = [];
+            (data.expedientes || []).forEach((row) => addTimelineEvent(events, "expedientes", row, "Expediente"));
+            (data.notificaciones || []).forEach((row) => addTimelineEvent(events, "notificaciones", row, "Notificación"));
+            (data.pagos || []).forEach((row) => addTimelineEvent(events, "pagos", row, "Pago"));
+            (data.citas || []).forEach((row) => addTimelineEvent(events, "citas", row, "Cita"));
+            (data.personas || []).forEach((row) => addTimelineEvent(events, "personas", row, "Datos personales"));
+            const sorted = events.sort((a, b) => b.date - a.date).slice(0, 12);
+            if (!sorted.length) {
+              timelineList.innerHTML = '<div class="empty">No hay eventos para este ciudadano.</div>';
+              return;
+            }
+            timelineList.innerHTML = sorted.map((event) => `
+              <div class="timeline-card">
+                <div class="timeline-date">${escapeHtml(formatDate(event.date))}</div>
+                <div>
+                  <strong>${escapeHtml(event.title)}</strong>
+                  <span>${escapeHtml(event.subtitle)}</span>
+                  <span>${escapeHtml(event.related)}</span>
+                </div>
+              </div>
+            `).join("");
+          }
+
+          async function loadCitizenOverview(existingToken = null) {
+            const tokenJson = existingToken || await getToken();
+            const citizenId = selectedCitizenId();
+            const entries = await Promise.all(Object.entries(citizenFolders).map(async ([folder, meta]) => {
+              const query = `${meta.endpoint}?select=*&${meta.filterKey}=eq.${encodeURIComponent(citizenId)}&order=fecha.desc.nullslast&limit=50`;
+              const rows = await fetchCitizenEndpoint(tokenJson, query);
+              return [folder, rows];
+            }));
+            citizenFolderData = Object.fromEntries(entries);
+            Object.entries(citizenFolderData).forEach(([folder, rows]) => {
+              const button = citizenFolderList.querySelector(`[data-folder="${folder}"]`);
+              if (button) button.dataset.total = String(rows.length);
+            });
+            renderCitizenFolderButtons();
+            citizenRows = citizenFolderData[activeCitizenFolder] || [];
+            renderCitizenDataTable(citizenRows);
+            renderAttention(citizenFolderData);
+            renderTimeline(citizenFolderData);
           }
 
           function applyPreset(name) {
@@ -1330,8 +1509,8 @@ data:
           });
 
           citizenRefreshButton.addEventListener("click", () => {
-            loadCitizenData()
-              .then(() => setStatus(`Carpeta actualizada: ${citizenFolders[activeCitizenFolder].title}.`, "ok"))
+            loadCitizenOverview()
+              .then(() => setStatus("Vista ciudadana actualizada.", "ok"))
               .catch((error) => setStatus(error.message || String(error), "bad"));
           });
 
