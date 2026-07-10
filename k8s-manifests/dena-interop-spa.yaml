@@ -195,6 +195,29 @@ data:
             padding: 7px 9px;
             font-size: .86rem;
           }
+          .folder-list {
+            display: grid;
+            gap: 8px;
+            padding: 14px 18px 18px;
+          }
+          .folder-button {
+            width: 100%;
+            justify-content: space-between;
+            background: var(--surface);
+            color: var(--ink);
+            border: 1px solid var(--line);
+          }
+          .folder-button:hover {
+            background: var(--surface-soft);
+          }
+          .folder-button.active {
+            border-color: var(--brand);
+            background: var(--brand-soft);
+          }
+          .folder-button span {
+            color: var(--muted);
+            font-size: .78rem;
+          }
           .session-card {
             padding: 14px 18px 18px;
           }
@@ -355,6 +378,29 @@ data:
             border-top: 1px solid var(--line);
             padding: 16px 18px 18px;
           }
+          .citizen-data-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 14px;
+            align-items: start;
+          }
+          .citizen-data-detail {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface-soft);
+            padding: 12px;
+          }
+          .citizen-data-detail pre {
+            max-height: 260px;
+            overflow: auto;
+            margin: 10px 0 0;
+            padding: 12px;
+            border-radius: 8px;
+            background: #13202b;
+            color: #eef6ff;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: .8rem;
+          }
           .detail-head {
             justify-content: space-between;
             gap: 12px;
@@ -406,7 +452,7 @@ data:
             border-color: #f3d38b;
           }
           @media (max-width: 980px) {
-            .workspace, .visuals { grid-template-columns: 1fr; }
+            .workspace, .visuals, .citizen-data-grid { grid-template-columns: 1fr; }
             .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           }
           @media (max-width: 640px) {
@@ -476,6 +522,8 @@ data:
                   <input id="titleFilter" name="titleFilter" placeholder="Buscar en el título">
                   <label for="codeFilter">Número de expediente</label>
                   <input id="codeFilter" name="codeFilter" placeholder="Ej. EXP-0001">
+                  <label for="citizenFilter">Identificador ciudadano</label>
+                  <input id="citizenFilter" name="citizenFilter" value="CIT-10001" placeholder="Ej. CIT-10001">
                   <label for="dateFrom">Fecha desde</label>
                   <input id="dateFrom" name="dateFrom" type="date">
                   <label for="dateTo">Fecha hasta</label>
@@ -497,6 +545,20 @@ data:
                   <button class="button-secondary" type="button" data-preset="resolved">Resueltos</button>
                   <button class="button-secondary" type="button" data-preset="recent">Últimos</button>
                   <button class="button-secondary" type="button" data-preset="empty">Sin resultados</button>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Mis carpetas</h2>
+                  <p>Datos relacionados con el ciudadano seleccionado.</p>
+                </div>
+                <div class="folder-list" id="citizenFolderList">
+                  <button class="folder-button active" type="button" data-folder="expedientes">Mis expedientes <span>-</span></button>
+                  <button class="folder-button" type="button" data-folder="notificaciones">Notificaciones <span>-</span></button>
+                  <button class="folder-button" type="button" data-folder="pagos">Pagos <span>-</span></button>
+                  <button class="folder-button" type="button" data-folder="citas">Citas <span>-</span></button>
+                  <button class="folder-button" type="button" data-folder="personas">Datos personales <span>-</span></button>
                 </div>
               </section>
 
@@ -561,6 +623,26 @@ data:
                   <div class="empty">Selecciona un expediente para ver su detalle.</div>
                 </div>
               </div>
+
+              <section class="panel" style="margin-top:14px">
+                <div class="panel-head">
+                  <div class="panel-title">
+                    <h2>Mis datos conectados</h2>
+                    <button class="button-secondary" id="citizenRefreshButton" type="button">Actualizar</button>
+                  </div>
+                  <p id="citizenDataLabel">Selecciona una carpeta para consultar datos externos relacionados.</p>
+                </div>
+                <div class="detail">
+                  <div class="citizen-data-grid">
+                    <div class="table-wrap" id="citizenDataWrap">
+                      <div class="empty">Sin carpeta cargada.</div>
+                    </div>
+                    <div class="citizen-data-detail" id="citizenDataDetail">
+                      <div class="empty">Selecciona una fila.</div>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </section>
           </section>
         </main>
@@ -578,6 +660,11 @@ data:
           const amountChart = document.querySelector("#amountChart");
           const refreshSessionButton = document.querySelector("#refreshSessionButton");
           const logoutButton = document.querySelector("#logoutButton");
+          const citizenFolderList = document.querySelector("#citizenFolderList");
+          const citizenRefreshButton = document.querySelector("#citizenRefreshButton");
+          const citizenDataWrap = document.querySelector("#citizenDataWrap");
+          const citizenDataDetail = document.querySelector("#citizenDataDetail");
+          const citizenDataLabel = document.querySelector("#citizenDataLabel");
 
           const statusLabels = {
             abierto: "Abierto",
@@ -590,18 +677,28 @@ data:
           const currency = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
           const shortDate = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
           const dateTime = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" });
+          const oidcOrigin = "http://localhost:30080";
           const oidc = {
             clientId: "react-frontend",
-            authUrl: "http://localhost:30080/realms/piloto/protocol/openid-connect/auth",
-            tokenUrl: "http://localhost:30080/realms/piloto/protocol/openid-connect/token",
-            logoutUrl: "http://localhost:30080/realms/piloto/protocol/openid-connect/logout",
-            redirectUri: "http://localhost:30080/"
+            authUrl: `${oidcOrigin}/realms/piloto/protocol/openid-connect/auth`,
+            tokenUrl: `${oidcOrigin}/realms/piloto/protocol/openid-connect/token`,
+            logoutUrl: `${oidcOrigin}/realms/piloto/protocol/openid-connect/logout`,
+            redirectUri: `${oidcOrigin}/`
           };
           let session = loadStoredSession();
           let lastRows = [];
           let lastPayload = null;
           let lastRequestBody = null;
           let selectedIndex = null;
+          let activeCitizenFolder = "expedientes";
+          let citizenRows = [];
+          const citizenFolders = {
+            expedientes: { title: "Mis expedientes", endpoint: "dena_external_expedientes", filterKey: "persona_id" },
+            notificaciones: { title: "Notificaciones", endpoint: "dena_external_notificaciones", filterKey: "persona_id" },
+            pagos: { title: "Pagos", endpoint: "dena_external_pagos", filterKey: "persona_id" },
+            citas: { title: "Citas", endpoint: "dena_external_citas", filterKey: "persona_id" },
+            personas: { title: "Datos personales", endpoint: "dena_external_personas", filterKey: "persona_id" }
+          };
 
           function setStatus(message, kind = "") {
             statusEl.textContent = message;
@@ -656,6 +753,7 @@ data:
             const code = data.get("codeFilter");
             const dateFrom = data.get("dateFrom");
             const dateTo = data.get("dateTo");
+            const citizenId = String(data.get("citizenFilter") || "").trim();
             if (data.get("statusFilter")) requestBody.p_status = data.get("statusFilter");
             if (title) requestBody.p_title = title;
             if (code) requestBody.p_code = code;
@@ -663,7 +761,7 @@ data:
             if (dateTo) requestBody.p_opened_to = `${dateTo}T23:59:59Z`;
             return {
               requestBody,
-              local: {}
+              local: { citizenId }
             };
           }
 
@@ -676,9 +774,11 @@ data:
             return rows.filter((row) => {
               const rowTitle = normalizeText(row.title);
               const rowCode = normalizeText(row.expediente_code || row.id);
+              const rowCitizen = normalizeText(row.citizen_id);
               const openedAt = dateOnly(row.opened_at);
               if (title && !rowTitle.includes(title)) return false;
               if (code && !rowCode.includes(code)) return false;
+              if (filters.citizenId && rowCitizen !== normalizeText(filters.citizenId)) return false;
               if (from && (!openedAt || openedAt < from)) return false;
               if (to && (!openedAt || openedAt > to)) return false;
               return true;
@@ -787,6 +887,10 @@ data:
           }
 
           async function startLogin() {
+            if (window.location.origin !== oidcOrigin) {
+              window.location.assign(`${oidc.redirectUri}?autoload=1`);
+              throw new Error("Redirigiendo a localhost:30080 para completar OIDC/WebAuthn.");
+            }
             const verifier = randomBase64Url(64);
             const state = randomBase64Url(24);
             const challenge = await sha256Base64Url(verifier);
@@ -1090,6 +1194,7 @@ data:
               }
               const payload = await apiResponse.json();
               renderPayload(payload, filters.local);
+              await loadCitizenData(tokenJson);
               setStatus(`Consulta correcta: ${lastRows.length} expedientes.`, lastRows.length ? "ok" : "warn");
             } catch (error) {
               tableWrap.innerHTML = `<div class="empty">${escapeHtml(error.message || error)}</div>`;
@@ -1102,9 +1207,106 @@ data:
             }
           }
 
+          function selectedCitizenId() {
+            const data = new FormData(form);
+            const fromInput = String(data.get("citizenFilter") || "").trim();
+            if (fromInput) return fromInput;
+            return lastRows[0]?.citizen_id || "CIT-10001";
+          }
+
+          function renderCitizenFolderButtons() {
+            citizenFolderList.querySelectorAll("[data-folder]").forEach((button) => {
+              const folder = button.dataset.folder;
+              const meta = citizenFolders[folder];
+              const total = button.dataset.total || "-";
+              button.classList.toggle("active", folder === activeCitizenFolder);
+              button.innerHTML = `${escapeHtml(meta.title)} <span>${escapeHtml(total)}</span>`;
+            });
+          }
+
+          async function fetchCitizenEndpoint(tokenJson, path) {
+            const response = await fetch(`/dena/external/${path}`, {
+              headers: { Authorization: `Bearer ${tokenJson.access_token}` }
+            });
+            if (!response.ok) throw new Error(`Datos externos HTTP ${response.status}.`);
+            return response.json();
+          }
+
+          function externalValue(row, keys, fallback = "-") {
+            for (const key of keys) {
+              if (row[key] !== undefined && row[key] !== null && row[key] !== "") return row[key];
+            }
+            return fallback;
+          }
+
+          function renderCitizenDataTable(rows) {
+            const citizenId = selectedCitizenId();
+            const folder = citizenFolders[activeCitizenFolder];
+            citizenDataLabel.textContent = `${folder.title} para ${citizenId}: ${rows.length} filas.`;
+            if (!rows.length) {
+              citizenDataWrap.innerHTML = '<div class="empty">No hay datos en esta carpeta para el ciudadano seleccionado.</div>';
+              renderCitizenDataDetail(null);
+              return;
+            }
+            citizenDataWrap.innerHTML = `
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th><th>Título</th><th>Estado</th><th>Relacionado</th><th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows.map((row, index) => `
+                    <tr tabindex="0" data-citizen-index="${index}" class="${index === 0 ? "selected" : ""}">
+                      <td class="code" data-label="ID">${escapeHtml(externalValue(row, ["id", "referencia"]))}</td>
+                      <td class="title-cell" data-label="Título">${escapeHtml(externalValue(row, ["titulo", "servicio", "tabla_sugerida"]))}</td>
+                      <td data-label="Estado">${escapeHtml(externalValue(row, ["estado", "tipo", "prioridad", "grupo"]))}</td>
+                      <td data-label="Relacionado">${escapeHtml(externalValue(row, ["expediente_id", "persona_id", "administracion", "unidad"]))}</td>
+                      <td data-label="Fecha">${formatDate(externalValue(row, ["fecha", "sincronizado_en", "creado_en"], ""))}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            `;
+            renderCitizenDataDetail(rows[0]);
+          }
+
+          function renderCitizenDataDetail(row) {
+            if (!row) {
+              citizenDataDetail.innerHTML = '<div class="empty">Selecciona una fila.</div>';
+              return;
+            }
+            const fields = Object.entries(row)
+              .filter(([key]) => key !== "detalle")
+              .slice(0, 10)
+              .map(([key, value]) => `
+                <div class="detail-item">
+                  <span>${escapeHtml(key)}</span>
+                  <strong>${escapeHtml(value instanceof Object ? JSON.stringify(value) : value)}</strong>
+                </div>
+              `).join("");
+            citizenDataDetail.innerHTML = `
+              <div class="detail-grid">${fields}</div>
+              <pre>${escapeHtml(JSON.stringify(row.detalle || row, null, 2))}</pre>
+            `;
+          }
+
+          async function loadCitizenData(existingToken = null) {
+            const folder = citizenFolders[activeCitizenFolder];
+            const citizenId = selectedCitizenId();
+            const tokenJson = existingToken || await getToken();
+            const query = `${folder.endpoint}?select=*&${folder.filterKey}=eq.${encodeURIComponent(citizenId)}&order=fecha.desc.nullslast&limit=50`;
+            citizenRows = await fetchCitizenEndpoint(tokenJson, query);
+            renderCitizenDataTable(citizenRows);
+            const button = citizenFolderList.querySelector(`[data-folder="${activeCitizenFolder}"]`);
+            if (button) button.dataset.total = String(citizenRows.length);
+            renderCitizenFolderButtons();
+          }
+
           function applyPreset(name) {
             form.reset();
             form.limit.value = "10";
+            form.citizenFilter.value = "CIT-10001";
             if (name === "pending") form.statusFilter.value = "pendiente_documentacion";
             if (name === "resolved") form.statusFilter.value = "resuelto";
             if (name === "recent") form.limit.value = "5";
@@ -1115,6 +1317,30 @@ data:
           form.addEventListener("submit", (event) => {
             event.preventDefault();
             runQuery(false);
+          });
+
+          citizenFolderList.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-folder]");
+            if (!button) return;
+            activeCitizenFolder = button.dataset.folder;
+            renderCitizenFolderButtons();
+            loadCitizenData()
+              .then(() => setStatus(`Carpeta cargada: ${citizenFolders[activeCitizenFolder].title}.`, "ok"))
+              .catch((error) => setStatus(error.message || String(error), "bad"));
+          });
+
+          citizenRefreshButton.addEventListener("click", () => {
+            loadCitizenData()
+              .then(() => setStatus(`Carpeta actualizada: ${citizenFolders[activeCitizenFolder].title}.`, "ok"))
+              .catch((error) => setStatus(error.message || String(error), "bad"));
+          });
+
+          citizenDataWrap.addEventListener("click", (event) => {
+            const row = event.target.closest("tr[data-citizen-index]");
+            if (!row) return;
+            citizenDataWrap.querySelectorAll("tr.selected").forEach((node) => node.classList.remove("selected"));
+            row.classList.add("selected");
+            renderCitizenDataDetail(citizenRows[Number(row.dataset.citizenIndex)]);
           });
 
           tableWrap.addEventListener("click", (event) => {
@@ -1159,6 +1385,10 @@ data:
           });
 
           handleAuthCallback()
+            .then((handled) => {
+              const params = new URLSearchParams(window.location.search);
+              if (!handled && params.get("autoload") === "1") runQuery(false);
+            })
             .catch((error) => setStatus(error.message || String(error), "bad"))
             .finally(() => renderSession(session));
           renderCharts([]);

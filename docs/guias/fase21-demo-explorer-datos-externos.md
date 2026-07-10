@@ -30,6 +30,11 @@ Esta fase añade una vista navegable en la consola admin para consultar la Postg
   - Panel lateral `Carpetas demo`
   - Panel central `Explorador datos externos`
   - Filtro por texto, limite, tabla de resultados y detalle JSON.
+- Demo cliente:
+  - Campo `Identificador ciudadano`.
+  - Panel `Mis carpetas`.
+  - Panel `Mis datos conectados`.
+  - Carpetas filtradas por ciudadano: expedientes, notificaciones, pagos, citas y datos personales.
 
 ## Despliegue
 
@@ -42,6 +47,7 @@ El script aplica las vistas SQL, crea el secret de PostgREST, despliega el servi
 ## Acceso
 
 - Consola admin con OIDC/WebAuthn: `http://localhost:30080/dena/admin-console`
+- Demo cliente con OIDC/WebAuthn: `http://localhost:30080/`
 - Tunel requerido desde el PC operador:
 
 ```bash
@@ -57,6 +63,14 @@ ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
   - Citas
   - Personas
   - Semántica
+
+En la demo cliente:
+
+- Entrar en `http://localhost:30080/`.
+- Usar `testuser / Test1234!`.
+- Mantener `CIT-10001` para ver el ciudadano demo con datos enlazados.
+- Pulsar `Consultar expedientes`.
+- Usar `Mis carpetas` para alternar entre expedientes, notificaciones, pagos, citas y datos personales.
 
 ## Comprobación rápida
 
@@ -81,6 +95,7 @@ Comprobaciones realizadas tras el despliegue:
 - `POST /dena/admin-files` devuelve expedientes con token valido.
 - `GET /dena/external/dena_external_folders` devuelve 6 carpetas.
 - `GET /dena/external/dena_external_expedientes` devuelve expedientes desde `datos_externos`.
+- En la demo cliente, `CIT-10001` devuelve 1 fila en cada carpeta ciudadana: expedientes, notificaciones, pagos, citas y datos personales.
 
 ## Relacion con NiFi
 

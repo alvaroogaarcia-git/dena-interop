@@ -91,9 +91,13 @@ join dena.dena_business_object bo on bo.business_object_pk = p.business_object_p
 join dena.dena_expediente e on e.business_object_pk = p.expediente_object_pk
 join dena.dena_business_object exp_bo on exp_bo.business_object_pk = e.business_object_pk;
 
+drop view if exists public.dena_external_folders;
+drop view if exists public.dena_external_citas;
+
 create or replace view public.dena_external_citas as
 select
     bo.external_id as id,
+    dp.external_id as persona_id,
     c.priority_code as prioridad,
     coalesce(c.subject_by_language ->> 'SPANISH', bo.external_id) as titulo,
     c.priority_code as estado,
@@ -108,7 +112,8 @@ select
         'indicaciones', c.location_directions_by_language
     ) as detalle
 from dena.dena_cita c
-join dena.dena_business_object bo on bo.business_object_pk = c.business_object_pk;
+join dena.dena_business_object bo on bo.business_object_pk = c.business_object_pk
+left join dena.dena_person dp on dp.person_pk = bo.about_person_pk;
 
 create or replace view public.dena_external_personas as
 select
@@ -181,3 +186,5 @@ grant select on
     public.dena_external_semantica,
     public.dena_external_folders
 to dena_external_anon;
+
+notify pgrst, 'reload schema';
