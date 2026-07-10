@@ -23,6 +23,7 @@ STAGING_DB_HOST="${STAGING_DB_HOST:-postgresql-datalake.datalake.svc.cluster.loc
 STAGING_DB_PORT="${STAGING_DB_PORT:-5432}"
 DB_PASSWORD="${DB_PASSWORD:-$(kubectl get secret -n verticales postgresql-verticales -o jsonpath='{.data.postgres-password}' | base64 -d)}"
 STAGING_DB_PASSWORD="${STAGING_DB_PASSWORD:-$(kubectl get secret -n datalake postgresql-datalake -o jsonpath='{.data.postgres-password}' | base64 -d)}"
+PROMOTE_SQL="${PROMOTE_SQL:-SELECT dena.dena_staging_to_main();}"
 JDBC_JAR="${JDBC_JAR:-/opt/nifi/nifi-current/extensions/postgresql-42.7.4.jar}"
 
 require_bin() {
@@ -305,7 +306,7 @@ if [[ -z "$promote_id" ]]; then
       "Promote Staging To Main" \
       "org.apache.nifi.processors.standard.ExecuteSQL" \
       810.0 220.0 \
-      "{\"Database Connection Pooling Service\":\"$staging_dbcp_id\",\"SQL select query\":\"SELECT dena.dena_staging_to_main();\"}" \
+      "{\"Database Connection Pooling Service\":\"$staging_dbcp_id\",\"SQL select query\":\"$PROMOTE_SQL\"}" \
       "[\"success\",\"failure\"]")" | json_get_id
   )"
 fi
@@ -417,7 +418,7 @@ configure_processor "$staging_id" \
   "{\"Database Connection Pooling Service\":\"$staging_dbcp_id\",\"Schema Name\":\"$STAGING_DB_SCHEMA\",\"Table Name\":\"$STAGING_DB_TABLE\",\"Unmatched Column Behavior\":\"Ignore Unmatched Columns\",\"Translate Field Names\":\"false\",\"Statement Type\":\"INSERT\",\"Record Reader\":\"$reader_id\",\"Support Fragmented Transactions\":null}" \
   "[\"failure\",\"retry\"]"
 configure_processor "$promote_id" \
-  "{\"Database Connection Pooling Service\":\"$staging_dbcp_id\",\"SQL select query\":\"SELECT dena.dena_staging_to_main();\"}" \
+  "{\"Database Connection Pooling Service\":\"$staging_dbcp_id\",\"SQL select query\":\"$PROMOTE_SQL\"}" \
   "[\"success\",\"failure\"]"
 
 connect_processors() {

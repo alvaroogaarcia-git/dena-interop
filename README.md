@@ -30,6 +30,7 @@ El entorno está validado hasta Fase 18 de la guía de instalación:
 | 17 | Portainer para inspección operativa | Validado |
 | 18 | Consola admin DENA para operación funcional | Validado |
 | 19 | PostgreSQL aislado para datos externos Markdown DENA | Validado |
+| 20 | NiFi incremental hacia datos externos DENA | Validado |
 
 ## Qué hay desplegado
 
@@ -78,8 +79,9 @@ El entorno está validado hasta Fase 18 de la guía de instalación:
   - PostgreSQL independiente preparado mediante chart Bitnami.
   - Base `datos_externos` para el modelo semantico DENA derivado de Markdown.
   - Seed demo con 50 expedientes, notificaciones, pagos, citas, personas y trazas REST.
+  - Sincronizacion incremental desde `verticales` mediante NiFi.
   - Sin exposicion externa, APISIX, Ingress ni NodePort.
-- El alcance definido hasta Fase 19 está completado.
+- El alcance definido hasta Fase 20 está completado.
 
 ## Accesos Demo
 
@@ -148,6 +150,7 @@ bash scripts/verify-fase14.sh
 bash scripts/verify-fase15.sh
 bash scripts/dena/test-curl.sh
 bash scripts/verify-fase19-datos-externos.sh
+bash scripts/verify-fase20-datos-externos-nifi.sh
 bash scripts/verify-stack.sh
 ```
 
@@ -178,6 +181,7 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Histórico de estados validados por fase](docs/estado-fases/README.md)
 - [Fase 15 - SQL del datalake y carga local](docs/guias/fase15-datalake.md)
 - [Fase 19 - PostgreSQL datos externos desde Markdown DENA](docs/guias/fase19-datos-externos.md)
+- [Fase 20 - NiFi hacia datos externos DENA](docs/guias/fase20-nifi-datos-externos.md)
 - [Acceso a datos-externos / datos_externos](docs/acceso-bd/datos-externos-dena.md)
 - [Flujo NiFi JDBC incremental actual, Fase 15](docs/guias/fase12-nifi-jdbc.md)
 - [Consola admin DENA](docs/herramientas/consola-admin-dena.md)

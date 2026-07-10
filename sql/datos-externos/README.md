@@ -7,5 +7,6 @@ Archivos:
 - `001_schema.sql`: esquema fisico de negocio `dena`, derivado de los Markdown y preparado para PostgreSQL 15+.
 - `002_markdown_catalog.sql`: catalogo documental con los ficheros Markdown, tablas sugeridas, campos principales y valores enumerados.
 - `003_demo_data.sql`: datos ficticios idempotentes para navegar el modelo desde `psql` o Mathesar.
+- `004_nifi_staging.sql`: staging y promocion para sincronizar cambios de `verticales` mediante NiFi.
 
 La carga se ejecuta con `scripts/dena/apply-fase19-datos-externos.sh`.

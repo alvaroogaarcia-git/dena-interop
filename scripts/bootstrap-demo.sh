@@ -478,6 +478,11 @@ install_datos_externos() {
   bash scripts/dena/apply-fase19-datos-externos.sh
 }
 
+install_datos_externos_nifi() {
+  log "Fase 20 - NiFi hacia datos externos DENA"
+  bash scripts/dena/provision-fase20-datos-externos-nifi.sh
+}
+
 print_summary() {
   cat <<EOF
 
@@ -536,10 +541,12 @@ user_stage() {
   install_nifi_sync
   install_spa_and_portainer
   install_datos_externos
+  install_datos_externos_nifi
 
   log "Verificacion final"
   bash scripts/wait-ready.sh
   bash scripts/verify-fase19-datos-externos.sh
+  bash scripts/verify-fase20-datos-externos-nifi.sh
   bash scripts/verify-stack.sh
   print_summary
 }

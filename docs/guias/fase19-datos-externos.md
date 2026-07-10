@@ -39,6 +39,7 @@ scripts/verify-fase19-datos-externos.sh
 sql/datos-externos/001_schema.sql
 sql/datos-externos/002_markdown_catalog.sql
 sql/datos-externos/003_demo_data.sql
+sql/datos-externos/004_nifi_staging.sql
 sql/datos-externos/README.md
 docs/guias/fase19-datos-externos.md
 docs/estado-fases/estado-fases-0-19.md
@@ -119,6 +120,8 @@ El fichero `sql/datos-externos/003_demo_data.sql` genera datos ficticios idempot
 - `50` mensajes REST con rutas de interoperabilidad simuladas.
 
 Los codigos de expediente siguen el mismo patron que la tabla demo de Mathesar (`EXP-0001`, `EXP-0002`, ...), pero esta base conserva una vista DENA normalizada y mas rica.
+
+La Fase 20 anade sincronizacion incremental desde `verticales` mediante NiFi. Ver [Fase 20 - NiFi hacia datos externos DENA](fase20-nifi-datos-externos.md).
 
 ## Despliegue
 
