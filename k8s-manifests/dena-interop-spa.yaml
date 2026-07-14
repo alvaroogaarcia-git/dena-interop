@@ -155,7 +155,12 @@ data:
             justify-content: space-between;
             gap: 12px;
           }
-          .panel-toggle {
+          .panel-controls {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+          }
+          .panel-toggle, .panel-help {
             min-height: 32px;
             width: 36px;
             padding: 0;
@@ -165,7 +170,11 @@ data:
             border: 1px solid var(--line);
             font-size: 1rem;
           }
-          .panel-toggle:hover {
+          .panel-help {
+            border-style: dashed;
+            font-weight: 850;
+          }
+          .panel-toggle:hover, .panel-help:hover {
             background: var(--surface-soft);
           }
           .panel.collapsed [data-panel-body] {
@@ -231,6 +240,19 @@ data:
             width: 100%;
             margin-top: 18px;
             border: 0;
+          }
+          .form-actions {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 8px;
+            align-items: end;
+          }
+          .form-actions .submit-button {
+            margin-top: 18px;
+          }
+          .form-actions .button-secondary {
+            min-width: 104px;
+            margin-top: 18px;
           }
           .session-actions button {
             width: auto;
@@ -643,7 +665,10 @@ data:
                   <input id="dateTo" name="dateTo" type="date">
                   <label for="limit">Expedientes a consultar</label>
                   <input id="limit" name="limit" value="10" type="number" min="1" max="50">
-                  <button class="submit-button" id="submitButton" type="submit">Consultar expedientes</button>
+                  <div class="form-actions">
+                    <button class="submit-button" id="submitButton" type="submit">Consultar expedientes</button>
+                    <button class="button-secondary" id="resetQueryButton" type="button">Resetear</button>
+                  </div>
                 </form>
               </section>
 
@@ -798,6 +823,7 @@ data:
           const resultLabel = document.querySelector("#resultLabel");
           const form = document.querySelector("#login");
           const submitButton = document.querySelector("#submitButton");
+          const resetQueryButton = document.querySelector("#resetQueryButton");
           const sessionLabel = document.querySelector("#sessionLabel");
           const sessionGrid = document.querySelector("#sessionGrid");
           const detailPanel = document.querySelector("#detailPanel");
@@ -837,6 +863,7 @@ data:
               "Fecha hasta": "Date to",
               "Expedientes a consultar": "Case files to query",
               "Consultar expedientes": "Query case files",
+              "Resetear": "Reset",
               "Filtros rápidos": "Quick filters",
               "Accesos directos para consultar los casos más habituales.": "Shortcuts for the most common cases.",
               "Pendientes": "Pending",
@@ -880,6 +907,7 @@ data:
               "Selecciona una carpeta para consultar datos externos relacionados.": "Select a folder to query related external data.",
               "Sin carpeta cargada.": "No folder loaded.",
               "Selecciona una fila.": "Select a row."
+              ,"Vista restablecida.": "View reset."
             },
             eu: {
               "Consulta ciudadana de expedientes": "Herritarren espediente-kontsulta",
@@ -903,6 +931,7 @@ data:
               "Fecha hasta": "Amaiera-data",
               "Expedientes a consultar": "Kontsultatu beharreko espedienteak",
               "Consultar expedientes": "Espedienteak kontsultatu",
+              "Resetear": "Berrezarri",
               "Filtros rápidos": "Iragazki azkarrak",
               "Accesos directos para consultar los casos más habituales.": "Ohiko kasuak kontsultatzeko lasterbideak.",
               "Pendientes": "Zain",
@@ -946,6 +975,7 @@ data:
               "Selecciona una carpeta para consultar datos externos relacionados.": "Hautatu karpeta bat lotutako kanpo-datuak kontsultatzeko.",
               "Sin carpeta cargada.": "Ez dago karpetarik kargatuta.",
               "Selecciona una fila.": "Hautatu errenkada bat."
+              ,"Vista restablecida.": "Ikuspegia berrezarri da."
             }
           };
 
@@ -1037,6 +1067,7 @@ data:
             themeToggle.textContent = document.documentElement.dataset.theme === "dark"
               ? translateText("Claro", lang)
               : translateText("Oscuro", lang);
+            updatePanelHelp();
           }
 
           function applyTheme(theme) {
@@ -1057,6 +1088,35 @@ data:
             return `denaClientPanelCollapsed:${title}:${index}`;
           }
 
+          function panelHelpText(panel) {
+            const title = panel.querySelector("h2")?.textContent.trim() || "";
+            const description = panel.querySelector(".panel-head p")?.textContent.trim() || "";
+            const lang = languageSelect.value;
+            if (lang === "en") return description ? `${title}: ${description}` : `Shows or hides ${title}.`;
+            if (lang === "eu") return description ? `${title}: ${description}` : `${title} panela zabaldu edo tolestu.`;
+            return description ? `${title}: ${description}` : `Muestra u oculta el panel ${title}.`;
+          }
+
+          function updatePanelHelp() {
+            document.querySelectorAll(".panel").forEach((panel) => {
+              const help = panel.querySelector(":scope > .panel-head .panel-help");
+              const toggle = panel.querySelector(":scope > .panel-head .panel-toggle");
+              if (help) {
+                help.title = panelHelpText(panel);
+                help.setAttribute("aria-label", help.title);
+              }
+              if (toggle) {
+                const collapsed = panel.classList.contains("collapsed");
+                const lang = languageSelect.value;
+                const label = collapsed
+                  ? lang === "en" ? "Expand panel" : lang === "eu" ? "Panela zabaldu" : "Desplegar panel"
+                  : lang === "en" ? "Collapse panel" : lang === "eu" ? "Panela tolestu" : "Plegar panel";
+                toggle.setAttribute("aria-label", label);
+                toggle.title = label;
+              }
+            });
+          }
+
           function initCollapsiblePanels() {
             document.querySelectorAll(".panel").forEach((panel, index) => {
               const head = panel.querySelector(":scope > .panel-head");
@@ -1066,23 +1126,39 @@ data:
               panel.dataset.collapsible = "true";
               const key = panelStorageKey(panel, index);
               let button = head.querySelector(".panel-toggle");
+              let controls = head.querySelector(".panel-controls");
+              if (!controls) {
+                controls = document.createElement("span");
+                controls.className = "panel-controls";
+                if (button?.parentElement) button.parentElement.replaceChild(controls, button);
+                else head.prepend(controls);
+                if (button) controls.append(button);
+              }
               if (!button) {
                 button = document.createElement("button");
                 button.type = "button";
                 button.className = "panel-toggle";
-                head.prepend(button);
+                controls.prepend(button);
+              }
+              if (!controls.querySelector(".panel-help")) {
+                const help = document.createElement("button");
+                help.type = "button";
+                help.className = "panel-help";
+                help.textContent = "?";
+                controls.append(help);
               }
               const setCollapsed = (collapsed) => {
                 panel.classList.toggle("collapsed", collapsed);
                 content.forEach((node) => node.classList.toggle("panel-content-collapsed", collapsed));
                 button.textContent = collapsed ? "+" : "-";
                 button.setAttribute("aria-expanded", String(!collapsed));
-                button.setAttribute("aria-label", `${collapsed ? "Desplegar" : "Plegar"} ${panel.querySelector("h2")?.textContent || "apartado"}`);
                 sessionStorage.setItem(key, collapsed ? "1" : "0");
+                updatePanelHelp();
               };
               setCollapsed(sessionStorage.getItem(key) === "1");
               button.addEventListener("click", () => setCollapsed(!panel.classList.contains("collapsed")));
             });
+            updatePanelHelp();
           }
 
           function formatDate(value) {
@@ -1820,10 +1896,43 @@ data:
             runQuery(name !== "all" && name !== "recent" ? true : false);
           }
 
+          function resetQueryView() {
+            form.reset();
+            form.statusFilter.value = "";
+            form.titleFilter.value = "";
+            form.codeFilter.value = "";
+            form.citizenFilter.value = "CIT-10001";
+            form.dateFrom.value = "";
+            form.dateTo.value = "";
+            form.limit.value = "10";
+            lastRows = [];
+            lastPayload = null;
+            lastRequestBody = null;
+            selectedIndex = null;
+            citizenRows = [];
+            citizenFolderData = {};
+            activeCitizenFolder = "expedientes";
+            renderSummary([]);
+            renderCharts([]);
+            renderDetail(null);
+            renderCitizenFolderButtons();
+            attentionList.innerHTML = '<div class="empty">Consulta un ciudadano para ver avisos.</div>';
+            timelineList.innerHTML = '<div class="empty">Consulta un ciudadano para ver su línea de vida.</div>';
+            tableWrap.innerHTML = '<div class="empty">Sin resultados todavía.</div>';
+            citizenDataWrap.innerHTML = '<div class="empty">Sin carpeta cargada.</div>';
+            citizenDataDetail.innerHTML = '<div class="empty">Selecciona una fila.</div>';
+            citizenDataLabel.textContent = "Selecciona una carpeta para consultar datos externos relacionados.";
+            resultLabel.textContent = "Ejecuta una consulta para ver resultados estructurados.";
+            renderSession(session);
+            setStatus("Vista restablecida.", "ok");
+            applyLanguage(languageSelect.value);
+          }
+
           form.addEventListener("submit", (event) => {
             event.preventDefault();
             runQuery(false);
           });
+          resetQueryButton.addEventListener("click", resetQueryView);
 
           initCollapsiblePanels();
 
