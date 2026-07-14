@@ -208,6 +208,53 @@ data:
           .health-row:last-child { border-bottom: 0; }
           .health-row strong { font-size: .9rem; }
           .health-row span { color: var(--muted); font-size: .82rem; }
+          .stack-summary {
+            display: grid;
+            grid-template-columns: 86px minmax(0, 1fr);
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+          }
+          .stack-score {
+            display: grid;
+            min-height: 70px;
+            place-items: center;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+            font-size: 1.35rem;
+            font-weight: 850;
+          }
+          .stack-score.ok { color: var(--ok); border-color: #b8ddc8; background: #eef9f2; }
+          .stack-score.warn { color: var(--warn); border-color: #f3d38b; background: #fff8e6; }
+          .stack-score.bad { color: var(--bad); border-color: #ecc6c6; background: #fff1f1; }
+          .stack-copy strong { display: block; font-size: .95rem; }
+          .stack-copy span {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: .82rem;
+            line-height: 1.35;
+          }
+          .health-toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 6px;
+          }
+          .health-toolbar button { min-height: 34px; padding: 6px 9px; }
+          .health-meta { color: var(--muted); font-size: .78rem; }
+          .health-row.ok strong, .health-row.ok .health-state { color: var(--ok); }
+          .health-row.warn strong, .health-row.warn .health-state { color: var(--warn); }
+          .health-row.bad strong, .health-row.bad .health-state { color: var(--bad); }
+          .health-row small {
+            display: block;
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: .75rem;
+            line-height: 1.3;
+          }
           .flow-map {
             display: grid;
             grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -299,6 +346,43 @@ data:
             background: var(--soft);
             padding: 12px;
           }
+          .citizen360 {
+            display: grid;
+            gap: 14px;
+          }
+          .citizen360-head {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px;
+            align-items: end;
+          }
+          .citizen360-controls {
+            display: grid;
+            grid-template-columns: minmax(180px, 260px) auto auto;
+            gap: 8px;
+            align-items: end;
+          }
+          .citizen360-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+          }
+          .citizen360-tabs button {
+            min-height: 34px;
+            padding: 7px 10px;
+            background: var(--surface);
+            color: var(--ink);
+          }
+          .citizen360-tabs button.active {
+            border-color: var(--brand);
+            background: var(--brand-soft);
+          }
+          .citizen360-summary {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 10px;
+          }
+          .citizen360 .metric strong { font-size: 1.2rem; }
           .citizen-preview {
             border: 1px solid var(--line);
             border-radius: 8px;
@@ -340,6 +424,7 @@ data:
             main { width: min(100% - 20px, 1440px); padding-top: 14px; }
             .topbar, .toolbar { align-items: stretch; flex-direction: column; }
             .layout, .side-right, .kpis, .grid2, .detail-grid, .external-grid { grid-template-columns: 1fr; }
+            .citizen360-head, .citizen360-controls, .citizen360-summary { grid-template-columns: 1fr; }
             .flow-map, .scenario-buttons { grid-template-columns: 1fr; }
             table { min-width: 720px; }
           }
@@ -441,6 +526,18 @@ data:
                     <button class="folder-button" type="button" data-folder="semantica">Semántica <span>-</span></button>
                   </div>
                   <button class="submit-button" id="externalLoadButton" type="button">Cargar carpeta</button>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h2>Ficha 360 ciudadano</h2>
+                  <p>Abre una vista dedicada con toda la información relacionada.</p>
+                </div>
+                <div class="panel-body">
+                  <label for="citizenOpenInput">Ciudadano</label>
+                  <input id="citizenOpenInput" value="CIT-10001">
+                  <button class="submit-button" id="citizenOpenButton" type="button">Abrir ficha 360</button>
                 </div>
               </section>
             </aside>
@@ -576,14 +673,32 @@ data:
 
               <section class="panel">
                 <div class="panel-head">
-                  <h2>Salud del stack</h2>
-                  <p>Comprobaciones desde el gateway público.</p>
+                  <div class="panel-title">
+                    <div>
+                      <h2>Estado operativo</h2>
+                      <p>Chequeos ligeros desde la consola, sin abrir herramientas externas.</p>
+                    </div>
+                    <button class="button-secondary" id="healthRefreshButton" type="button">Revisar</button>
+                  </div>
                 </div>
-                <div class="panel-body" id="healthPanel">
-                  <div class="health-row"><strong>Keycloak</strong><span>pendiente</span></div>
-                  <div class="health-row"><strong>APISIX</strong><span>pendiente</span></div>
-                  <div class="health-row"><strong>PostgREST</strong><span>pendiente</span></div>
-                  <div class="health-row"><strong>Datalake</strong><span>pendiente</span></div>
+                <div class="panel-body">
+                  <div class="stack-summary" id="stackSummary">
+                    <div class="stack-score">-</div>
+                    <div class="stack-copy">
+                      <strong>Sin comprobar</strong>
+                      <span>Inicia sesión o pulsa Revisar para validar gateway, identidad y APIs.</span>
+                    </div>
+                  </div>
+                  <div class="health-toolbar">
+                    <span class="health-meta" id="healthUpdated">Última revisión: pendiente</span>
+                  </div>
+                  <div id="healthPanel">
+                    <div class="health-row warn"><strong>Keycloak</strong><span class="health-state">pendiente</span></div>
+                    <div class="health-row warn"><strong>APISIX</strong><span class="health-state">pendiente</span></div>
+                    <div class="health-row warn"><strong>API DENA</strong><span class="health-state">pendiente</span></div>
+                    <div class="health-row warn"><strong>Datos externos</strong><span class="health-state">pendiente</span></div>
+                    <div class="health-row warn"><strong>Sesión</strong><span class="health-state">pendiente</span></div>
+                  </div>
                 </div>
               </section>
 
@@ -611,6 +726,52 @@ data:
               </section>
             </aside>
           </section>
+
+          <section class="citizen360" id="citizen360View" hidden>
+            <section class="panel">
+              <div class="panel-head">
+                <div class="citizen360-head">
+                  <div>
+                    <h2>Ficha 360 ciudadano</h2>
+                    <p id="citizen360Label">Vista consolidada de expedientes, pagos, citas, notificaciones y datos personales.</p>
+                  </div>
+                  <div class="citizen360-controls">
+                    <div>
+                      <label for="citizen360Input">Ciudadano</label>
+                      <input id="citizen360Input" value="CIT-10001">
+                    </div>
+                    <button id="citizen360LoadButton" type="button">Cargar ficha</button>
+                    <button class="button-secondary" id="citizen360BackButton" type="button">Volver</button>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="citizen360-summary" id="citizen360Summary">
+                  <div class="metric"><span>Expedientes</span><strong>-</strong></div>
+                  <div class="metric"><span>Notificaciones</span><strong>-</strong></div>
+                  <div class="metric"><span>Pagos</span><strong>-</strong></div>
+                  <div class="metric"><span>Citas</span><strong>-</strong></div>
+                  <div class="metric"><span>Importe</span><strong>-</strong></div>
+                  <div class="metric"><span>Alertas</span><strong>-</strong></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title">
+                  <div>
+                    <h2>Relación completa</h2>
+                    <p id="citizen360ResultLabel">Carga un ciudadano para ver sus datos agrupados.</p>
+                  </div>
+                  <div class="citizen360-tabs" id="citizen360Tabs"></div>
+                </div>
+              </div>
+              <div class="panel-body" id="citizen360Results">
+                <div class="empty">Sin ficha cargada.</div>
+              </div>
+            </section>
+          </section>
         </main>
 
         <script>
@@ -621,6 +782,9 @@ data:
           const tableWrap = document.getElementById("tableWrap");
           const detailPanel = document.getElementById("detailPanel");
           const healthPanel = document.getElementById("healthPanel");
+          const stackSummary = document.getElementById("stackSummary");
+          const healthUpdated = document.getElementById("healthUpdated");
+          const healthRefreshButton = document.getElementById("healthRefreshButton");
           const auditPanel = document.getElementById("auditPanel");
           const comparePanel = document.getElementById("comparePanel");
           const incidentPanel = document.getElementById("incidentPanel");
@@ -645,6 +809,18 @@ data:
           const externalTableWrap = document.getElementById("externalTableWrap");
           const externalDetailPanel = document.getElementById("externalDetailPanel");
           const externalResultLabel = document.getElementById("externalResultLabel");
+          const adminLayout = document.querySelector(".layout");
+          const citizenOpenInput = document.getElementById("citizenOpenInput");
+          const citizenOpenButton = document.getElementById("citizenOpenButton");
+          const citizen360View = document.getElementById("citizen360View");
+          const citizen360Input = document.getElementById("citizen360Input");
+          const citizen360LoadButton = document.getElementById("citizen360LoadButton");
+          const citizen360BackButton = document.getElementById("citizen360BackButton");
+          const citizen360Label = document.getElementById("citizen360Label");
+          const citizen360Summary = document.getElementById("citizen360Summary");
+          const citizen360Tabs = document.getElementById("citizen360Tabs");
+          const citizen360Results = document.getElementById("citizen360Results");
+          const citizen360ResultLabel = document.getElementById("citizen360ResultLabel");
           const statusLabels = {
             abierto: "Abierto",
             en_tramitacion: "En tramitación",
@@ -672,6 +848,8 @@ data:
           let activeExternalFolder = "expedientes";
           let externalRows = [];
           let visibleExternalRows = [];
+          let activeCitizen360Tab = "expedientes";
+          let citizen360Data = null;
           let externalFolders = {
             expedientes: { title: "Expedientes", endpoint: "dena_external_expedientes", total: "-" },
             notificaciones: { title: "Notificaciones", endpoint: "dena_external_notificaciones", total: "-" },
@@ -774,6 +952,12 @@ data:
               window.location.assign(`${oidc.redirectUri}?autoload=1`);
               throw new Error("Redirigiendo a localhost:30080 para completar OIDC/WebAuthn.");
             }
+            if (!citizen360View.hidden) {
+              sessionStorage.setItem("denaAdminAfterLoginView", JSON.stringify({
+                view: "ciudadano360",
+                persona: citizen360Input.value || "CIT-10001"
+              }));
+            }
             const verifier = randomBase64Url(64);
             const state = randomBase64Url(24);
             const challenge = await sha256Base64Url(verifier);
@@ -817,6 +1001,23 @@ data:
             window.history.replaceState({}, document.title, oidc.redirectUri);
           }
 
+          async function restoreAfterLoginView() {
+            const raw = sessionStorage.getItem("denaAdminAfterLoginView");
+            if (!raw) return false;
+            sessionStorage.removeItem("denaAdminAfterLoginView");
+            try {
+              const saved = JSON.parse(raw);
+              if (saved.view !== "ciudadano360") return false;
+              showCitizen360View();
+              citizen360Input.value = saved.persona || "CIT-10001";
+              window.history.replaceState({}, document.title, `${oidc.redirectUri}?view=ciudadano360&persona=${encodeURIComponent(citizen360Input.value)}`);
+              await loadCitizen360();
+              return true;
+            } catch {
+              return false;
+            }
+          }
+
           async function handleAuthCallback() {
             const params = new URLSearchParams(window.location.search);
             const code = params.get("code");
@@ -829,6 +1030,7 @@ data:
             if (!code) return false;
             setStatus("Completando autenticación OIDC...");
             await exchangeCode(code, state);
+            if (await restoreAfterLoginView()) return true;
             const shouldLoad = sessionStorage.getItem("denaAdminPendingLoad") === "1";
             sessionStorage.removeItem("denaAdminPendingLoad");
             if (shouldLoad) await loadData();
@@ -922,6 +1124,122 @@ data:
             if (ms < 60000) return `${Math.round(ms / 1000)} s`;
             if (ms < 3600000) return `${Math.round(ms / 60000)} min`;
             return `${Math.round(ms / 3600000)} h`;
+          }
+
+          async function fetchWithTimeout(url, options = {}, timeoutMs = 4500) {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+              return await fetch(url, { ...options, signal: controller.signal });
+            } finally {
+              clearTimeout(timeout);
+            }
+          }
+
+          function renderStackSummary(checks) {
+            const okCount = checks.filter((check) => check.state === "ok").length;
+            const warnCount = checks.filter((check) => check.state === "warn").length;
+            const badCount = checks.filter((check) => check.state === "bad").length;
+            const total = checks.length || 1;
+            const state = badCount ? "bad" : warnCount ? "warn" : "ok";
+            const label = badCount ? "Revisar incidencias" : warnCount ? "Operativo con avisos" : "Operativo";
+            const detail = `${okCount}/${total} checks OK · ${warnCount} avisos · ${badCount} errores`;
+            stackSummary.innerHTML = `
+              <div class="stack-score ${state}">${okCount}/${total}</div>
+              <div class="stack-copy">
+                <strong>${escapeHtml(label)}</strong>
+                <span>${escapeHtml(detail)}</span>
+              </div>
+            `;
+          }
+
+          function renderHealthChecks(checks) {
+            healthPanel.innerHTML = checks.map((check) => `
+              <div class="health-row ${escapeHtml(check.state)}">
+                <div>
+                  <strong>${escapeHtml(check.name)}</strong>
+                  <small>${escapeHtml(check.detail)}</small>
+                </div>
+                <span class="health-state">${escapeHtml(check.label)}</span>
+              </div>
+            `).join("");
+            healthUpdated.textContent = `Última revisión: ${dateTime.format(new Date())}`;
+            renderStackSummary(checks);
+          }
+
+          async function runHealthCheck(name, detail, check) {
+            const started = performance.now();
+            try {
+              const result = await check();
+              return {
+                name,
+                detail: result.detail || detail,
+                state: result.state || "ok",
+                label: result.label || `${Math.round(performance.now() - started)} ms`
+              };
+            } catch (error) {
+              return {
+                name,
+                detail: error.message || detail,
+                state: "bad",
+                label: "error"
+              };
+            }
+          }
+
+          async function refreshHealth({ silent = false } = {}) {
+            healthRefreshButton.disabled = true;
+            if (!silent) setStatus("Revisando estado operativo...");
+            const token = tokenIsUsable() ? session.access_token : null;
+            const checks = await Promise.all([
+              runHealthCheck("Keycloak", "Discovery OIDC público", async () => {
+                const response = await fetchWithTimeout("/realms/piloto/.well-known/openid-configuration");
+                if (!response.ok) throw new Error(`Discovery HTTP ${response.status}`);
+                const discovery = await response.json();
+                return { detail: discovery.issuer ? "Realm piloto disponible" : "Discovery sin issuer", state: discovery.issuer ? "ok" : "warn" };
+              }),
+              runHealthCheck("APISIX", "Gateway y política OIDC", async () => {
+                const response = await fetchWithTimeout("/api/");
+                if (response.status === 401) return { detail: "API protegida rechaza tráfico sin token", state: "ok" };
+                if (response.ok) return { detail: "Gateway responde, pero la API no rechazó sin token", state: "warn", label: `HTTP ${response.status}` };
+                throw new Error(`Gateway HTTP ${response.status}`);
+              }),
+              runHealthCheck("API DENA", "RPC /dena/admin-files", async () => {
+                if (!token) return { detail: "Requiere sesión admin para prueba autenticada", state: "warn", label: "sin sesión" };
+                const response = await fetchWithTimeout("/dena/admin-files", {
+                  method: "POST",
+                  headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                  body: JSON.stringify({ p_limit: 1 })
+                });
+                if (!response.ok) throw new Error(`API HTTP ${response.status}`);
+                const data = await response.json();
+                return { detail: `${Array.isArray(data) ? data.length : 0} fila de prueba recuperada`, state: "ok" };
+              }),
+              runHealthCheck("Datos externos", "PostgREST datos_externos vía /dena/external", async () => {
+                if (!token) return { detail: "Requiere sesión admin para prueba autenticada", state: "warn", label: "sin sesión" };
+                const response = await fetchWithTimeout("/dena/external/dena_external_folders?select=folder_id,title,total&order=folder_id.asc", {
+                  headers: { Authorization: `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error(`Datos externos HTTP ${response.status}`);
+                const data = await response.json();
+                return { detail: `${Array.isArray(data) ? data.length : 0} carpetas publicadas`, state: Array.isArray(data) && data.length >= 6 ? "ok" : "warn" };
+              }),
+              runHealthCheck("Sesión", "Token y roles DENA", async () => {
+                const claims = decodeJwt(session?.access_token);
+                const roles = claims.realm_access?.roles || [];
+                if (!session?.access_token) return { detail: "Sin sesión activa", state: "warn", label: "pendiente" };
+                if (!tokenIsUsable()) return { detail: "Token caducado o próximo a caducar", state: "warn", label: "renovar" };
+                if (!roles.includes("dena-admin")) return { detail: "Sesión sin rol dena-admin", state: "warn", label: "rol limitado" };
+                return { detail: `${claims.preferred_username || "usuario"} con rol dena-admin`, state: "ok" };
+              })
+            ]);
+            renderHealthChecks(checks);
+            renderFlow(checks.some((check) => check.name === "API DENA" && check.state === "ok"));
+            if (!silent) {
+              const badCount = checks.filter((check) => check.state === "bad").length;
+              setStatus(badCount ? `Estado operativo con ${badCount} errores.` : "Estado operativo revisado.", badCount ? "bad" : "ok");
+            }
+            healthRefreshButton.disabled = false;
           }
 
           function rowIncidents(row) {
@@ -1100,13 +1418,8 @@ data:
           }
 
           function renderHealth(dataOk = false) {
-            healthPanel.innerHTML = `
-              <div class="health-row"><strong>Keycloak</strong><span class="${session ? "ok" : ""}">${session ? "token emitido" : "pendiente"}</span></div>
-              <div class="health-row"><strong>APISIX</strong><span>gateway respondió</span></div>
-              <div class="health-row"><strong>PostgREST</strong><span>${dataOk ? "RPC operativa" : "pendiente"}</span></div>
-              <div class="health-row"><strong>Datalake</strong><span>${rows.length} filas leídas</span></div>
-            `;
             renderFlow(dataOk);
+            refreshHealth({ silent: true });
           }
 
           function renderFlow(dataOk = false) {
@@ -1244,6 +1557,159 @@ data:
             return fallback;
           }
 
+          function openCitizen360Tab() {
+            const persona = (citizenOpenInput.value || "CIT-10001").trim();
+            const target = `${oidc.redirectUri}?view=ciudadano360&persona=${encodeURIComponent(persona)}`;
+            window.open(target, "_blank");
+          }
+
+          function showCitizen360View() {
+            adminLayout.hidden = true;
+            citizen360View.hidden = false;
+          }
+
+          function showAdminView() {
+            citizen360View.hidden = true;
+            adminLayout.hidden = false;
+            window.history.replaceState({}, document.title, oidc.redirectUri);
+          }
+
+          function citizen360AlertCount(data) {
+            const pendingDocs = data.expedientes.filter((row) => String(row.estado || "").includes("WAITING") || String(row.estado || "").includes("PENDING")).length;
+            const unread = data.notificaciones.filter((row) => !row.leido_en).length;
+            const paymentIssues = data.pagos.filter((row) => /PENDING|REJECTED|ERROR/i.test(row.estado || "")).length;
+            const nextAppointments = data.citas.filter((row) => new Date(row.fecha).getTime() > Date.now()).length;
+            return pendingDocs + unread + paymentIssues + nextAppointments;
+          }
+
+          function renderCitizen360Summary(data) {
+            const totalAmount = data.pagos.reduce((sum, row) => sum + Number(row.importe_eur || 0), 0);
+            const alerts = citizen360AlertCount(data);
+            citizen360Summary.innerHTML = `
+              <div class="metric"><span>Expedientes</span><strong>${data.expedientes.length}</strong></div>
+              <div class="metric"><span>Notificaciones</span><strong>${data.notificaciones.length}</strong></div>
+              <div class="metric"><span>Pagos</span><strong>${data.pagos.length}</strong></div>
+              <div class="metric"><span>Citas</span><strong>${data.citas.length}</strong></div>
+              <div class="metric"><span>Importe</span><strong>${currency.format(totalAmount)}</strong></div>
+              <div class="metric"><span>Alertas</span><strong>${alerts}</strong></div>
+            `;
+          }
+
+          function renderCitizen360Tabs() {
+            const tabs = [
+              ["persona", "Identidad"],
+              ["expedientes", "Expedientes"],
+              ["notificaciones", "Notificaciones"],
+              ["pagos", "Pagos"],
+              ["citas", "Citas"],
+              ["alertas", "Alertas"]
+            ];
+            citizen360Tabs.innerHTML = tabs.map(([id, label]) => `
+              <button class="${id === activeCitizen360Tab ? "active" : ""}" type="button" data-citizen-tab="${id}">
+                ${escapeHtml(label)}
+              </button>
+            `).join("");
+          }
+
+          function renderCitizen360Cards(rows, emptyLabel) {
+            if (!rows.length) return `<div class="empty">${escapeHtml(emptyLabel)}</div>`;
+            return `
+              <div class="notifications">
+                ${rows.map((row) => `
+                  <div class="notification ok">
+                    <strong>${escapeHtml(externalDisplayValue(row, ["referencia", "id", "titulo"]))}</strong>
+                    <span>${escapeHtml(externalDisplayValue(row, ["titulo", "tipo", "estado", "prioridad"]))}</span>
+                    <span>${escapeHtml(externalDisplayValue(row, ["estado", "servicio", "administracion", "ubicacion"]))} · ${formatDate(externalDisplayValue(row, ["fecha", "sincronizado_en"], ""))}</span>
+                  </div>
+                `).join("")}
+              </div>
+            `;
+          }
+
+          function renderCitizen360Alerts(data) {
+            const alerts = [];
+            data.expedientes.forEach((row) => {
+              if (/WAITING|PENDING/i.test(row.estado || "")) alerts.push(["warn", row.referencia || row.id, "Expediente con actuación pendiente."]);
+            });
+            data.notificaciones.forEach((row) => {
+              if (!row.leido_en) alerts.push(["warn", row.id, "Notificación sin lectura registrada."]);
+            });
+            data.pagos.forEach((row) => {
+              if (/PENDING|REJECTED|ERROR/i.test(row.estado || "")) alerts.push(["bad", row.id, `Pago en estado ${row.estado || "pendiente"}.`]);
+            });
+            data.citas.forEach((row) => {
+              if (new Date(row.fecha).getTime() > Date.now()) alerts.push(["ok", row.id, `Cita próxima: ${formatDate(row.fecha)}.`]);
+            });
+            if (!alerts.length) return '<div class="empty">Sin alertas funcionales para este ciudadano.</div>';
+            return `
+              <div class="notifications">
+                ${alerts.map(([type, title, message]) => `
+                  <div class="notification ${escapeHtml(type)}">
+                    <strong>${escapeHtml(title)}</strong>
+                    <span>${escapeHtml(message)}</span>
+                  </div>
+                `).join("")}
+              </div>
+            `;
+          }
+
+          function renderCitizen360Results() {
+            if (!citizen360Data) {
+              citizen360Results.innerHTML = '<div class="empty">Sin ficha cargada.</div>';
+              return;
+            }
+            renderCitizen360Tabs();
+            const data = citizen360Data;
+            citizen360ResultLabel.textContent = `${data.personaId}: ${data.expedientes.length} expedientes, ${data.notificaciones.length} notificaciones, ${data.pagos.length} pagos y ${data.citas.length} citas.`;
+            if (activeCitizen360Tab === "persona") {
+              const person = data.personas[0] || {};
+              citizen360Results.innerHTML = `
+                <div class="detail-grid">
+                  <div class="item"><span>Ciudadano</span><strong>${escapeHtml(data.personaId)}</strong></div>
+                  <div class="item"><span>Nombre</span><strong>${escapeHtml(person.titulo || data.expedientes[0]?.persona_nombre || "-")}</strong></div>
+                  <div class="item"><span>Email</span><strong>${escapeHtml(person.email || "-")}</strong></div>
+                  <div class="item"><span>Teléfono</span><strong>${escapeHtml(person.telefono || "-")}</strong></div>
+                  <div class="item"><span>Idioma</span><strong>${escapeHtml(person.idioma || "-")}</strong></div>
+                  <div class="item"><span>Unidad</span><strong>${escapeHtml(person.unidad || "-")}</strong></div>
+                </div>
+              `;
+              return;
+            }
+            if (activeCitizen360Tab === "alertas") {
+              citizen360Results.innerHTML = renderCitizen360Alerts(data);
+              return;
+            }
+            citizen360Results.innerHTML = renderCitizen360Cards(data[activeCitizen360Tab] || [], "Sin datos en esta categoría.");
+          }
+
+          async function loadCitizen360() {
+            citizen360LoadButton.disabled = true;
+            const personaId = (citizen360Input.value || "CIT-10001").trim();
+            try {
+              setStatus(`Cargando ficha 360 de ${personaId}...`);
+              const filter = `persona_id=eq.${encodeURIComponent(personaId)}`;
+              const [personas, expedientes, notificaciones, pagos, citas] = await Promise.all([
+                fetchExternal(`dena_external_personas?select=*&${filter}&limit=1`),
+                fetchExternal(`dena_external_expedientes?select=*&${filter}&order=fecha.desc.nullslast&limit=50`),
+                fetchExternal(`dena_external_notificaciones?select=*&${filter}&order=fecha.desc.nullslast&limit=50`),
+                fetchExternal(`dena_external_pagos?select=*&${filter}&order=fecha.desc.nullslast&limit=50`),
+                fetchExternal(`dena_external_citas?select=*&${filter}&order=fecha.asc.nullslast&limit=50`)
+              ]);
+              citizen360Data = { personaId, personas, expedientes, notificaciones, pagos, citas };
+              citizen360Label.textContent = `Vista consolidada de ${personaId}.`;
+              renderCitizen360Summary(citizen360Data);
+              renderCitizen360Results();
+              addNotification("ok", "Ficha 360 cargada", `${personaId}: ${expedientes.length} expedientes relacionados.`);
+              setStatus(`Ficha 360 cargada: ${personaId}.`, "ok");
+            } catch (error) {
+              citizen360Results.innerHTML = `<div class="empty">${escapeHtml(error.message || error)}</div>`;
+              addNotification("bad", "Error ficha 360", error.message || String(error));
+              setStatus("No se pudo cargar la ficha 360.", "bad");
+            } finally {
+              citizen360LoadButton.disabled = false;
+            }
+          }
+
           function filterExternalRows() {
             const query = normalize(externalSearch.value);
             visibleExternalRows = externalRows.filter((row) => {
@@ -1343,6 +1809,16 @@ data:
           externalSearch.addEventListener("input", filterExternalRows);
           externalLoadButton.addEventListener("click", loadExternalData);
           externalRefreshButton.addEventListener("click", loadExternalData);
+          healthRefreshButton.addEventListener("click", () => refreshHealth());
+          citizenOpenButton.addEventListener("click", openCitizen360Tab);
+          citizen360LoadButton.addEventListener("click", loadCitizen360);
+          citizen360BackButton.addEventListener("click", showAdminView);
+          citizen360Tabs.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-citizen-tab]");
+            if (!button) return;
+            activeCitizen360Tab = button.dataset.citizenTab;
+            renderCitizen360Results();
+          });
           externalTableWrap.addEventListener("click", (event) => {
             const row = event.target.closest("tr[data-external-index]");
             if (!row) return;
@@ -1401,11 +1877,19 @@ data:
             });
           });
 
+          const bootParams = new URLSearchParams(window.location.search);
+          if (bootParams.get("view") === "ciudadano360") {
+            showCitizen360View();
+            citizen360Input.value = bootParams.get("persona") || "CIT-10001";
+            activeCitizen360Tab = "persona";
+            if (session?.access_token) loadCitizen360();
+          }
           if (session?.access_token) {
             renderSession();
             loadExternalFolders();
           }
           else logoutButton.hidden = true;
+          refreshHealth({ silent: true });
           handleAuthCallback()
             .then((handled) => {
               const params = new URLSearchParams(window.location.search);

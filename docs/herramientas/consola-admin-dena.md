@@ -14,7 +14,7 @@ Demuestra la parte administrativa del flujo:
 4. La consola llama a `POST /dena/admin-files` mediante APISIX.
 5. APISIX valida el token.
 6. PostgREST ejecuta la RPC `dena_data_retrieve`.
-7. La consola muestra KPIs, resultados, trazabilidad, salud básica y auditoría de la consulta.
+7. La consola muestra KPIs, resultados, trazabilidad, estado operativo y auditoría de la consulta.
 
 ## Dónde Está
 
@@ -61,10 +61,13 @@ La consola contiene:
 - KPIs de expedientes, importe total, incidencias y última ingesta.
 - Tabla operativa de expedientes.
 - Detalle del expediente seleccionado.
+- Botón `Abrir ficha 360` para abrir una pestaña dedicada por ciudadano, por ejemplo `CIT-10001`.
+- Ficha 360 con identidad, expedientes, notificaciones, pagos, citas y alertas funcionales agrupadas por `persona_id`.
 - Trazabilidad funcional: origen vertical, NiFi, datalake y API protegida.
-- Salud básica del stack vista desde la sesión web.
+- Panel `Estado operativo` con revisión manual y automática de Keycloak, APISIX, API DENA, datos externos y sesión.
 - Auditoría de la última consulta: usuario, endpoint, filtros, filas y duración.
 - Exportación CSV y JSON de los resultados visibles.
+- Accesos operativos a NiFi, Grafana, Mathesar y Portainer sin mezclar esas herramientas con la tabla principal.
 
 ## Datos Que Usa
 
