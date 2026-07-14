@@ -108,6 +108,7 @@ data:
             border-bottom: 1px solid var(--line);
             padding: 16px 18px;
           }
+          .panel.collapsed .panel-head { border-bottom: 0; }
           .panel-head h2, .panel-title h2 {
             margin: 0;
             font-size: 1rem;
@@ -137,6 +138,9 @@ data:
           }
           .panel.collapsed [data-panel-body] {
             display: none;
+          }
+          .panel-content-collapsed {
+            display: none !important;
           }
           form {
             padding: 4px 18px 18px;
@@ -818,6 +822,44 @@ data:
               .replaceAll(">", "&gt;")
               .replaceAll('"', "&quot;")
               .replaceAll("'", "&#039;");
+          }
+
+          function panelStorageKey(panel, index) {
+            const title = String(panel.querySelector("h2")?.textContent || `panel-${index}`)
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "");
+            return `denaClientPanelCollapsed:${title}:${index}`;
+          }
+
+          function initCollapsiblePanels() {
+            document.querySelectorAll(".panel").forEach((panel, index) => {
+              const head = panel.querySelector(":scope > .panel-head");
+              if (!head) return;
+              const content = panel.querySelectorAll(":scope > :not(.panel-head)");
+              if (!content.length) return;
+              panel.dataset.collapsible = "true";
+              const key = panelStorageKey(panel, index);
+              let button = head.querySelector(".panel-toggle");
+              if (!button) {
+                button = document.createElement("button");
+                button.type = "button";
+                button.className = "panel-toggle";
+                head.prepend(button);
+              }
+              const setCollapsed = (collapsed) => {
+                panel.classList.toggle("collapsed", collapsed);
+                content.forEach((node) => node.classList.toggle("panel-content-collapsed", collapsed));
+                button.textContent = collapsed ? "+" : "-";
+                button.setAttribute("aria-expanded", String(!collapsed));
+                button.setAttribute("aria-label", `${collapsed ? "Desplegar" : "Plegar"} ${panel.querySelector("h2")?.textContent || "apartado"}`);
+                sessionStorage.setItem(key, collapsed ? "1" : "0");
+              };
+              setCollapsed(sessionStorage.getItem(key) === "1");
+              button.addEventListener("click", () => setCollapsed(!panel.classList.contains("collapsed")));
+            });
           }
 
           function formatDate(value) {
@@ -1560,16 +1602,7 @@ data:
             runQuery(false);
           });
 
-          document.querySelectorAll("[data-collapsible] .panel-toggle").forEach((button) => {
-            button.addEventListener("click", () => {
-              const panel = button.closest("[data-collapsible]");
-              const isCollapsed = panel.classList.toggle("collapsed");
-              const isOpen = !isCollapsed;
-              button.setAttribute("aria-expanded", String(isOpen));
-              button.setAttribute("aria-label", `${isOpen ? "Plegar" : "Desplegar"} ${panel.querySelector("h2")?.textContent || "apartado"}`);
-              button.textContent = isOpen ? "⌃" : "⌄";
-            });
-          });
+          initCollapsiblePanels();
 
           citizenFolderList.addEventListener("click", (event) => {
             const button = event.target.closest("[data-folder]");

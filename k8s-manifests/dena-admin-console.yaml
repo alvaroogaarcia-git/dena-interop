@@ -93,10 +93,25 @@ data:
             padding: 14px 16px;
             border-bottom: 1px solid var(--line);
           }
+          .panel.collapsed .panel-head { border-bottom: 0; }
           .panel-title { justify-content: space-between; gap: 10px; }
           .panel-head h2 { margin: 0; font-size: 1rem; }
           .panel-head p { margin: 4px 0 0; color: var(--muted); font-size: .86rem; line-height: 1.4; }
           form, .panel-body { padding: 14px 16px 16px; }
+          .panel-toggle {
+            float: right;
+            min-width: 34px;
+            min-height: 32px;
+            margin-left: 10px;
+            padding: 5px 9px;
+            border-color: var(--line);
+            background: var(--surface);
+            color: var(--muted);
+            font-size: .9rem;
+            line-height: 1;
+          }
+          .panel-toggle:hover { color: var(--ink); border-color: var(--brand); }
+          .panel-content-collapsed { display: none !important; }
           label {
             display: block;
             margin: 12px 0 6px;
@@ -148,6 +163,7 @@ data:
           .toolbar input { max-width: 320px; }
           .table-wrap { overflow: auto; }
           table { width: 100%; border-collapse: collapse; min-width: 860px; }
+          .external-table { min-width: 680px; }
           th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
           th {
             background: var(--soft);
@@ -336,11 +352,12 @@ data:
           }
           .external-grid {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 340px;
+            grid-template-columns: 1fr;
             gap: 14px;
             align-items: start;
           }
           .external-detail {
+            min-width: 0;
             border: 1px solid var(--line);
             border-radius: 8px;
             background: var(--soft);
@@ -419,6 +436,9 @@ data:
             .side-right .panel + .panel { margin-top: 0; }
             .flow-map { grid-template-columns: repeat(3, minmax(0, 1fr)); }
             .external-grid { grid-template-columns: 1fr; }
+          }
+          @media (min-width: 1320px) {
+            .external-grid { grid-template-columns: minmax(0, 1fr) minmax(300px, 340px); }
           }
           @media (max-width: 760px) {
             main { width: min(100% - 20px, 1440px); padding-top: 14px; }
@@ -863,6 +883,32 @@ data:
             return String(value ?? "").replace(/[&<>"']/g, (char) => ({
               "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
             }[char]));
+          }
+
+          function initCollapsiblePanels() {
+            document.querySelectorAll(".panel").forEach((panel, index) => {
+              const head = panel.querySelector(":scope > .panel-head");
+              if (!head || head.querySelector(".panel-toggle")) return;
+              const content = Array.from(panel.children).filter((child) => child !== head);
+              if (!content.length) return;
+              const title = normalize(head.querySelector("h2")?.textContent || `panel-${index}`);
+              const key = `denaAdminPanelCollapsed:${title}:${index}`;
+              const button = document.createElement("button");
+              button.type = "button";
+              button.className = "panel-toggle";
+              button.setAttribute("aria-label", "Contraer panel");
+              head.prepend(button);
+              const setCollapsed = (collapsed) => {
+                panel.classList.toggle("collapsed", collapsed);
+                content.forEach((node) => node.classList.toggle("panel-content-collapsed", collapsed));
+                button.textContent = collapsed ? "+" : "-";
+                button.setAttribute("aria-expanded", String(!collapsed));
+                button.setAttribute("aria-label", collapsed ? "Desplegar panel" : "Contraer panel");
+                sessionStorage.setItem(key, collapsed ? "1" : "0");
+              };
+              setCollapsed(sessionStorage.getItem(key) === "1");
+              button.addEventListener("click", () => setCollapsed(!panel.classList.contains("collapsed")));
+            });
           }
 
           function normalize(value) {
@@ -1728,7 +1774,7 @@ data:
               return;
             }
             externalTableWrap.innerHTML = `
-              <table>
+              <table class="external-table">
                 <thead>
                   <tr>
                     <th>ID</th><th>Título</th><th>Estado</th><th>Relacionado</th><th>Fecha</th>
@@ -1877,6 +1923,7 @@ data:
             });
           });
 
+          initCollapsiblePanels();
           const bootParams = new URLSearchParams(window.location.search);
           if (bootParams.get("view") === "ciudadano360") {
             showCitizen360View();
