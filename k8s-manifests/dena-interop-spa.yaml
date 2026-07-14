@@ -29,6 +29,23 @@ data:
             --bad: #a13d3d;
             --blue: #245ca8;
           }
+          :root[data-theme="dark"] {
+            color-scheme: dark;
+            --bg: #101820;
+            --surface: #17212b;
+            --surface-soft: #1e2a35;
+            --ink: #edf4f7;
+            --muted: #a9b8c6;
+            --line: #344352;
+            --brand: #6fb3d2;
+            --brand-dark: #8fc6dc;
+            --brand-soft: #203948;
+            --ok: #74d39a;
+            --warn: #f2c96d;
+            --closed: #b6c2d1;
+            --bad: #f09a9a;
+            --blue: #9ec5ff;
+          }
           * { box-sizing: border-box; }
           body {
             margin: 0;
@@ -42,7 +59,7 @@ data:
             margin: 0 auto;
             padding: 24px 0 38px;
           }
-          .topbar, .brand, .session-actions, .panel-title, .detail-head {
+          .topbar, .brand, .session-actions, .panel-title, .detail-head, .topbar-tools {
             display: flex;
             align-items: center;
           }
@@ -75,6 +92,21 @@ data:
             color: var(--muted);
             font-size: .92rem;
           }
+          .topbar-tools {
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+          }
+          .locale-select, .theme-toggle {
+            min-height: 38px;
+            width: auto;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: var(--ink);
+            font-size: .86rem;
+          }
+          .theme-toggle { padding: 8px 10px; }
           .status {
             min-height: 38px;
             display: inline-flex;
@@ -161,7 +193,7 @@ data:
           }
           input, select {
             width: 100%;
-            background: #fff;
+            background: var(--surface);
             color: var(--ink);
           }
           button {
@@ -354,7 +386,7 @@ data:
             cursor: pointer;
           }
           tbody tr:hover, tbody tr.selected {
-            background: #fbfdff;
+            background: var(--surface-soft);
           }
           tbody tr.selected td:first-child {
             box-shadow: inset 3px 0 0 var(--brand);
@@ -379,7 +411,7 @@ data:
             min-height: 26px;
             border-radius: 999px;
             padding: 4px 9px;
-            background: #eef2f6;
+            background: var(--surface-soft);
             color: var(--closed);
             font-size: .78rem;
             font-weight: 800;
@@ -441,10 +473,12 @@ data:
           .attention-card.warn {
             border-color: #f3d38b;
             background: #fff8e6;
+            color: #3f2f00;
           }
           .attention-card.bad {
             border-color: #ecc6c6;
             background: #fff1f1;
+            color: #5d1f1f;
           }
           .attention-card strong, .timeline-card strong {
             display: block;
@@ -457,6 +491,8 @@ data:
             font-size: .84rem;
             line-height: 1.35;
           }
+          .attention-card.warn span { color: #6d5200; }
+          .attention-card.bad span { color: #7c3333; }
           .timeline-card {
             display: grid;
             grid-template-columns: 94px minmax(0, 1fr);
@@ -484,7 +520,7 @@ data:
             margin-top: 12px;
             border: 1px solid var(--line);
             border-radius: 8px;
-            background: #fbfdff;
+            background: var(--surface-soft);
             padding: 12px;
           }
           .citizen-guide h4 {
@@ -525,6 +561,8 @@ data:
           @media (max-width: 640px) {
             main { width: min(100% - 20px, 1380px); padding-top: 14px; }
             .topbar { align-items: stretch; flex-direction: column; }
+            .topbar-tools { justify-content: stretch; }
+            .locale-select, .theme-toggle, .topbar-tools .status { width: 100%; }
             .status { justify-content: flex-start; white-space: normal; }
             .summary, .session-grid, .detail-grid, .presets { grid-template-columns: 1fr; }
             .bar-row { grid-template-columns: 1fr; gap: 5px; }
@@ -564,7 +602,15 @@ data:
                 <p class="subtitle">Consulta ciudadana de expedientes</p>
               </div>
             </div>
-            <div class="status" id="status">Listo para iniciar sesión.</div>
+            <div class="topbar-tools">
+              <select class="locale-select" id="languageSelect" aria-label="Idioma">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+                <option value="eu">Euskara</option>
+              </select>
+              <button class="theme-toggle button-secondary" id="themeToggle" type="button">Oscuro</button>
+              <div class="status" id="status">Listo para iniciar sesión.</div>
+            </div>
           </header>
 
           <section class="workspace">
@@ -766,6 +812,142 @@ data:
           const citizenDataLabel = document.querySelector("#citizenDataLabel");
           const attentionList = document.querySelector("#attentionList");
           const timelineList = document.querySelector("#timelineList");
+          const languageSelect = document.querySelector("#languageSelect");
+          const themeToggle = document.querySelector("#themeToggle");
+          const translations = {
+            en: {
+              "Consulta ciudadana de expedientes": "Citizen case-file query",
+              "Oscuro": "Dark",
+              "Claro": "Light",
+              "Listo para iniciar sesión.": "Ready to sign in.",
+              "Consulta": "Query",
+              "Inicia sesión y filtra los expedientes que quieres revisar.": "Sign in and filter the case files you want to review.",
+              "La autenticación se realiza en Keycloak. Usa testuser / Test1234! cuando se abra la pantalla de login.": "Authentication is handled in Keycloak. Use testuser / Test1234! when the login screen opens.",
+              "Estado": "Status",
+              "Todos": "All",
+              "Abierto": "Open",
+              "En tramitación": "In progress",
+              "Pendiente documentación": "Documentation pending",
+              "Resuelto": "Resolved",
+              "Archivado": "Archived",
+              "Título": "Title",
+              "Número de expediente": "Case-file number",
+              "Identificador ciudadano": "Citizen identifier",
+              "Fecha desde": "Date from",
+              "Fecha hasta": "Date to",
+              "Expedientes a consultar": "Case files to query",
+              "Consultar expedientes": "Query case files",
+              "Filtros rápidos": "Quick filters",
+              "Accesos directos para consultar los casos más habituales.": "Shortcuts for the most common cases.",
+              "Pendientes": "Pending",
+              "Resueltos": "Resolved",
+              "Últimos": "Latest",
+              "Sin resultados": "No results",
+              "Mis carpetas": "My folders",
+              "Datos relacionados con el ciudadano seleccionado.": "Data related to the selected citizen.",
+              "Mis expedientes": "My case files",
+              "Notificaciones": "Notifications",
+              "Pagos": "Payments",
+              "Citas": "Appointments",
+              "Datos personales": "Personal data",
+              "Sesión": "Session",
+              "Aún no hay token emitido.": "No token has been issued yet.",
+              "Usuario": "User",
+              "Expira": "Expires",
+              "Sin iniciar": "Not signed in",
+              "Renovar": "Renew",
+              "Cerrar sesión": "Sign out",
+              "Expedientes": "Case files",
+              "Importe total": "Total amount",
+              "Última actualización": "Latest update",
+              "Organismos": "Organizations",
+              "Requiere mi atención": "Needs my attention",
+              "Pagos, notificaciones, citas o expedientes que necesitan revisión.": "Payments, notifications, appointments or case files that need review.",
+              "Consulta un ciudadano para ver avisos.": "Query a citizen to see notices.",
+              "Línea de vida": "Timeline",
+              "Actividad consolidada de expedientes, notificaciones, pagos, citas y datos personales.": "Consolidated activity for case files, notifications, payments, appointments and personal data.",
+              "Consulta un ciudadano para ver su línea de vida.": "Query a citizen to see their timeline.",
+              "Estados": "Statuses",
+              "Distribución de expedientes por estado.": "Case-file distribution by status.",
+              "Importes": "Amounts",
+              "Total acumulado por estado.": "Accumulated total by status.",
+              "Sin datos.": "No data.",
+              "Ejecuta una consulta para ver resultados estructurados.": "Run a query to view structured results.",
+              "Sin resultados todavía.": "No results yet.",
+              "Selecciona un expediente para ver su detalle.": "Select a case file to view its detail.",
+              "Mis datos conectados": "My connected data",
+              "Actualizar": "Refresh",
+              "Selecciona una carpeta para consultar datos externos relacionados.": "Select a folder to query related external data.",
+              "Sin carpeta cargada.": "No folder loaded.",
+              "Selecciona una fila.": "Select a row."
+            },
+            eu: {
+              "Consulta ciudadana de expedientes": "Herritarren espediente-kontsulta",
+              "Oscuro": "Iluna",
+              "Claro": "Argia",
+              "Listo para iniciar sesión.": "Saioa hasteko prest.",
+              "Consulta": "Kontsulta",
+              "Inicia sesión y filtra los expedientes que quieres revisar.": "Hasi saioa eta iragazi berrikusi nahi dituzun espedienteak.",
+              "La autenticación se realiza en Keycloak. Usa testuser / Test1234! cuando se abra la pantalla de login.": "Autentifikazioa Keycloak-en egiten da. Erabili testuser / Test1234! login pantaila irekitzen denean.",
+              "Estado": "Egoera",
+              "Todos": "Guztiak",
+              "Abierto": "Irekita",
+              "En tramitación": "Izapidetzen",
+              "Pendiente documentación": "Dokumentazioa falta da",
+              "Resuelto": "Ebatzita",
+              "Archivado": "Artxibatuta",
+              "Título": "Izenburua",
+              "Número de expediente": "Espediente-zenbakia",
+              "Identificador ciudadano": "Herritarraren identifikatzailea",
+              "Fecha desde": "Hasiera-data",
+              "Fecha hasta": "Amaiera-data",
+              "Expedientes a consultar": "Kontsultatu beharreko espedienteak",
+              "Consultar expedientes": "Espedienteak kontsultatu",
+              "Filtros rápidos": "Iragazki azkarrak",
+              "Accesos directos para consultar los casos más habituales.": "Ohiko kasuak kontsultatzeko lasterbideak.",
+              "Pendientes": "Zain",
+              "Resueltos": "Ebatzita",
+              "Últimos": "Azkenak",
+              "Sin resultados": "Emaitzarik gabe",
+              "Mis carpetas": "Nire karpetak",
+              "Datos relacionados con el ciudadano seleccionado.": "Hautatutako herritarrarekin lotutako datuak.",
+              "Mis expedientes": "Nire espedienteak",
+              "Notificaciones": "Jakinarazpenak",
+              "Pagos": "Ordainketak",
+              "Citas": "Hitzorduak",
+              "Datos personales": "Datu pertsonalak",
+              "Sesión": "Saioa",
+              "Aún no hay token emitido.": "Oraindik ez da tokenik jaulki.",
+              "Usuario": "Erabiltzailea",
+              "Expira": "Iraungitzea",
+              "Sin iniciar": "Hasi gabe",
+              "Renovar": "Berritu",
+              "Cerrar sesión": "Saioa itxi",
+              "Expedientes": "Espedienteak",
+              "Importe total": "Zenbateko osoa",
+              "Última actualización": "Azken eguneratzea",
+              "Organismos": "Erakundeak",
+              "Requiere mi atención": "Nire arreta behar du",
+              "Pagos, notificaciones, citas o expedientes que necesitan revisión.": "Berrikusi beharreko ordainketak, jakinarazpenak, hitzorduak edo espedienteak.",
+              "Consulta un ciudadano para ver avisos.": "Kontsultatu herritar bat abisuak ikusteko.",
+              "Línea de vida": "Denbora-lerroa",
+              "Actividad consolidada de expedientes, notificaciones, pagos, citas y datos personales.": "Espedienteen, jakinarazpenen, ordainketen, hitzorduen eta datu pertsonalen jarduera bateratua.",
+              "Consulta un ciudadano para ver su línea de vida.": "Kontsultatu herritar bat bere denbora-lerroa ikusteko.",
+              "Estados": "Egoerak",
+              "Distribución de expedientes por estado.": "Espedienteen banaketa egoeraren arabera.",
+              "Importes": "Zenbatekoak",
+              "Total acumulado por estado.": "Egoeraren araberako guztizko metatua.",
+              "Sin datos.": "Daturik gabe.",
+              "Ejecuta una consulta para ver resultados estructurados.": "Exekutatu kontsulta bat emaitza egituratuak ikusteko.",
+              "Sin resultados todavía.": "Oraindik ez dago emaitzarik.",
+              "Selecciona un expediente para ver su detalle.": "Hautatu espediente bat xehetasuna ikusteko.",
+              "Mis datos conectados": "Nire datu konektatuak",
+              "Actualizar": "Eguneratu",
+              "Selecciona una carpeta para consultar datos externos relacionados.": "Hautatu karpeta bat lotutako kanpo-datuak kontsultatzeko.",
+              "Sin carpeta cargada.": "Ez dago karpetarik kargatuta.",
+              "Selecciona una fila.": "Hautatu errenkada bat."
+            }
+          };
 
           const statusLabels = {
             abierto: "Abierto",
@@ -822,6 +1004,47 @@ data:
               .replaceAll(">", "&gt;")
               .replaceAll('"', "&quot;")
               .replaceAll("'", "&#039;");
+          }
+
+          function walkTextNodes(root, callback) {
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+              acceptNode(node) {
+                const parent = node.parentElement;
+                if (!parent || ["SCRIPT", "STYLE", "PRE", "CODE"].includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
+                return node.textContent.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+              }
+            });
+            let node = walker.nextNode();
+            while (node) {
+              callback(node);
+              node = walker.nextNode();
+            }
+          }
+
+          function translateText(text, lang) {
+            if (lang === "es") return text;
+            return translations[lang]?.[text] || text;
+          }
+
+          function applyLanguage(lang) {
+            document.documentElement.lang = lang;
+            localStorage.setItem("denaClientLanguage", lang);
+            walkTextNodes(document.body, (node) => {
+              const source = node.i18nSource || node.textContent.trim();
+              node.i18nSource = source;
+              node.textContent = node.textContent.replace(node.textContent.trim(), translateText(source, lang));
+            });
+            themeToggle.textContent = document.documentElement.dataset.theme === "dark"
+              ? translateText("Claro", lang)
+              : translateText("Oscuro", lang);
+          }
+
+          function applyTheme(theme) {
+            document.documentElement.dataset.theme = theme;
+            localStorage.setItem("denaClientTheme", theme);
+            themeToggle.textContent = theme === "dark"
+              ? translateText("Claro", languageSelect.value)
+              : translateText("Oscuro", languageSelect.value);
           }
 
           function panelStorageKey(panel, index) {
@@ -1667,6 +1890,14 @@ data:
             });
             if (idToken) params.set("id_token_hint", idToken);
             window.location.assign(`${oidc.logoutUrl}?${params}`);
+          });
+
+          languageSelect.value = localStorage.getItem("denaClientLanguage") || "es";
+          applyTheme(localStorage.getItem("denaClientTheme") || "light");
+          applyLanguage(languageSelect.value);
+          languageSelect.addEventListener("change", () => applyLanguage(languageSelect.value));
+          themeToggle.addEventListener("click", () => {
+            applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
           });
 
           handleAuthCallback()
