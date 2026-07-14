@@ -41,6 +41,8 @@ if ! grep -q '^TF_VAR_recovery_operator_password=' "$LOCAL_ENV"; then
 fi
 
 set -a
+TF_VAR_testuser_password=""
+TF_VAR_adminuser_password=""
 # shellcheck disable=SC1090
 . "$LOCAL_ENV"
 set +a

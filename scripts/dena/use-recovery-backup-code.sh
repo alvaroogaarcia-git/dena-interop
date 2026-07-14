@@ -5,7 +5,6 @@ set -euo pipefail
 KUBECONFIG_PATH="${KUBECONFIG:-$HOME/.kube/dena-config}"
 export KUBECONFIG="$KUBECONFIG_PATH"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REALM="${DENA_RECOVERY_REALM:-piloto}"
 USERNAME="${DENA_RECOVERY_USERNAME:-adminuser}"
 ISSUED_BY="${DENA_RECOVERY_ISSUED_BY:-recovery-operator}"
