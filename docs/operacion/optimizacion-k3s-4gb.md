@@ -57,7 +57,7 @@ En esta partición ext4 de `20 GiB` se redujo la reserva para root al `1 %`:
 sudo tune2fs -m 1 /dev/sda1
 ```
 
-Esto libero aproximadamente `800 MiB` sin eliminar datos. No se debe aplicar a otro dispositivo sin comprobar antes su filesystem y función.
+Esto liberó aproximadamente `800 MiB` sin eliminar datos. No se debe aplicar a otro dispositivo sin comprobar antes su filesystem y función.
 
 No se deben borrar manualmente `/var/lib/rancher/k3s`, los PVC ni snapshots activos de containerd.
 

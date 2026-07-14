@@ -122,6 +122,22 @@ data:
             justify-content: space-between;
             gap: 12px;
           }
+          .panel-toggle {
+            min-height: 32px;
+            width: 36px;
+            padding: 0;
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--ink);
+            border: 1px solid var(--line);
+            font-size: 1rem;
+          }
+          .panel-toggle:hover {
+            background: var(--surface-soft);
+          }
+          .panel.collapsed [data-panel-body] {
+            display: none;
+          }
           form {
             padding: 4px 18px 18px;
           }
@@ -637,21 +653,27 @@ data:
                 <div class="metric"><span>Organismos</span><strong>0</strong></div>
               </div>
               <div class="citizen-overview">
-                <section class="panel">
+                <section class="panel" data-collapsible>
                   <div class="panel-head">
-                    <h2>Requiere mi atención</h2>
+                    <div class="panel-title">
+                      <h2>Requiere mi atención</h2>
+                      <button class="panel-toggle" type="button" aria-label="Plegar Requiere mi atención" aria-expanded="true">⌃</button>
+                    </div>
                     <p>Pagos, notificaciones, citas o expedientes que necesitan revisión.</p>
                   </div>
-                  <div class="attention-list" id="attentionList">
+                  <div class="attention-list" id="attentionList" data-panel-body>
                     <div class="empty">Consulta un ciudadano para ver avisos.</div>
                   </div>
                 </section>
-                <section class="panel">
+                <section class="panel" data-collapsible>
                   <div class="panel-head">
-                    <h2>Línea de vida</h2>
+                    <div class="panel-title">
+                      <h2>Línea de vida</h2>
+                      <button class="panel-toggle" type="button" aria-label="Plegar Línea de vida" aria-expanded="true">⌃</button>
+                    </div>
                     <p>Actividad consolidada de expedientes, notificaciones, pagos, citas y datos personales.</p>
                   </div>
-                  <div class="timeline-list" id="timelineList">
+                  <div class="timeline-list" id="timelineList" data-panel-body>
                     <div class="empty">Consulta un ciudadano para ver su línea de vida.</div>
                   </div>
                 </section>
@@ -676,30 +698,36 @@ data:
                   </div>
                 </section>
               </div>
-              <div class="panel">
+              <div class="panel" data-collapsible>
                 <div class="panel-head">
                   <div class="panel-title">
                     <h2>Expedientes</h2>
+                    <button class="panel-toggle" type="button" aria-label="Plegar Expedientes" aria-expanded="true">⌃</button>
                   </div>
                   <p id="resultLabel">Ejecuta una consulta para ver resultados estructurados.</p>
                 </div>
-                <div class="table-wrap" id="tableWrap">
-                  <div class="empty">Sin resultados todavía.</div>
-                </div>
-                <div class="detail" id="detailPanel">
-                  <div class="empty">Selecciona un expediente para ver su detalle.</div>
+                <div data-panel-body>
+                  <div class="table-wrap" id="tableWrap">
+                    <div class="empty">Sin resultados todavía.</div>
+                  </div>
+                  <div class="detail" id="detailPanel">
+                    <div class="empty">Selecciona un expediente para ver su detalle.</div>
+                  </div>
                 </div>
               </div>
 
-              <section class="panel" style="margin-top:14px">
+              <section class="panel" style="margin-top:14px" data-collapsible>
                 <div class="panel-head">
                   <div class="panel-title">
                     <h2>Mis datos conectados</h2>
-                    <button class="button-secondary" id="citizenRefreshButton" type="button">Actualizar</button>
+                    <div class="session-actions" style="margin-top:0">
+                      <button class="button-secondary" id="citizenRefreshButton" type="button">Actualizar</button>
+                      <button class="panel-toggle" type="button" aria-label="Plegar Mis datos conectados" aria-expanded="true">⌃</button>
+                    </div>
                   </div>
                   <p id="citizenDataLabel">Selecciona una carpeta para consultar datos externos relacionados.</p>
                 </div>
-                <div class="detail">
+                <div class="detail" data-panel-body>
                   <div class="citizen-data-grid">
                     <div class="table-wrap" id="citizenDataWrap">
                       <div class="empty">Sin carpeta cargada.</div>
@@ -741,6 +769,14 @@ data:
             pendiente_documentacion: "Pendiente documentación",
             resuelto: "Resuelto",
             archivado: "Archivado"
+          };
+          const denaStateMap = {
+            REGISTERED_PENDING_TO_BE_OPENED: "abierto",
+            OPENED: "abierto",
+            IN_PROGRESS: "en_tramitacion",
+            WAITING_FOR_INTERESTED_PARTY_RESPONSE: "pendiente_documentacion",
+            WAITING_FOR_OTHER_ORG_WORK: "en_tramitacion",
+            CLOSED: "archivado"
           };
 
           const currency = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
@@ -1222,6 +1258,31 @@ data:
             renderSession(session);
           }
 
+          function externalExpedienteToClientRow(row) {
+            return {
+              id: row.id,
+              expediente_code: row.id,
+              title: row.titulo,
+              citizen_id: row.persona_id,
+              source_system: row.administracion || row.servicio || "datos_externos",
+              status: denaStateMap[row.estado] || "abierto",
+              amount_eur: Number(row.detalle?.raw_payload?.amountHint || 0),
+              opened_at: row.creado_en || row.fecha,
+              updated_at: row.fecha || row.sincronizado_en,
+              ingested_at: row.sincronizado_en,
+              external_state: row.estado
+            };
+          }
+
+          function renderExternalExpedientesAsMain(rows) {
+            const mappedRows = rows.map(externalExpedienteToClientRow);
+            lastRows = mappedRows;
+            renderSummary(mappedRows);
+            renderCharts(mappedRows);
+            renderTable(mappedRows);
+            renderSession(session);
+          }
+
           function friendlyError(scope, response) {
             if (scope === "token") {
               if (response.status === 400 || response.status === 401) return "Keycloak no pudo completar el login.";
@@ -1478,6 +1539,7 @@ data:
             renderCitizenFolderButtons();
             citizenRows = citizenFolderData[activeCitizenFolder] || [];
             renderCitizenDataTable(citizenRows);
+            renderExternalExpedientesAsMain(citizenFolderData.expedientes || []);
             renderAttention(citizenFolderData);
             renderTimeline(citizenFolderData);
           }
@@ -1496,6 +1558,17 @@ data:
           form.addEventListener("submit", (event) => {
             event.preventDefault();
             runQuery(false);
+          });
+
+          document.querySelectorAll("[data-collapsible] .panel-toggle").forEach((button) => {
+            button.addEventListener("click", () => {
+              const panel = button.closest("[data-collapsible]");
+              const isCollapsed = panel.classList.toggle("collapsed");
+              const isOpen = !isCollapsed;
+              button.setAttribute("aria-expanded", String(isOpen));
+              button.setAttribute("aria-label", `${isOpen ? "Plegar" : "Desplegar"} ${panel.querySelector("h2")?.textContent || "apartado"}`);
+              button.textContent = isOpen ? "⌃" : "⌄";
+            });
           });
 
           citizenFolderList.addEventListener("click", (event) => {

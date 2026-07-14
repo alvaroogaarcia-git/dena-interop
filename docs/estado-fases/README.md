@@ -1,6 +1,6 @@
 # Estados Validados Por Fase
 
-Indice operativo de fases individuales. Cada pagina explica que se hizo, que comandos ejecutar, que hace cada comando y como verificar el resultado.
+Índice operativo de fases individuales. Cada página explica que se hizo, que comandos ejecutar, que hace cada comando y cómo verificar el resultado.
 
 | Fase | Resumen corto | Detalle |
 | --- | --- | --- |
@@ -27,10 +27,11 @@ Indice operativo de fases individuales. Cada pagina explica que se hizo, que com
 | 18 | Consola admin DENA queda protegida con passkey. | [Fase 18](fase-18-consola-admin-passkey.md) |
 | 19 | PostgreSQL aislado de datos externos queda creado. | [Fase 19](fase-19-datos-externos.md) |
 | 20 | NiFi sincroniza datos externos DENA incrementalmente. | [Fase 20](fase-20-nifi-datos-externos.md) |
+| 21 | Consola admin y SPA navegan datos externos por carpetas demo. | [Fase 21](fase-21-demo-explorer-datos-externos.md) |
 
-## Historico acumulado
+## Histórico acumulado
 
-Los documentos antiguos se conservan como cortes de validacion historicos:
+Los documentos antiguos se conservan como cortes de validación históricos:
 
 | Corte | Archivo |
 | --- | --- |
@@ -48,4 +49,4 @@ Los documentos antiguos se conservan como cortes de validacion historicos:
 | Fase 19 | [estado-fases-0-19.md](historico/estado-fases-0-19.md) |
 | Fase 20 | [estado-fases-0-20.md](historico/estado-fases-0-20.md) |
 
-Para reconstruir una VM completa desde cero, usar tambien la [guia paso a paso de replicacion](../operacion/configuracion-vm-previa.md).
+Para reconstruir una VM completa desde cero, usar también la [guía paso a paso de replicación](../operacion/configuracion-vm-previa.md).

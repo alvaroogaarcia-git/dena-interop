@@ -22,7 +22,7 @@ kubectl get ns
 - `kubectl apply -f -`: aplica el YAML de forma idempotente.
 - `kubectl get ns`: lista los namespaces creados.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get ns auth gateway app monitoring datalake verticales portainer
@@ -32,4 +32,4 @@ Todos deben aparecer con estado `Active`.
 
 ## Referencias
 
-- [Historico 0-3](historico/estado-fases-0-3.md)
+- [Histórico 0-3](historico/estado-fases-0-3.md)

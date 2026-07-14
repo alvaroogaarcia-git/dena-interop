@@ -15,14 +15,14 @@ bash scripts/verify-fase13.sh
 
 ## Que hace cada parte
 
-- `apply-dena-api.sh`: aplica SQL y sincronizacion necesaria para la API DENA.
+- `apply-dena-api.sh`: aplica SQL y sincronización necesaria para la API DENA.
 - `apply-route.sh`: crea upstreams y rutas de APISIX usando la Admin API.
 - Las rutas de Keycloak publican `/realms/*`, `/admin/*` y `/resources/*`.
 - La ruta `/api` exige token OIDC valido.
 - La ruta `/dena/admin-files` expone el endpoint DENA funcional.
 - `verify-fase13.sh`: prueba rechazo sin token, login OIDC y llamadas autenticadas.
 
-## Verificacion
+## Verificación
 
 ```bash
 curl -i http://192.168.56.15:30080/api
@@ -33,5 +33,5 @@ bash scripts/verify-fase13.sh
 
 ## Referencias
 
-- [Historico 0-13](historico/estado-fases-0-13.md)
+- [Histórico 0-13](historico/estado-fases-0-13.md)
 - [APISIX](../herramientas/apisix.md)

@@ -21,7 +21,7 @@ kubectl rollout status deployment/keycloak -n auth --timeout=420s
 - `kubectl apply -f k8s-manifests/keycloak-deployment.yaml`: aplica el Deployment y Service de Keycloak.
 - `kubectl rollout status`: espera a que el Deployment termine correctamente.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get pods,svc -n auth -l app=keycloak -o wide
@@ -30,5 +30,5 @@ kubectl logs -n auth deploy/keycloak --tail=80
 
 ## Referencias
 
-- [Historico 0-6](historico/estado-fases-0-6.md)
+- [Histórico 0-6](historico/estado-fases-0-6.md)
 - [Manifiesto Keycloak](../../k8s-manifests/keycloak-deployment.yaml)

@@ -14,6 +14,7 @@ Mathesar simula la herramienta de un funcionario que edita expedientes en el sis
 - Deployment: `mathesar`
 - Service NodePort: `30900`
 - URL: `http://192.168.56.15:30900`
+- URL por port-forward local: `http://127.0.0.1:18000`
 - Base interna: `mathesar_django`
 - Base de negocio: `expedientes`
 
@@ -25,12 +26,36 @@ Abrir:
 http://192.168.56.15:30900
 ```
 
+Si el NodePort no es accesible desde la máquina operadora, usar port-forward:
+
+```bash
+kubectl port-forward -n verticales svc/mathesar 18000:8000 --address 127.0.0.1
+```
+
+Y abrir:
+
+```text
+http://127.0.0.1:18000
+```
+
+Login web demo:
+
+- Usuario: `admin`
+- Password: `Mathesar1234!`
+
 Conexión que debe existir en Mathesar:
 
 - Host: `postgresql-verticales.verticales.svc.cluster.local`
 - Puerto: `5432`
 - Base: `expedientes`
 - Usuario: `postgres`
+- Password: valor del Secret `verticales/mathesar-secret`, clave `db-password`
+
+Para leer la password de PostgreSQL usada por Mathesar:
+
+```bash
+kubectl get secret mathesar-secret -n verticales -o jsonpath='{.data.db-password}' | base64 -d; echo
+```
 
 ## Qué Contiene En Este Caso
 

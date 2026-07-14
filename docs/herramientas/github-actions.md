@@ -14,6 +14,7 @@ Workflows:
 
 - `.github/workflows/cluster-verify.yml`
 - `.github/workflows/phase-ops.yml`
+- `.github/workflows/repo-ci.yml`
 
 Documentación específica:
 
@@ -31,13 +32,16 @@ Desde GitHub se lanza manualmente el workflow con inputs:
 
 `cluster-verify.yml`:
 
-- Ejecuta verificaciones de fases.
+- Ejecuta `verify-stack.sh` para `all` y verificaciones concretas hasta Fase 21.
 
 `phase-ops.yml`:
 
 - Aplica Keycloak.
 - Aplica Grafana.
 - Aplica SQL del datalake.
+- Aplica datos externos.
+- Provisiona NiFi hacia datos externos.
+- Aplica el explorador demo de Fase 21.
 - Provisiona NiFi.
 - Ejecuta verificaciones.
 

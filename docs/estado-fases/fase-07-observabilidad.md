@@ -31,7 +31,7 @@ kubectl rollout status statefulset/tempo -n monitoring --timeout=300s
 - `tempo`: instala almacenamiento de trazas.
 - `rollout status`: espera a que los componentes principales esten listos.
 
-## Verificacion
+## Verificación
 
 ```bash
 helm list -n monitoring
@@ -41,5 +41,5 @@ curl -i http://192.168.56.15:31803/login
 
 ## Referencias
 
-- [Historico 0-7](historico/estado-fases-0-7.md)
+- [Histórico 0-7](historico/estado-fases-0-7.md)
 - [Grafana observabilidad](../arquitectura/grafana-observabilidad.md)

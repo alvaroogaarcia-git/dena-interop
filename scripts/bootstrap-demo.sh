@@ -429,6 +429,9 @@ install_verticales_mathesar() {
     --dry-run=client -o yaml | kubectl apply -f -
   kubectl apply -f k8s-manifests/mathesar-deployment.yaml
   kubectl rollout status deployment/mathesar -n verticales --timeout=300s
+  kubectl exec -n verticales deployment/mathesar -- \
+    env MATHESAR_ADMIN_PASSWORD='Mathesar1234!' \
+    python manage.py shell -c "import os; from django.contrib.auth import get_user_model; User=get_user_model(); user, _ = User.objects.get_or_create(username='admin', defaults={'is_staff': True, 'is_superuser': True, 'is_active': True}); user.is_staff = True; user.is_superuser = True; user.is_active = True; user.set_password(os.environ['MATHESAR_ADMIN_PASSWORD']); user.save(); print('Mathesar admin listo')"
 }
 
 install_nifi_sync() {

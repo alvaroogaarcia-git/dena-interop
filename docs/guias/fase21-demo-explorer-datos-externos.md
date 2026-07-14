@@ -19,6 +19,8 @@ Esta fase añade una vista navegable en la consola admin para consultar la Postg
   - `public.dena_external_citas`
   - `public.dena_external_personas`
   - `public.dena_external_semantica`
+- Datos extra cliente: `sql/datos-externos/006_citizen_rich_demo.sql`
+  - Amplia `CIT-10001` para que la demo cliente tenga varios elementos por carpeta.
 - Kubernetes: `k8s-manifests/datos-externos/postgrest.yaml`
   - Deployment `postgrest-datos-externos`
   - Service `postgrest-datos-externos`
@@ -42,6 +44,7 @@ Esta fase añade una vista navegable en la consola admin para consultar la Postg
 
 ```bash
 bash scripts/dena/apply-fase21-demo-explorer.sh
+bash scripts/verify-fase21-demo-explorer.sh
 ```
 
 El script aplica las vistas SQL, crea el secret de PostgREST, despliega el servicio, reaplica APISIX y actualiza la consola admin.
@@ -50,13 +53,13 @@ El script aplica las vistas SQL, crea el secret de PostgREST, despliega el servi
 
 - Consola admin con OIDC/WebAuthn: `http://localhost:30080/dena/admin-console`
 - Demo cliente con OIDC/WebAuthn: `http://localhost:30080/`
-- Tunel requerido desde el PC operador:
+- Túnel requerido desde el PC operador:
 
 ```bash
 ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
 ```
 
-- La URL directa `http://192.168.56.15:30080/dena/admin-console` sirve para comprobar gateway, pero la consola redirige a `localhost:30080` al iniciar sesion porque Keycloak y WebAuthn estan configurados para ese origen.
+- La URL directa `http://192.168.56.15:30080/dena/admin-console` sirve para comprobar gateway, pero la consola redirige a `localhost:30080` al iniciar sesión porque Keycloak y WebAuthn están configurados para ese origen.
 - Iniciar sesión con un usuario con rol `dena-admin`.
 - Usar el bloque `Carpetas demo`:
   - Expedientes
@@ -84,6 +87,8 @@ En la demo cliente:
 
 `Línea de vida` mezcla las carpetas ciudadanas y ordena los eventos por fecha para mostrar una historia única del ciudadano.
 
+Los paneles `Requiere mi atención`, `Línea de vida`, `Expedientes` y `Mis datos conectados` se pueden plegar o desplegar desde el botón del encabezado para compactar la vista durante una presentación.
+
 ## Comprobación rápida
 
 Con token OIDC valido, las rutas responden en:
@@ -102,12 +107,13 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 Comprobaciones realizadas tras el despliegue:
 
+- `bash scripts/verify-fase21-demo-explorer.sh` termina sin error.
 - `GET /dena/admin-console` devuelve `200`.
 - `GET /realms/piloto/protocol/openid-connect/auth` acepta `redirect_uri=http://localhost:30080/dena/admin-console`.
 - `POST /dena/admin-files` devuelve expedientes con token valido.
 - `GET /dena/external/dena_external_folders` devuelve 6 carpetas.
 - `GET /dena/external/dena_external_expedientes` devuelve expedientes desde `datos_externos`.
-- En la demo cliente, `CIT-10001` devuelve 1 fila en cada carpeta ciudadana: expedientes, notificaciones, pagos, citas y datos personales.
+- En la demo cliente, `CIT-10001` devuelve 6 expedientes, 2 notificaciones, 3 pagos, 2 citas y 1 registro de datos personales.
 - Para `CIT-10001`, `Requiere mi atención` muestra la notificación pendiente `NOT-0001`.
 
 ## Relacion con NiFi

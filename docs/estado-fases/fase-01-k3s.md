@@ -16,16 +16,16 @@ sudo k3s kubectl get nodes -o wide
 ## Que hace cada parte
 
 - `curl -sfL https://get.k3s.io`: descarga el instalador oficial de k3s.
-- `INSTALL_K3S_VERSION`: fija la version validada.
+- `INSTALL_K3S_VERSION`: fija la versión validada.
 - `--disable traefik`: evita instalar Traefik porque se usa APISIX.
 - `--disable servicelb`: evita el balanceador local incluido por defecto.
 - `--write-kubeconfig-mode 0644`: permite leer el kubeconfig generado.
 - `--node-ip`: fija la IP del nodo Kubernetes.
-- `--tls-san`: anade la IP al certificado de la API de Kubernetes.
-- `systemctl enable --now k3s`: activa k3s y lo deja arrancando automaticamente.
+- `--tls-san`: añade la IP al certificado de la API de Kubernetes.
+- `systemctl enable --now k3s`: activa k3s y lo deja arrancando automáticamente.
 - `kubectl wait`: espera a que el nodo este `Ready`.
 
-## Verificacion
+## Verificación
 
 ```bash
 sudo systemctl status k3s
@@ -36,4 +36,4 @@ El nodo debe aparecer `Ready`.
 
 ## Referencias
 
-- [Historico 0-3](historico/estado-fases-0-3.md)
+- [Histórico 0-3](historico/estado-fases-0-3.md)

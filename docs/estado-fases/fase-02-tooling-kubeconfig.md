@@ -18,18 +18,18 @@ helm version --short
 terraform version
 ```
 
-Si Helm o Terraform no existen, el bootstrap los instala automaticamente.
+Si Helm o Terraform no existen, el bootstrap los instala automáticamente.
 
 ## Que hace cada parte
 
 - `ln -sf`: crea el comando `kubectl` apuntando al binario de k3s.
-- `mkdir -p`: crea la carpeta de configuracion de Kubernetes del usuario.
+- `mkdir -p`: crea la carpeta de configuración de Kubernetes del usuario.
 - `cp k3s.yaml`: copia las credenciales del cluster.
 - `chown` y `chmod`: dejan el kubeconfig accesible solo para `dietpi`.
 - `export KUBECONFIG`: indica a `kubectl`, Helm y Terraform que usen ese cluster.
-- `helm version` y `terraform version`: comprueban que las herramientas estan instaladas.
+- `helm version` y `terraform version`: comprueban que las herramientas están instaladas.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get nodes -o wide
@@ -40,4 +40,4 @@ terraform version
 
 ## Referencias
 
-- [Historico 0-3](historico/estado-fases-0-3.md)
+- [Histórico 0-3](historico/estado-fases-0-3.md)

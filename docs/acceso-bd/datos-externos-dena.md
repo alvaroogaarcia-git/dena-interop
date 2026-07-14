@@ -22,7 +22,7 @@ kubectl get secret -n datos-externos datos-externos-postgresql \
 echo
 ```
 
-El script de despliegue tambien lo conserva localmente en:
+El script de despliegue también lo conserva localmente en:
 
 ```text
 .local/fase19-datos-externos.env
@@ -65,18 +65,18 @@ group by document_group
 order by document_group;
 ```
 
-Valores esperados del seed demo:
+Valores esperados del despliegue actual, con Fases 19, 20 y 21 aplicadas:
 
-- `50` expedientes.
-- `30` notificaciones.
-- `25` pagos.
-- `10` citas.
+- `55` expedientes.
+- `31` notificaciones.
+- `27` pagos.
+- `11` citas.
 - `20` fichas de persona.
 - `21` documentos Markdown catalogados.
 
 ## Acceso Desde Mathesar
 
-Mathesar puede crear una conexion adicional a esta base sin desplegar otra instancia.
+Mathesar puede crear una conexión adicional a esta base sin desplegar otra instancia.
 
 Usar estos datos en la UI de Mathesar:
 
@@ -100,7 +100,7 @@ Tablas utiles para empezar:
 - `dena.dena_semantic_field`
 - `dena.dena_semantic_enum_value`
 
-## Verificacion Automatizada
+## Verificación Automatizada
 
 ```bash
 cd /home/dietpi/dena-interop

@@ -35,6 +35,7 @@ bash "$REPO_ROOT/scripts/verify-fase14.sh"
 bash "$REPO_ROOT/scripts/verify-fase15.sh"
 bash "$REPO_ROOT/scripts/verify-fase19-datos-externos.sh"
 bash "$REPO_ROOT/scripts/verify-fase20-datos-externos-nifi.sh"
+bash "$REPO_ROOT/scripts/verify-fase21-demo-explorer.sh"
 
 echo
 echo "[4/8] Cliente SPA"

@@ -16,19 +16,19 @@ bash scripts/dena/apply-route.sh
 
 ## Que hace cada parte
 
-- `apply-fase12-keycloak.sh`: asegura realm, clientes, usuarios y configuracion de autenticacion.
+- `apply-fase12-keycloak.sh`: asegura realm, clientes, usuarios y configuración de autenticación.
 - `dena-admin-console.yaml`: publica la consola admin en NGINX.
 - `rollout status`: espera a que la consola este lista.
 - `apply-route.sh`: publica `/dena/admin-console` en APISIX.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get pods,svc -n app -l app=dena-admin-console -o wide
 ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
 ```
 
-Abrir despues:
+Abrir después:
 
 ```text
 http://localhost:30080/dena/admin-console
@@ -36,6 +36,6 @@ http://localhost:30080/dena/admin-console
 
 ## Referencias
 
-- [Historico fase 18](historico/estado-fases-0-18.md)
+- [Histórico fase 18](historico/estado-fases-0-18.md)
 - [Consola admin DENA](../herramientas/consola-admin-dena.md)
-- [Recuperacion passkey](../operacion/recuperacion-passkey-keycloak.md)
+- [Recuperación passkey](../operacion/recuperacion-passkey-keycloak.md)

@@ -39,11 +39,15 @@ if [[ -z "$DATOS_EXTERNOS_POSTGRES_PASSWORD" ]]; then
   exit 1
 fi
 
-echo "Aplicando vistas SQL del explorador"
-kubectl exec -i -n "$NAMESPACE" "$RELEASE-0" -- \
-  env PGPASSWORD="$DATOS_EXTERNOS_POSTGRES_PASSWORD" \
-  psql -v ON_ERROR_STOP=1 -U postgres -d "$DATABASE" \
-  <"$REPO_ROOT/sql/datos-externos/005_demo_explorer.sql"
+for sql_file in \
+  "$REPO_ROOT/sql/datos-externos/005_demo_explorer.sql" \
+  "$REPO_ROOT/sql/datos-externos/006_citizen_rich_demo.sql"; do
+  echo "Aplicando $(basename "$sql_file")"
+  kubectl exec -i -n "$NAMESPACE" "$RELEASE-0" -- \
+    env PGPASSWORD="$DATOS_EXTERNOS_POSTGRES_PASSWORD" \
+    psql -v ON_ERROR_STOP=1 -U postgres -d "$DATABASE" \
+    <"$sql_file"
+done
 
 echo "Creando secret de PostgREST para datos_externos"
 kubectl create secret generic postgrest-datos-externos-secret \

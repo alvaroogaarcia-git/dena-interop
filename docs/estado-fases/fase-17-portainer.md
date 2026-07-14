@@ -21,7 +21,7 @@ PORTAINER_ADMIN_PASSWORD="$PORTAINER_ADMIN_PASSWORD" bash scripts/dena/init-port
 - `rollout status`: espera a que Portainer este listo.
 - `init-portainer.sh`: inicializa usuario admin y endpoint Kubernetes.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get pods,svc,pvc -n portainer -o wide
@@ -30,5 +30,5 @@ curl -kI https://192.168.56.15:30779
 
 ## Referencias
 
-- [Historico 0-17](historico/estado-fases-0-17.md)
+- [Histórico 0-17](historico/estado-fases-0-17.md)
 - [Portainer](../herramientas/portainer.md)

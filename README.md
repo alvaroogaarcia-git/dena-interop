@@ -4,7 +4,7 @@ Stack local de interoperabilidad desplegado sobre un nodo único DietPi x86_64 c
 
 ## Estado actual
 
-El entorno está validado hasta Fase 18 de la guía de instalación:
+El entorno está validado hasta Fase 21 de la guía de instalación:
 
 | Fase | Componente | Estado |
 | --- | --- | --- |
@@ -31,6 +31,7 @@ El entorno está validado hasta Fase 18 de la guía de instalación:
 | 18 | Consola admin DENA para operación funcional | Validado |
 | 19 | PostgreSQL aislado para datos externos Markdown DENA | Validado |
 | 20 | NiFi incremental hacia datos externos DENA | Validado |
+| 21 | Explorador demo de datos externos en consola admin y SPA | Validado |
 
 ## Qué hay desplegado
 
@@ -50,6 +51,7 @@ El entorno está validado hasta Fase 18 de la guía de instalación:
   - Consola admin `dena-admin-console` servida por NGINX.
   - APISIX enruta `/*` como fallback hacia la SPA.
   - APISIX enruta `/dena/admin-console` hacia la consola admin.
+  - SPA y consola consultan las rutas protegidas de datos externos bajo `/dena/external`.
 - Namespace `monitoring`
   - Prometheus Operator mediante `kube-prometheus-stack`.
   - Grafana publicado en `NodePort 31803`.
@@ -64,7 +66,7 @@ El entorno está validado hasta Fase 18 de la guía de instalación:
   - PostgREST `13.0.4` publicado como `ClusterIP` interno en `:3000`.
   - Roles `anon` y `postgrest` validados en la base `datalake`.
   - Esquema `dena`, 50 expedientes sincronizados y RPC `dena_data_retrieve`.
-  - Staging `dena.admin_file_staging` y promocion `dena.dena_staging_to_main()` validadas.
+  - Staging `dena.admin_file_staging` y promoción `dena.dena_staging_to_main()` validadas.
 - Apache NiFi
   - Deployment `nifi` en `datalake`.
   - HTTPS en `NodePort 30821`.
@@ -77,27 +79,27 @@ El entorno está validado hasta Fase 18 de la guía de instalación:
   - Portainer CE `2.39.3` publicado en HTTPS `NodePort 30779`.
 - Namespace `datos-externos`
   - PostgreSQL independiente preparado mediante chart Bitnami.
-  - Base `datos_externos` para el modelo semantico DENA derivado de Markdown.
-  - Seed demo con 50 expedientes, notificaciones, pagos, citas, personas y trazas REST.
-  - Sincronizacion incremental desde `verticales` mediante NiFi.
-  - Sin exposicion externa, APISIX, Ingress ni NodePort.
-- El alcance definido hasta Fase 20 está completado.
+  - Base `datos_externos` para el modelo semántico DENA derivado de Markdown.
+  - Seed demo actual con 55 expedientes, 31 notificaciones, 27 pagos, 11 citas, 20 fichas de persona y 50 trazas REST.
+  - Sincronización incremental desde `verticales` mediante NiFi.
+  - PostgREST interno `postgrest-datos-externos` publicado por APISIX solo en rutas OIDC `/dena/external/*`.
+- El alcance definido hasta Fase 21 está completado.
 
 ## Accesos Demo
 
 | Uso | URL | Credenciales |
 | --- | --- | --- |
-| Portal ciudadano con login OIDC | `http://localhost:30080/` via tunel SSH | `testuser` / `Test1234!` |
-| Consola admin DENA con passkey | `http://localhost:30080/dena/admin-console` via tunel SSH | `adminuser` / `Admin1234!` + passkey |
-| Recuperacion de passkey Keycloak | `http://localhost:30080/admin/piloto/console/` via tunel SSH | `recovery-operator` / password local en `.local/fase12-keycloak.env` |
+| Portal ciudadano con login OIDC | `http://localhost:30080/` vía túnel SSH | `testuser` / `Test1234!` |
+| Consola admin DENA con passkey | `http://localhost:30080/dena/admin-console` vía túnel SSH | `adminuser` / `Admin1234!` + passkey |
+| Recuperación de passkey Keycloak | `http://localhost:30080/admin/piloto/console/` vía túnel SSH | `recovery-operator` / password local en `.local/fase12-keycloak.env` |
 | Grafana | `http://192.168.56.15:31803/login` | `admin` / secret `monitoring/grafana-admin` |
-| Mathesar | `http://192.168.56.15:30900` | Usuario creado en la UI |
-| Portainer | `https://192.168.56.15:30779` | `admin` / password local de Portainer |
+| Mathesar | `http://192.168.56.15:30900` o port-forward `http://127.0.0.1:18000` | `admin` / `Mathesar1234!` |
+| Portainer | `https://192.168.56.15:30779` | `admin` / `T]8zJMh3U:ADu@L` |
 | NiFi | `https://192.168.56.15:30821/nifi/` | secret `datalake/nifi-secret` |
 
 La consola admin está pensada para personal interno. Permite revisar expedientes con filtros, KPIs, detalle, trazabilidad origen -> NiFi -> datalake -> API, salud básica del stack, auditoría de consulta y exportación CSV/JSON.
 
-Para los flujos web con OIDC y passkey, abrir primero un tunel local desde el PC operador:
+Para los flujos web con OIDC y passkey, abrir primero un túnel local desde el PC operador:
 
 ```bash
 ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
@@ -105,15 +107,15 @@ ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
 
 WebAuthn/passkey requiere origen seguro. En esta demo HTTP se usa `localhost:30080`; no usar la IP directa para la consola admin con passkey.
 
-## Recuperacion De Passkey
+## Recuperación De Passkey
 
-Si `adminuser` pierde la passkey, entrar en Keycloak con `recovery-operator` y seguir la guia operativa:
+Si `adminuser` pierde la passkey, entrar en Keycloak con `recovery-operator` y seguir la guía operativa:
 
 ```bash
 grep '^TF_VAR_recovery_operator_password=' .local/fase12-keycloak.env
 ```
 
-La guia documenta como revocar la credencial WebAuthn perdida, emitir una password temporal, forzar el reenrolado y generar/consumir backup codes:
+La guía documenta cómo revocar la credencial WebAuthn perdida, emitir una password temporal, forzar el reenrolado y generar/consumir backup codes:
 
 ```bash
 bash scripts/dena/generate-recovery-backup-codes.sh
@@ -121,7 +123,7 @@ export DENA_RECOVERY_CODE='XXXX-XXXX-XXXX-XXXX'
 bash scripts/dena/use-recovery-backup-code.sh
 ```
 
-Referencia completa: [Recuperacion de passkey en Keycloak](docs/operacion/recuperacion-passkey-keycloak.md).
+Referencia completa: [Recuperación de passkey en Keycloak](docs/operacion/recuperacion-passkey-keycloak.md).
 
 ## Verificación rápida
 
@@ -182,10 +184,11 @@ Resultado esperado de `scripts/verify-fase10.sh`:
 - [Fase 15 - SQL del datalake y carga local](docs/guias/fase15-datalake.md)
 - [Fase 19 - PostgreSQL datos externos desde Markdown DENA](docs/guias/fase19-datos-externos.md)
 - [Fase 20 - NiFi hacia datos externos DENA](docs/guias/fase20-nifi-datos-externos.md)
+- [Fase 21 - Explorador demo de datos externos](docs/guias/fase21-demo-explorer-datos-externos.md)
 - [Acceso a datos-externos / datos_externos](docs/acceso-bd/datos-externos-dena.md)
 - [Flujo NiFi JDBC incremental actual, Fase 15](docs/guias/fase12-nifi-jdbc.md)
 - [Consola admin DENA](docs/herramientas/consola-admin-dena.md)
-- [Recuperacion de passkey en Keycloak](docs/operacion/recuperacion-passkey-keycloak.md)
+- [Recuperación de passkey en Keycloak](docs/operacion/recuperacion-passkey-keycloak.md)
 - [Runbook operativo](docs/operacion/runbook.md)
 - [Arquitectura](docs/arquitectura/arquitectura.md)
 - [Documentación de herramientas](docs/herramientas/README.md)

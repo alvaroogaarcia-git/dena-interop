@@ -71,7 +71,7 @@ Salida esperada:
 
 ```text
 Environment Kubernetes local ya existe en Portainer (id=1).
-Portainer ve el cluster: namespaces=11 deployments=16.
+Portainer ve el cluster: namespaces=12 deployments=18.
 ```
 
 ## Por Qué Se Usa

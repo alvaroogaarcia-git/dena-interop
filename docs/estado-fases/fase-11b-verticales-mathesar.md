@@ -33,7 +33,7 @@ bash scripts/verify-fase11b.sh
 - `load-expedientes.sh`: carga datos demo.
 - `mathesar-secret` y `mathesar-deployment.yaml`: despliegan Mathesar.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get pods,svc,pvc -n verticales -o wide
@@ -42,5 +42,5 @@ bash scripts/verify-fase11b.sh
 
 ## Referencias
 
-- [Historico 0-11b](historico/estado-fases-0-11b.md)
+- [Histórico 0-11b](historico/estado-fases-0-11b.md)
 - [Mathesar](../herramientas/mathesar.md)

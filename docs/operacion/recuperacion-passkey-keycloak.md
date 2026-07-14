@@ -1,8 +1,8 @@
-# Recuperacion De Passkey En Keycloak
+# Recuperación De Passkey En Keycloak
 
 ## Objetivo
 
-Esta guia describe el proceso operativo para recuperar el acceso de un usuario del realm `piloto` cuando pierde su passkey/WebAuthn.
+Esta guía describe el proceso operativo para recuperar el acceso de un usuario del realm `piloto` cuando pierde su passkey/WebAuthn.
 
 El caso de uso principal es `adminuser`, pero el mismo procedimiento aplica a cualquier usuario del realm al que se le haya registrado una credencial WebAuthn.
 
@@ -10,12 +10,12 @@ El caso de uso principal es `adminuser`, pero el mismo procedimiento aplica a cu
 
 Si un usuario solo tiene una passkey y la pierde, quedaria bloqueado de forma permanente.
 
-Para evitarlo, el piloto incorpora un usuario de recuperacion:
+Para evitarlo, el piloto incorpora un usuario de recuperación:
 
 - Usuario: `recovery-operator`
 - Realm: `piloto`
 - Permisos: ver usuarios y gestionar credenciales de usuario
-- No permisos: clientes, roles, realm completo ni administracion global
+- No permisos: clientes, roles, realm completo ni administración global
 
 La idea es que este usuario sirva como puente operativo, no como superadministrador.
 
@@ -89,8 +89,8 @@ No puede:
 
 - crear o editar clientes OIDC
 - cambiar roles de negocio
-- cambiar el flujo de autenticacion del realm
-- tocar la configuracion global de Keycloak
+- cambiar el flujo de autenticación del realm
+- tocar la configuración global de Keycloak
 
 ## Procedimiento Operativo
 
@@ -119,7 +119,7 @@ Abre la consola:
 http://localhost:30080/admin/piloto/console/
 ```
 
-Inicia sesion con:
+Inicia sesión con:
 
 - Usuario: `recovery-operator`
 - Password: la registrada en `.local/fase12-keycloak.env`
@@ -140,7 +140,7 @@ En la pestaña `Credentials` deberias ver:
 - una password normal
 - una credencial `webauthn` con etiqueta tipo `Passkey (Default Label)`
 
-Si la passkey sigue existiendo pero el usuario solo la perdio fisicamente, el sistema no puede distinguirlo. En ese caso se sigue el mismo flujo de recuperacion para reemplazar la credencial.
+Si la passkey sigue existiendo pero el usuario solo la perdió físicamente, el sistema no puede distinguirlo. En ese caso se sigue el mismo flujo de recuperación para reemplazar la credencial.
 
 ### 4. Eliminar La Passkey Perdida
 
@@ -185,7 +185,7 @@ Haz que el siguiente acceso obligue a:
 - cambiar la password temporal si la consola lo pide
 - registrar de nuevo WebAuthn/passkey
 
-Si la UI no expone claramente la accion requerida, el criterio operativo es simple: la password temporal solo habilita una unica reentrada para volver a registrar una passkey.
+Si la UI no expone claramente la accion requerida, el criterio operativo es simple: la password temporal solo habilita una única reentrada para volver a registrar una passkey.
 
 ### 7. Comunicar La Password Temporal
 
@@ -211,7 +211,7 @@ Y registrar una nueva passkey cuando el flujo OIDC se lo pida.
 
 Si prefieres hacerlo por comandos, puedes usar `kcadm.sh` dentro del pod de Keycloak.
 
-Autenticacion de ejemplo:
+Autenticación de ejemplo:
 
 ```bash
 kubectl exec -n auth deploy/keycloak -- /opt/keycloak/bin/kcadm.sh config credentials \
@@ -254,13 +254,13 @@ export DENA_RECOVERY_CODE='XXXX-XXXX-XXXX-XXXX'
 bash scripts/dena/use-recovery-backup-code.sh
 ```
 
-Asignar el operador de recuperacion se automatiza con:
+Asignar el operador de recuperación se automatiza con:
 
 ```bash
 bash scripts/dena/apply-recovery-operator.sh
 ```
 
-## Comandos De Verificacion
+## Comandos De Verificación
 
 Comprobar que el operador existe:
 
@@ -309,17 +309,17 @@ kubectl exec -i -n datalake postgresql-datalake-0 -- \
 
 ## Riesgos Y Criterio Operativo
 
-- La password temporal debe expirar o dejar de ser util cuanto antes.
-- La passkey vieja debe revocarse si hay sospecha de perdida fisica.
-- El operador de recuperacion no debe convertirse en el camino normal de acceso.
+- La password temporal debe expirar o dejar de ser útil cuanto antes.
+- La passkey vieja debe revocarse si hay sospecha de perdida física.
+- El operador de recuperación no debe convertirse en el camino normal de acceso.
 - El acceso normal del admin debe volver a ser WebAuthn.
 - Los backup codes deben entregarse y custodiarse como credenciales, no como documentación.
 
 ## Dónde Encaja En El Repo
 
-Esta guia complementa:
+Esta guía complementa:
 
 - [Keycloak](../herramientas/keycloak.md)
 - [Consola admin DENA](../herramientas/consola-admin-dena.md)
 - [Runbook operativo](runbook.md)
-- [Guia completa de instalacion](../guias/guia-instalacion.md)
+- [Guía completa de instalación](../guias/guia-instalacion.md)

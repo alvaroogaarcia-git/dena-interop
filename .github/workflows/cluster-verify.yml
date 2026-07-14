@@ -18,6 +18,9 @@ on:
           - fase13
           - fase14
           - fase15
+          - fase19
+          - fase20
+          - fase21
       runner_labels_json:
         description: JSON array for runs-on labels.
         required: true
@@ -80,14 +83,7 @@ jobs:
         run: |
           case "${{ inputs.phase }}" in
             all)
-              bash scripts/verify-fase10.sh          # Verifica datalake y PostgREST.
-              bash scripts/verify-fase11.sh          # Verifica NiFi.
-              bash scripts/verify-fase11b.sh         # Verifica verticales y Mathesar.
-              bash scripts/verify-fase15-nifi.sh     # Verifica flujo incremental de NiFi.
-              bash scripts/verify-fase12-keycloak.sh # Verifica Keycloak.
-              bash scripts/verify-fase13.sh          # Verifica APISIX OIDC y API DENA.
-              bash scripts/verify-fase14.sh          # Verifica Grafana en Terraform.
-              bash scripts/verify-fase15.sh          # Verifica SQL DENA y staging del datalake.
+              bash scripts/verify-stack.sh           # Verifica stack completo y accesos demo.
               ;;
             fase10)
               bash scripts/verify-fase10.sh          # Verifica PostgreSQL datalake y PostgREST.
@@ -112,6 +108,15 @@ jobs:
               ;;
             fase15)
               bash scripts/verify-fase15.sh          # Verifica SQL DENA y staging del datalake.
+              ;;
+            fase19)
+              bash scripts/verify-fase19-datos-externos.sh # Verifica datos externos DENA.
+              ;;
+            fase20)
+              bash scripts/verify-fase20-datos-externos-nifi.sh # Verifica NiFi hacia datos externos.
+              ;;
+            fase21)
+              bash scripts/verify-fase21-demo-explorer.sh # Verifica explorador demo de datos externos.
               ;;
             *)
               echo "Unsupported phase: ${{ inputs.phase }}" >&2

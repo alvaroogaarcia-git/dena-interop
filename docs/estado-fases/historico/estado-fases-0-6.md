@@ -107,7 +107,7 @@ Recursos:
 - Service Admin: `apisix-admin`
 - PVC local-path: `data-apisix-etcd-0`, `4Gi`
 
-Exposicion:
+Exposición:
 
 - `apisix-gateway`: `NodePort`
 - HTTP: `80:30080/TCP`

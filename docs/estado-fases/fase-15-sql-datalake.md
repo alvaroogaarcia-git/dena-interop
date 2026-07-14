@@ -17,10 +17,10 @@ bash scripts/verify-fase15.sh
 - `apply-fase15-datalake.sh`: ejecuta los SQL versionados contra `postgresql-datalake`.
 - `sql/01-dena-admin-file.sql`: crea el modelo principal.
 - `sql/02-dena-rpc.sql`: crea funciones/RPC usadas por la API.
-- `sql/03-dena-staging.sql`: crea staging y promocion desde NiFi.
+- `sql/03-dena-staging.sql`: crea staging y promoción desde NiFi.
 - `verify-fase15.sh`: comprueba objetos SQL y recuentos esperados.
 
-## Verificacion
+## Verificación
 
 ```bash
 bash scripts/verify-fase15.sh
@@ -28,5 +28,5 @@ bash scripts/verify-fase15.sh
 
 ## Referencias
 
-- [Historico 0-15](historico/estado-fases-0-15.md)
-- [Guia Fase 15](../guias/fase15-datalake.md)
+- [Histórico 0-15](historico/estado-fases-0-15.md)
+- [Guía Fase 15](../guias/fase15-datalake.md)

@@ -85,6 +85,16 @@ check_status "RPC DENA" 200 \
     --data '{"p_limit":2}' \
     "$BASE_URL/dena/admin-files"
 
+check_status "Carpetas datos externos" 200 \
+  curl -sS --max-time 10 \
+    -H "Authorization: Bearer $token" \
+    "$BASE_URL/dena/external/dena_external_folders?select=*&limit=1"
+
+check_status "Expedientes datos externos" 200 \
+  curl -sS --max-time 10 \
+    -H "Authorization: Bearer $token" \
+    "$BASE_URL/dena/external/dena_external_expedientes?select=id,titulo,estado&persona_id=eq.CIT-10001&limit=1"
+
 check_status "SPA cliente" 200 \
   curl -sS --max-time 10 "$BASE_URL/"
 

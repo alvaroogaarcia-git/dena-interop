@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Dejar la VM DietPi lista para instalar k3s: sistema actualizado, red correcta, swap desactivado y parametros de kernel compatibles con Kubernetes.
+Dejar la VM DietPi lista para instalar k3s: sistema actualizado, red correcta, swap desactivado y parámetros de kernel compatibles con Kubernetes.
 
 ## Comandos
 
@@ -23,19 +23,19 @@ curl -I https://github.com
 
 ## Que hace cada parte
 
-- `apt-get update`: actualiza el indice local de paquetes.
+- `apt-get update`: actualiza el índice local de paquetes.
 - `apt-get install`: instala herramientas basicas para descargar, descomprimir, usar Git y preparar almacenamiento/red.
 - `hostnamectl`: fija el nombre del nodo como `dena`.
-- `modprobe overlay` y `modprobe br_netfilter`: cargan modulos de kernel necesarios para contenedores y red de Kubernetes.
-- `tee /etc/modules-load.d/k3s.conf`: hace persistente la carga de modulos tras reiniciar.
+- `modprobe overlay` y `modprobe br_netfilter`: cargan módulos de kernel necesarios para contenedores y red de Kubernetes.
+- `tee /etc/modules-load.d/k3s.conf`: hace persistente la carga de módulos tras reiniciar.
 - `tee /etc/sysctl.d/99-k3s.conf`: activa forwarding IP y filtrado de bridge.
-- `sysctl --system`: aplica los parametros de kernel.
-- `swapoff -a`: desactiva swap en la sesion actual.
+- `sysctl --system`: aplica los parámetros de kernel.
+- `swapoff -a`: desactiva swap en la sesión actual.
 - `sed -i ... /etc/fstab`: evita que swap vuelva a activarse al reiniciar.
 - `ip -brief addr`: comprueba que existe la IP esperada, normalmente `192.168.56.15`.
 - `curl -I https://github.com`: confirma salida a internet.
 
-## Verificacion
+## Verificación
 
 ```bash
 sudo whoami
@@ -48,5 +48,5 @@ Debe responder `root`, mostrar la IP host-only, tener memoria suficiente y disco
 
 ## Referencias
 
-- [Guia de replicacion de VM](../operacion/configuracion-vm-previa.md)
-- [Historico 0-3](historico/estado-fases-0-3.md)
+- [Guía de replicación de VM](../operacion/configuracion-vm-previa.md)
+- [Histórico 0-3](historico/estado-fases-0-3.md)

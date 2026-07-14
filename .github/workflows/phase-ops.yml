@@ -18,9 +18,15 @@ on:
           - verify-fase13
           - verify-fase14
           - verify-fase15
+          - verify-fase19
+          - verify-fase20
+          - verify-fase21
           - apply-fase12-keycloak
           - apply-fase14-grafana
           - apply-fase15-datalake
+          - apply-fase19-datos-externos
+          - provision-fase20-datos-externos-nifi
+          - apply-fase21-demo-explorer
           - provision-fase15-nifi
           - load-expedientes
           - apply-dena-api
@@ -84,14 +90,7 @@ jobs:
         run: |
           case "${{ inputs.operation }}" in
             verify-all)
-              bash scripts/verify-fase10.sh          # Verifica datalake y PostgREST.
-              bash scripts/verify-fase11.sh          # Verifica NiFi.
-              bash scripts/verify-fase11b.sh         # Verifica verticales y Mathesar.
-              bash scripts/verify-fase15-nifi.sh     # Verifica flujo incremental de NiFi.
-              bash scripts/verify-fase12-keycloak.sh # Verifica Keycloak.
-              bash scripts/verify-fase13.sh          # Verifica APISIX OIDC y API DENA.
-              bash scripts/verify-fase14.sh          # Verifica Grafana en Terraform.
-              bash scripts/verify-fase15.sh          # Verifica SQL DENA y staging del datalake.
+              bash scripts/verify-stack.sh           # Verifica stack completo y accesos demo.
               ;;
             verify-fase10)
               bash scripts/verify-fase10.sh          # Comprueba datalake y PostgREST.
@@ -117,6 +116,15 @@ jobs:
             verify-fase15)
               bash scripts/verify-fase15.sh          # Comprueba SQL DENA y staging del datalake.
               ;;
+            verify-fase19)
+              bash scripts/verify-fase19-datos-externos.sh # Comprueba datos externos DENA.
+              ;;
+            verify-fase20)
+              bash scripts/verify-fase20-datos-externos-nifi.sh # Comprueba NiFi hacia datos externos.
+              ;;
+            verify-fase21)
+              bash scripts/verify-fase21-demo-explorer.sh # Comprueba explorador demo de datos externos.
+              ;;
             apply-fase12-keycloak)
               bash scripts/dena/apply-fase12-keycloak.sh # Aplica recursos Terraform de Keycloak.
               bash scripts/verify-fase12-keycloak.sh     # Verifica el resultado.
@@ -128,6 +136,18 @@ jobs:
             apply-fase15-datalake)
               bash scripts/dena/apply-fase15-datalake.sh # Aplica SQL DENA del datalake.
               bash scripts/verify-fase15.sh              # Verifica el resultado.
+              ;;
+            apply-fase19-datos-externos)
+              bash scripts/dena/apply-fase19-datos-externos.sh # Aplica PostgreSQL y SQL de datos externos.
+              bash scripts/verify-fase19-datos-externos.sh     # Verifica el resultado.
+              ;;
+            provision-fase20-datos-externos-nifi)
+              bash scripts/dena/provision-fase20-datos-externos-nifi.sh # Crea flujo NiFi hacia datos externos.
+              bash scripts/verify-fase20-datos-externos-nifi.sh         # Verifica el resultado.
+              ;;
+            apply-fase21-demo-explorer)
+              bash scripts/dena/apply-fase21-demo-explorer.sh # Aplica explorador demo de datos externos.
+              bash scripts/verify-stack.sh                    # Verifica el stack completo.
               ;;
             provision-fase15-nifi)
               bash scripts/dena/provision-fase15-nifi.sh # Crea el flujo incremental de NiFi.

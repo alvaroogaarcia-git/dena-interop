@@ -11,10 +11,10 @@ Se incorpora un flujo NiFi incremental que replica cambios de `verticales.expedi
 - Nuevo SQL `sql/datos-externos/004_nifi_staging.sql`.
 - Nuevo script `scripts/dena/provision-fase20-datos-externos-nifi.sh`.
 - Nuevo script `scripts/verify-fase20-datos-externos-nifi.sh`.
-- Nueva guia `docs/guias/fase20-nifi-datos-externos.md`.
+- Nueva guía `docs/guias/fase20-nifi-datos-externos.md`.
 - Nuevo grupo NiFi `Fase 20 - DENA datos externos incremental`.
 
-## Verificacion Esperada
+## Verificación Esperada
 
 ```bash
 bash scripts/verify-fase20-datos-externos-nifi.sh

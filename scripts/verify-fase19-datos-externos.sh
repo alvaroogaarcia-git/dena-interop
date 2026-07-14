@@ -66,6 +66,12 @@ grep -Fx "21" <<<"$(sed -n '6p' <<<"$schema_output")" >/dev/null
 
 semantic_fields="$(sed -n '7p' <<<"$schema_output")"
 enum_values="$(sed -n '8p' <<<"$schema_output")"
+expedientes_count="$(sed -n '10p' <<<"$schema_output")"
+notificaciones_count="$(sed -n '11p' <<<"$schema_output")"
+pagos_count="$(sed -n '12p' <<<"$schema_output")"
+citas_count="$(sed -n '13p' <<<"$schema_output")"
+person_data_count="$(sed -n '14p' <<<"$schema_output")"
+interop_demo_count="$(sed -n '15p' <<<"$schema_output")"
 
 if (( semantic_fields < 45 )); then
   echo "Diccionario de campos incompleto: $semantic_fields" >&2
@@ -80,11 +86,34 @@ fi
 grep -F "PAYMENTS" <<<"$(sed -n '9p' <<<"$schema_output")" >/dev/null
 grep -F "RECORDS" <<<"$(sed -n '9p' <<<"$schema_output")" >/dev/null
 
-grep -Fx "50" <<<"$(sed -n '10p' <<<"$schema_output")" >/dev/null
-grep -Fx "30" <<<"$(sed -n '11p' <<<"$schema_output")" >/dev/null
-grep -Fx "25" <<<"$(sed -n '12p' <<<"$schema_output")" >/dev/null
-grep -Fx "10" <<<"$(sed -n '13p' <<<"$schema_output")" >/dev/null
-grep -Fx "20" <<<"$(sed -n '14p' <<<"$schema_output")" >/dev/null
-grep -Fx "50" <<<"$(sed -n '15p' <<<"$schema_output")" >/dev/null
+if (( expedientes_count < 50 )); then
+  echo "Expedientes demo incompletos: $expedientes_count" >&2
+  exit 1
+fi
+
+if (( notificaciones_count < 30 )); then
+  echo "Notificaciones demo incompletas: $notificaciones_count" >&2
+  exit 1
+fi
+
+if (( pagos_count < 25 )); then
+  echo "Pagos demo incompletos: $pagos_count" >&2
+  exit 1
+fi
+
+if (( citas_count < 10 )); then
+  echo "Citas demo incompletas: $citas_count" >&2
+  exit 1
+fi
+
+if (( person_data_count < 20 )); then
+  echo "Datos personales demo incompletos: $person_data_count" >&2
+  exit 1
+fi
+
+if (( interop_demo_count < 50 )); then
+  echo "Mensajes REST demo incompletos: $interop_demo_count" >&2
+  exit 1
+fi
 
 echo "Fase 19 verificada: PostgreSQL datos-externos, catalogo Markdown y datos demo operativos."

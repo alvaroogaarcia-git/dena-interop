@@ -4,7 +4,7 @@ Fecha: 2026-07-09
 
 ## Resumen
 
-Se incorpora un PostgreSQL independiente para datos externos derivados de la documentacion Markdown de semantica DENA.
+Se incorpora un PostgreSQL independiente para datos externos derivados de la documentación Markdown de semantica DENA.
 
 ## Cambios Principales
 
@@ -15,8 +15,8 @@ Se incorpora un PostgreSQL independiente para datos externos derivados de la doc
 - Nuevo seed documental en `sql/datos-externos/002_markdown_catalog.sql`.
 - Nuevo seed demo operativo en `sql/datos-externos/003_demo_data.sql`.
 - Nuevo script de despliegue `scripts/dena/apply-fase19-datos-externos.sh`.
-- Nuevo script de verificacion `scripts/verify-fase19-datos-externos.sh`.
-- Nueva guia `docs/guias/fase19-datos-externos.md`.
+- Nuevo script de verificación `scripts/verify-fase19-datos-externos.sh`.
+- Nueva guía `docs/guias/fase19-datos-externos.md`.
 
 ## Recursos Kubernetes Nuevos
 
@@ -28,7 +28,7 @@ StatefulSet/datos-externos-postgresql
 PVC/data-datos-externos-postgresql-0
 ```
 
-## Verificacion Esperada
+## Verificación Esperada
 
 ```bash
 bash scripts/verify-fase19-datos-externos.sh
@@ -38,12 +38,12 @@ Resultado esperado:
 
 - Tablas principales del esquema `dena` presentes.
 - 21 documentos Markdown catalogados.
-- Catalogo de campos y enumeraciones cargado.
+- Catálogo de campos y enumeraciones cargado.
 - Tipos DENA base disponibles.
 - Datos demo DENA cargados: expedientes, notificaciones, pagos, citas, personas y trazas.
 
-## Notas De Operacion
+## Notas De Operación
 
 La base no se expone por APISIX, Ingress ni NodePort. El acceso operativo se realiza con `kubectl exec` sobre el pod `datos-externos-postgresql-0`.
 
-El password se conserva localmente en `.local/fase19-datos-externos.env` y tambien en el Secret del release Helm. No se versiona en el repositorio.
+El password se conserva localmente en `.local/fase19-datos-externos.env` y también en el Secret del release Helm. No se versiona en el repositorio.

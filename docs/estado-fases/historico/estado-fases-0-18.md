@@ -13,12 +13,12 @@ Se habilito MFA WebAuthn/FIDO2 para la consola admin DENA. El usuario `adminuser
   - redirige a Keycloak para autenticar.
   - intercambia el `code` por token OIDC en el navegador.
   - usa el bearer token para `POST /dena/admin-files`.
-  - incorpora boton `Cerrar sesion`, que limpia `sessionStorage` y llama a logout OIDC.
+  - incorpora botón `Cerrar sesion`, que limpia `sessionStorage` y llama a logout OIDC.
 
 - Keycloak realm `piloto`
   - flujo browser activo: `browser-dena-webauthn`.
-  - subflujo condicional WebAuthn despues de usuario/password.
-  - `webAuthnPolicyRpId=localhost` para la demo por tunel SSH.
+  - subflujo condicional WebAuthn después de usuario/password.
+  - `webAuthnPolicyRpId=localhost` para la demo por túnel SSH.
   - `react-frontend` con `directAccessGrantsEnabled=false`.
   - redirect y web origin `http://localhost:30080`.
 
@@ -39,7 +39,7 @@ En el PC operador:
 ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
 ```
 
-Despues abrir:
+Después abrir:
 
 ```text
 http://localhost:30080/dena/admin-console
@@ -67,11 +67,11 @@ dena-admin-console: Running
 keycloak: Running
 ```
 
-La verificacion negativa confirma que `react-frontend` ya no puede obtener token con password grant, evitando saltarse MFA.
+La verificación negativa confirma que `react-frontend` ya no puede obtener token con password grant, evitando saltarse MFA.
 
-## Notas De Operacion
+## Notas De Operación
 
-La configuracion `localhost` es una solucion de demo para no requerir permisos de administrador en Windows ni editar `hosts`. En un despliegue real se debe sustituir por un FQDN HTTPS, por ejemplo:
+La configuración `localhost` es una solucion de demo para no requerir permisos de administrador en Windows ni editar `hosts`. En un despliegue real se debe sustituir por un FQDN HTTPS, por ejemplo:
 
 ```text
 https://admin.dena.example

@@ -22,10 +22,10 @@ kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql -n a
 - `--dry-run=client -o yaml | kubectl apply -f -`: hace el Secret idempotente.
 - `curl ... postgresql-16.2.1.tgz`: descarga el chart validado.
 - `helm upgrade --install`: instala o actualiza el release `postgresql`.
-- `--values helm-values/postgresql-values.yaml`: aplica la configuracion versionada.
+- `--values helm-values/postgresql-values.yaml`: aplica la configuración versionada.
 - `kubectl wait`: espera a que el pod este listo.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get pods,svc,pvc -n auth -l app.kubernetes.io/name=postgresql -o wide
@@ -33,5 +33,5 @@ kubectl get pods,svc,pvc -n auth -l app.kubernetes.io/name=postgresql -o wide
 
 ## Referencias
 
-- [Historico 0-6](historico/estado-fases-0-6.md)
+- [Histórico 0-6](historico/estado-fases-0-6.md)
 - [Valores Helm](../../helm-values/postgresql-values.yaml)

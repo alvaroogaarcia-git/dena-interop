@@ -37,13 +37,13 @@ El proceso descarga imágenes, charts y binarios. En una VM nueva puede tardar 2
 Cuando termine, desde el ordenador host abre:
 
 ```text
-SPA/OIDC:   http://localhost:30080/        # con tunel SSH activo
+SPA/OIDC:   http://localhost:30080/        # con túnel SSH activo
 Grafana:    http://192.168.56.15:31803/login
 Mathesar:   http://192.168.56.15:30900
 Portainer:  https://192.168.56.15:30779
 ```
 
-Antes de usar la SPA con login OIDC o la consola admin con passkey, abre el tunel:
+Antes de usar la SPA con login OIDC o la consola admin con passkey, abre el túnel:
 
 ```bash
 ssh -L 30080:127.0.0.1:30080 dietpi@192.168.56.15
@@ -55,6 +55,7 @@ Credenciales demo:
 SPA/OIDC:   testuser / Test1234!
 Admin DENA: adminuser / Admin1234! + passkey en http://localhost:30080/dena/admin-console
 Grafana:    admin / hLgdC1Azsa0V7XUUhF9P8NyQEVSQyDpJ
+Mathesar:   admin / Mathesar1234!
 Portainer:  admin / T]8zJMh3U:ADu@L
 ```
 

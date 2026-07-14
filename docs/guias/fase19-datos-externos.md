@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Crear una base PostgreSQL independiente para conservar el modelo semantico DENA deducido de los Markdown ubicados en `/home/dietpi/codex_unzip/codex/semantica-dena`.
+Crear una base PostgreSQL independiente para conservar el modelo semántico DENA deducido de los Markdown ubicados en `/home/dietpi/codex_unzip/codex/semantica-dena`.
 
 Esta fase no modifica los namespaces ni las bases ya existentes:
 
@@ -19,7 +19,7 @@ Recursos nuevos:
 
 - Namespace: `datos-externos`
 - Release Helm: `datos-externos-postgresql`
-- Chart: `bitnami/postgresql` version `18.7.5`
+- Chart: `bitnami/postgresql` versión `18.7.5`
 - Base: `datos_externos`
 - Usuario aplicativo configurado en values: `datos_externos`
 - Pod/StatefulSet: `datos-externos-postgresql-0`
@@ -55,13 +55,13 @@ Bloques principales:
 - Maestros compartidos: `dena_admin`, `dena_person`, `dena_data_type`.
 - Envoltorio REST y trazabilidad: `dena_interop_message`, `dena_interop_message_route`.
 - Base comun DATA-RETRIEVE: `dena_business_object`, `dena_business_object_url`.
-- Catalogo administrativo: `dena_org_unit`, `dena_service`, `dena_procedure`.
+- Catálogo administrativo: `dena_org_unit`, `dena_service`, `dena_procedure`.
 - Entidades DATA-RETRIEVE: `dena_expediente`, `dena_notificacion`, `dena_registro_oficial`, `dena_pago`, `dena_cita`, `dena_person_data`.
 - Flujos METADATA-SYNC: `dena_sync_metadata_item`.
 - Flujos PERSON-SYNC: `dena_person_push_event`, `dena_person_export_request`.
 - Trazabilidad Markdown: `dena_source_document`, `dena_semantic_field`, `dena_semantic_enum_value`.
 
-El diseño combina tablas normalizadas con `jsonb` para `LanguageTexts`, payloads originales y zonas ambiguas de la documentacion.
+El diseño combina tablas normalizadas con `jsonb` para `LanguageTexts`, payloads originales y zonas ambiguas de la documentación.
 
 ## Que contiene cada tabla
 
@@ -71,7 +71,7 @@ Las tablas `dena_source_document`, `dena_semantic_field` y `dena_semantic_enum_v
 - `dena_semantic_field`: campos detectados en esos Markdown, con tabla sugerida, ruta de campo, tipo y obligatoriedad.
 - `dena_semantic_enum_value`: valores enumerados publicados en los Markdown.
 
-El resto del esquema es el modelo fisico PostgreSQL derivado de esa documentacion:
+El resto del esquema es el modelo fisico PostgreSQL derivado de esa documentación:
 
 | Tabla | Contenido |
 | --- | --- |
@@ -94,13 +94,13 @@ El resto del esquema es el modelo fisico PostgreSQL derivado de esa documentacio
 | `dena_notificacion` | Notificaciones o comunicaciones asociadas a expedientes. |
 | `dena_registro_oficial` | Registros oficiales asociados a expedientes. |
 | `dena_pago` | Pagos unicos y domiciliaciones asociados a expedientes. |
-| `dena_pago_historial` | Historico de cargos de pagos domiciliados. |
+| `dena_pago_historial` | Histórico de cargos de pagos domiciliados. |
 | `dena_pago_org_unit` | Relacion entre pagos y unidades organicas por rol. |
 | `dena_cita` | Citas presenciales: fecha, hora, prioridad, asunto y ubicacion. |
 | `dena_person_data` | Datos de persona: identificador, nombre, contacto e idioma. |
 | `dena_person_address` | Direcciones asociadas a una ficha de persona. |
 | `dena_person_bank_account` | Cuentas bancarias asociadas a una ficha de persona. |
-| `dena_sync_metadata_item` | Elementos de sincronizacion `metadata-sync`. |
+| `dena_sync_metadata_item` | Elementos de sincronización `metadata-sync`. |
 | `dena_person_push_event` | Eventos `person-sync` de alta, baja, actualizacion o cambio de identificador. |
 | `dena_person_export_request` | Solicitudes de exportacion de datos de persona. |
 
@@ -108,10 +108,10 @@ Las filas de negocio cargadas por `003_demo_data.sql` son ficticias. Sirven para
 
 ## Datos demo
 
-El fichero `sql/datos-externos/003_demo_data.sql` genera datos ficticios idempotentes para inspeccionar el modelo completo:
+El fichero `sql/datos-externos/003_demo_data.sql` genera la base ficticia idempotente para inspeccionar el modelo completo:
 
-- `50` expedientes con codigos `EXP-0001` a `EXP-0050`.
-- `50` personas base con codigos `CIT-10001` a `CIT-10050`.
+- `50` expedientes con códigos `EXP-0001` a `EXP-0050`.
+- `50` personas base con códigos `CIT-10001` a `CIT-10050`.
 - `5` administraciones, `5` unidades organicas, `8` servicios y `12` procedimientos.
 - `30` notificaciones asociadas a expedientes.
 - `25` pagos, con pagos unicos y domiciliaciones.
@@ -119,13 +119,15 @@ El fichero `sql/datos-externos/003_demo_data.sql` genera datos ficticios idempot
 - `20` fichas `PersonData` con direccion y cuenta bancaria demo.
 - `50` mensajes REST con rutas de interoperabilidad simuladas.
 
-Los codigos de expediente siguen el mismo patron que la tabla demo de Mathesar (`EXP-0001`, `EXP-0002`, ...), pero esta base conserva una vista DENA normalizada y mas rica.
+Con Fase 21 aplicada, `sql/datos-externos/006_citizen_rich_demo.sql` amplía el ciudadano `CIT-10001`. El despliegue actual contiene `55` expedientes, `31` notificaciones, `27` pagos, `11` citas, `20` fichas `PersonData` y `50` mensajes REST demo.
 
-La Fase 20 anade sincronizacion incremental desde `verticales` mediante NiFi. Ver [Fase 20 - NiFi hacia datos externos DENA](fase20-nifi-datos-externos.md).
+Los códigos de expediente siguen el mismo patrón que la tabla demo de Mathesar (`EXP-0001`, `EXP-0002`, ...), pero esta base conserva una vista DENA normalizada y más rica.
+
+La Fase 20 añade sincronización incremental desde `verticales` mediante NiFi. Ver [Fase 20 - NiFi hacia datos externos DENA](fase20-nifi-datos-externos.md).
 
 ## Despliegue
 
-Desde la maquina DietPi:
+Desde la máquina DietPi:
 
 ```bash
 cd /home/dietpi/dena-interop
@@ -148,10 +150,12 @@ La convencion es usar prefijos numericos:
 001_schema.sql
 002_markdown_catalog.sql
 003_demo_data.sql
-004_otra_migracion.sql
+004_nifi_staging.sql
+005_demo_explorer.sql
+006_citizen_rich_demo.sql
 ```
 
-## Verificacion
+## Verificación
 
 ```bash
 cd /home/dietpi/dena-interop
@@ -159,13 +163,13 @@ export KUBECONFIG=/home/dietpi/.kube/dena-config
 bash scripts/verify-fase19-datos-externos.sh
 ```
 
-La verificacion comprueba:
+La verificación comprueba:
 
 - Namespace, StatefulSet, Service, PVC y Secret nuevos.
 - Tablas principales del esquema `dena`.
 - 21 documentos Markdown catalogados.
-- Diccionario semantico de campos.
-- Catalogo de enumeraciones.
+- Diccionario semántico de campos.
+- Catálogo de enumeraciones.
 - Tipos DENA base: `RECORDS`, `NOTICES`, `REGISTRY`, `PAYMENTS`, `SCHEDULE`.
 - Datos demo principales: expedientes, notificaciones, pagos, citas, personas y mensajes REST.
 
@@ -199,7 +203,7 @@ limit 10;
 
 ## Acceso desde Mathesar
 
-No hace falta desplegar otro Mathesar. Desde la UI de Mathesar existente (`http://192.168.56.15:30900`) se puede crear una conexion adicional:
+No hace falta desplegar otro Mathesar. Desde la UI de Mathesar existente (`http://192.168.56.15:30900`) se puede crear una conexión adicional:
 
 ```text
 Host: datos-externos-postgresql.datos-externos.svc.cluster.local
@@ -217,7 +221,7 @@ kubectl get secret -n datos-externos datos-externos-postgresql \
 echo
 ```
 
-Guia de acceso detallada: [datos-externos / datos_externos](../acceso-bd/datos-externos-dena.md).
+Guía de acceso detallada: [datos-externos / datos_externos](../acceso-bd/datos-externos-dena.md).
 
 ## Aislamiento
 

@@ -27,12 +27,12 @@ Mathesar
 `004_nifi_staging.sql` crea:
 
 - Tabla `dena.dena_admin_file_staging`.
-- Funcion `dena.dena_status_from_verticales(text)`.
-- Funcion batch `dena.dena_admin_file_staging_to_dena()`.
-- Funcion trigger `dena.dena_apply_admin_file_row_to_dena()`.
+- Función `dena.dena_status_from_verticales(text)`.
+- Función batch `dena.dena_admin_file_staging_to_dena()`.
+- Función trigger `dena.dena_apply_admin_file_row_to_dena()`.
 - Trigger `trg_dena_admin_file_staging_to_dena`.
 
-El trigger actualiza el modelo DENA cuando NiFi inserta una fila en staging. Esto evita depender de que el procesador posterior de NiFi ejecute la promocion en todos los casos.
+El trigger actualiza el modelo DENA cuando NiFi inserta una fila en staging. Esto evita depender de que el procesador posterior de NiFi ejecute la promoción en todos los casos.
 
 ## Grupo NiFi
 
@@ -68,15 +68,15 @@ El script:
 1. Comprueba el driver JDBC de PostgreSQL en NiFi.
 2. Aplica `004_nifi_staging.sql`.
 3. Reutiliza el aprovisionador NiFi de Fase 15 con otro grupo y otro destino.
-4. Arranca la sincronizacion incremental cada `30 sec`.
+4. Arranca la sincronización incremental cada `30 sec`.
 
-## Verificacion
+## Verificación
 
 ```bash
 bash scripts/verify-fase20-datos-externos-nifi.sh
 ```
 
-La verificacion comprueba:
+La verificación comprueba:
 
 - Grupo NiFi presente.
 - Procesadores `VALID/RUNNING`.

@@ -23,20 +23,20 @@ curl -i http://192.168.56.15:30080/
 - `GODEBUG=http2client=0`: evita problemas de HTTP/2 vistos en algunas redes.
 - `helm pull`: descarga el chart validado.
 - `helm upgrade --install`: instala APISIX y etcd.
-- `--values helm-values/apisix-values.yaml`: usa NodePort `30080` y configuracion local.
+- `--values helm-values/apisix-values.yaml`: usa NodePort `30080` y configuración local.
 - `kubectl wait`: espera a etcd y APISIX.
 - `curl`: comprueba que el gateway responde.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get pods,svc -n gateway -o wide
 curl -i http://192.168.56.15:30080/
 ```
 
-En esta fase es normal no tener rutas funcionales todavia.
+En esta fase es normal no tener rutas funcionales todavía.
 
 ## Referencias
 
-- [Historico 0-6](historico/estado-fases-0-6.md)
+- [Histórico 0-6](historico/estado-fases-0-6.md)
 - [Valores APISIX](../../helm-values/apisix-values.yaml)

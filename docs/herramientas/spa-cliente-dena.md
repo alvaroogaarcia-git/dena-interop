@@ -22,7 +22,7 @@ Demuestra el flujo completo:
 - Namespace: `app`
 - Deployment: `dena-interop-spa`
 - Service interno: `dena-interop-spa`
-- URL con login OIDC: `http://localhost:30080/` mediante tunel SSH.
+- URL con login OIDC: `http://localhost:30080/` mediante túnel SSH.
 - URL gateway directa para health/static: `http://192.168.56.15:30080/`
 - Manifiesto: `k8s-manifests/dena-interop-spa.yaml`
 
@@ -68,6 +68,8 @@ La bandeja `Requiere mi atención` se calcula en navegador a partir de las carpe
 
 La `Línea de vida` combina todos los registros del ciudadano y los ordena por fecha para enseñar la actividad completa sin tener que abrir cada carpeta por separado.
 
+Los paneles `Requiere mi atención`, `Línea de vida`, `Expedientes` y `Mis datos conectados` tienen botón de plegar/desplegar para poder compactar la pantalla durante una demo.
+
 ## Qué Contiene En Este Caso
 
 Contiene una página HTML/JS estática en un ConfigMap. No es la SPA definitiva de producción; es una demo funcional para probar OIDC con PKCE, API DENA desde navegador y el explorador ciudadano de `datos_externos`.
@@ -90,6 +92,7 @@ Para `CIT-10001`, la demo debe mostrar:
 
 - Una notificación pendiente en `Requiere mi atención`.
 - Eventos en la línea de vida para expediente, notificación, pago, cita y datos personales.
+- Recuento esperado de carpetas: 6 expedientes, 2 notificaciones, 3 pagos, 2 citas y 1 registro de datos personales.
 
 Comprobación manual desde navegador:
 

@@ -19,7 +19,7 @@ bash scripts/verify-fase20-datos-externos-nifi.sh
 - El flujo escribe en staging y aplica enriquecimiento en `datos-externos`.
 - `verify-fase20-datos-externos-nifi.sh`: valida procesadores, controladores, schedule y resultado funcional.
 
-## Verificacion
+## Verificación
 
 ```bash
 bash scripts/verify-fase20-datos-externos-nifi.sh
@@ -27,5 +27,5 @@ bash scripts/verify-fase20-datos-externos-nifi.sh
 
 ## Referencias
 
-- [Historico fase 20](historico/estado-fases-0-20.md)
-- [Guia Fase 20](../guias/fase20-nifi-datos-externos.md)
+- [Histórico fase 20](historico/estado-fases-0-20.md)
+- [Guía Fase 20](../guias/fase20-nifi-datos-externos.md)

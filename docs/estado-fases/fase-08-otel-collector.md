@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Instalar OpenTelemetry Collector como DaemonSet para recoger senales del nodo y enviarlas a la pila de observabilidad.
+Instalar OpenTelemetry Collector como DaemonSet para recoger señales del nodo y enviarlas a la pila de observabilidad.
 
 ## Comandos
 
@@ -17,13 +17,13 @@ kubectl rollout status daemonset/otel-collector-opentelemetry-collector-agent -n
 
 ## Que hace cada parte
 
-- `preflight-fase8.sh`: comprueba que la Fase 7 esta sana antes de instalar.
+- `preflight-fase8.sh`: comprueba que la Fase 7 está sana antes de instalar.
 - `helm repo add open-telemetry`: registra el repo del chart.
 - `helm upgrade --install`: instala o actualiza el collector.
 - `--values helm-values/otel-collector-values.yaml`: aplica pipelines versionadas.
 - `rollout status daemonset`: espera a que el agente este listo en el nodo.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get daemonset,pods -n monitoring -l app.kubernetes.io/instance=otel-collector -o wide
@@ -31,5 +31,5 @@ kubectl get daemonset,pods -n monitoring -l app.kubernetes.io/instance=otel-coll
 
 ## Referencias
 
-- [Historico 0-10](historico/estado-fases-0-10.md)
+- [Histórico 0-10](historico/estado-fases-0-10.md)
 - [OTel Collector](../herramientas/otel-collector.md)

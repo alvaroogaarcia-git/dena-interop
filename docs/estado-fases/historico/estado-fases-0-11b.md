@@ -69,7 +69,7 @@ NiFi: https://localhost:8443/nifi
 
 Notas operativas:
 
-- El primer arranque de Mathesar requiere crear el usuario admin desde la UI.
+- En este corte historico el primer arranque de Mathesar requeria crear el usuario admin desde la UI; en el estado actual lo inicializa `scripts/bootstrap-demo.sh`.
 - Dentro de Mathesar hay que añadir la conexión a `expedientes` usando `postgres`.
 - El NodePort directo de NiFi `30821` sigue devolviendo `400`; el acceso validado continua siendo por port-forward.
 - La Fase 12 versiona el flujo NiFi JDBC incremental; Fase 11b deja preparado el origen, el driver y la conectividad.
@@ -101,5 +101,5 @@ Estado esperado:
 - JSON de salida generado en el PVC.
 - Flujo conservado tras `kubectl rollout restart deployment/nifi -n datalake`.
 
-Procedimiento: [fase12-nifi-jdbc.md](../guias/fase12-nifi-jdbc.md).
-Optimización del nodo: [optimizacion-k3s-4gb.md](../operacion/optimizacion-k3s-4gb.md).
+Procedimiento: [fase12-nifi-jdbc.md](../../guias/fase12-nifi-jdbc.md).
+Optimización del nodo: [optimizacion-k3s-4gb.md](../../operacion/optimizacion-k3s-4gb.md).

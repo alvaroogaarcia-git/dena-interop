@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Desplegar Apache NiFi 2.9 en `datalake` con HTTPS y autenticacion single-user.
+Desplegar Apache NiFi 2.9 en `datalake` con HTTPS y autenticación single-user.
 
 ## Comandos
 
@@ -23,7 +23,7 @@ bash scripts/verify-fase11.sh
 - `rollout status`: espera a que NiFi arranque.
 - `verify-fase11.sh`: valida el despliegue y acceso operativo.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get pods,svc,pvc -n datalake -l app=nifi -o wide
@@ -32,5 +32,5 @@ bash scripts/verify-fase11.sh
 
 ## Referencias
 
-- [Historico 0-11](historico/estado-fases-0-11.md)
+- [Histórico 0-11](historico/estado-fases-0-11.md)
 - [Manifiesto NiFi](../../k8s-manifests/nifi-deployment.yaml)

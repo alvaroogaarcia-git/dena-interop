@@ -19,9 +19,9 @@ curl -i http://192.168.56.15:30080/
 - `dena-interop-spa.yaml`: crea ConfigMap, Deployment y Service de la SPA.
 - `rollout status`: espera a que NGINX este sirviendo.
 - `apply-route.sh`: actualiza upstreams y rutas de APISIX.
-- `curl`: comprueba que APISIX publica la pagina.
+- `curl`: comprueba que APISIX publica la página.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get pods,svc -n app -l app=dena-interop-spa -o wide
@@ -30,5 +30,5 @@ curl -i http://192.168.56.15:30080/
 
 ## Referencias
 
-- [Historico 0-17](historico/estado-fases-0-17.md)
+- [Histórico 0-17](historico/estado-fases-0-17.md)
 - [SPA cliente](../herramientas/spa-cliente-dena.md)

@@ -22,11 +22,11 @@ bash scripts/verify-fase10.sh
 - `pg_password=...`: lee la password real del Secret de PostgreSQL.
 - `kubectl exec ... psql`: ejecuta SQL dentro del pod de PostgreSQL.
 - `sql/00-postgrest-roles.sql`: crea roles y permisos de PostgREST.
-- `postgrest-secret`: guarda la cadena de conexion.
+- `postgrest-secret`: guarda la cadena de conexión.
 - `kubectl apply`: despliega PostgREST.
 - `verify-fase10.sh`: prueba conectividad y respuesta funcional.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get pods,svc -n datalake -l app=postgrest -o wide
@@ -35,5 +35,5 @@ bash scripts/verify-fase10.sh
 
 ## Referencias
 
-- [Historico 0-10](historico/estado-fases-0-10.md)
+- [Histórico 0-10](historico/estado-fases-0-10.md)
 - [Manifiesto PostgREST](../../k8s-manifests/postgrest-deployment.yaml)

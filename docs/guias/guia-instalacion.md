@@ -1,10 +1,10 @@
 # Guía completa de instalación
 
-Esta guía reconstruye el estado validado hasta Fase 17 de `dena-interop` sobre un nodo único DietPi x86_64 con k3s, Helm y Terraform.
+Esta guía reconstruye el estado validado hasta Fase 21 de `dena-interop` sobre un nodo único DietPi x86_64 con k3s, Helm y Terraform.
 
 El objetivo es que una persona con conocimientos mínimos de Linux, Kubernetes y terminal pueda repetir la instalación sin depender de pasos implícitos.
 
-Para entender qué hace cada herramienta antes de instalarla, consulta la [documentacion de herramientas](../herramientas/README.md).
+Para entender qué hace cada herramienta antes de instalarla, consulta la [documentación de herramientas](../herramientas/README.md).
 
 ## 0. Supuestos del entorno
 
@@ -1074,6 +1074,9 @@ kubectl create secret generic mathesar-secret -n verticales \
 ssh dena "k3s crictl pull docker.io/mathesar/mathesar:0.11.0"
 kubectl apply -f k8s-manifests/mathesar-deployment.yaml
 kubectl rollout status deployment/mathesar -n verticales --timeout=240s
+kubectl exec -n verticales deployment/mathesar -- \
+  env MATHESAR_ADMIN_PASSWORD='Mathesar1234!' \
+  python manage.py shell -c "import os; from django.contrib.auth import get_user_model; User=get_user_model(); user, _ = User.objects.get_or_create(username='admin', defaults={'is_staff': True, 'is_superuser': True, 'is_active': True}); user.is_staff = True; user.is_superuser = True; user.is_active = True; user.set_password(os.environ['MATHESAR_ADMIN_PASSWORD']); user.save(); print('Mathesar admin listo')"
 ```
 
 Acceso de operador:
@@ -1084,7 +1087,7 @@ http://192.168.56.15:30900
 
 Notas:
 
-- En el primer arranque hay que crear el usuario admin desde la UI.
+- El usuario web demo queda como `admin / Mathesar1234!`.
 - Dentro de Mathesar hay que añadir una conexión a `expedientes` usando:
   - host `postgresql-verticales.verticales.svc.cluster.local`
   - base `expedientes`
@@ -1127,7 +1130,7 @@ ADR-009: el laboratorio pasa de dejar preparado el origen a materializar un fluj
 
 ### 11c.1 Estructura del flujo
 
-El flujo que se despliega hoy como sincronizacion operativa de NiFi corresponde a la Fase 15 del datalake:
+El flujo que se despliega hoy como sincronización operativa de NiFi corresponde a la Fase 15 del datalake:
 
 - Grupo de proceso: `Fase 15 - DENA staging incremental`
 - Fuente: `QueryDatabaseTableRecord`
@@ -1214,7 +1217,7 @@ El password demo de `testuser` es `Test1234!` salvo que se overridee con `DENA_T
 
 ## Fase 14 - APISIX OIDC e interoperabilidad DENA
 
-ADR-011: APISIX es la única entrada HTTP. Las rutas de datos quedan accesibles por `http://192.168.56.15:30080`, pero los flujos de navegador con OIDC/WebAuthn usan `http://localhost:30080` mediante tunel SSH porque WebAuthn requiere origen seguro. PostgREST sigue como `ClusterIP` y las rutas de datos requieren un bearer token validado mediante introspección OIDC.
+ADR-011: APISIX es la única entrada HTTP. Las rutas de datos quedan accesibles por `http://192.168.56.15:30080`, pero los flujos de navegador con OIDC/WebAuthn usan `http://localhost:30080` mediante túnel SSH porque WebAuthn requiere origen seguro. PostgREST sigue como `ClusterIP` y las rutas de datos requieren un bearer token validado mediante introspección OIDC.
 
 Antes de crear las rutas se aplica la función SQL y se sincronizan los 50 expedientes actuales:
 
@@ -1266,7 +1269,7 @@ La Fase 15 consolida el esquema DENA del datalake y deja una carga reproducible 
 - vista camelCase `dena."adminFile"`
 - RPC `public.dena_data_retrieve`
 - staging `dena.admin_file_staging`
-- función de promocion `dena.dena_staging_to_main()`
+- función de promoción `dena.dena_staging_to_main()`
 
 Aplicación y verificación:
 
@@ -1337,13 +1340,21 @@ Acceso:
 https://192.168.56.15:30779
 ```
 
-El script deja inicializado `admin / T]8zJMh3U:ADu@L`, garantiza el environment Kubernetes `local` y valida que Portainer ve namespaces y deployments. En la UI entra en `Environments` y abre `local`.
+El script deja inicializado `admin / T]8zJMh3U:ADu@L`, garantiza el environment Kubernetes `local` y valida que Portainer ve namespaces y deployments. En el despliegue actual ve `12` namespaces y `18` deployments. En la UI entra en `Environments` y abre `local`.
 
 Si caduca el bootstrap antes de inicializar:
 
 ```bash
 kubectl rollout restart deployment/portainer -n portainer
 ```
+
+## Fases 19, 20 y 21
+
+Las fases posteriores de datos externos se documentan en guías específicas:
+
+- [Fase 19 - PostgreSQL datos externos desde Markdown DENA](fase19-datos-externos.md)
+- [Fase 20 - NiFi hacia datos externos DENA](fase20-nifi-datos-externos.md)
+- [Fase 21 - Explorador demo de datos externos](fase21-demo-explorer-datos-externos.md)
 
 ## Verificación end-to-end
 
@@ -1354,9 +1365,9 @@ bash scripts/verify-stack.sh
 
 `verify-stack.sh` ejecuta las verificaciones por fase, prueba la SPA, Portainer y el flujo DENA OIDC completo.
 
-## Operacion
+## Operación
 
-Arranque/revision:
+Arranque/revisión:
 
 ```bash
 bash scripts/wait-ready.sh

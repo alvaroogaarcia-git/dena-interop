@@ -18,7 +18,7 @@ Estado versionado:
 - `sql/03-dena-staging.sql`: staging `dena.admin_file_staging` y función `dena.dena_staging_to_main()`.
 - `scripts/dena/apply-fase15-datalake.sh`: aplica los tres SQL contra `postgresql-datalake`.
 - `scripts/verify-fase15.sh`: comprueba objetos SQL y recuentos de staging/main.
-- [fase15-datalake.md](../guias/fase15-datalake.md): procedimiento operativo de carga manual y flujo NiFi.
+- [fase15-datalake.md](../../guias/fase15-datalake.md): procedimiento operativo de carga manual y flujo NiFi.
 
 ## Aplicación reproducible
 

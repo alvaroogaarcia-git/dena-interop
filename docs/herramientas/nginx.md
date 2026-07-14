@@ -17,8 +17,8 @@ NGINX sirve las dos páginas estáticas del namespace `app`: el portal ciudadano
 - Service interno: `dena-interop-spa:80`
 - Service interno: `dena-admin-console:80`
 - URL gateway directa: `http://192.168.56.15:30080/`
-- URL web OIDC por tunel: `http://localhost:30080/`
-- URL admin con passkey por tunel: `http://localhost:30080/dena/admin-console`
+- URL web OIDC por túnel: `http://localhost:30080/`
+- URL admin con passkey por túnel: `http://localhost:30080/dena/admin-console`
 
 ## Cómo Se Usa
 

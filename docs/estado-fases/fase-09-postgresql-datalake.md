@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Desplegar PostgreSQL en `datalake`, que sera la base consolidada expuesta por PostgREST y alimentada por NiFi.
+Desplegar PostgreSQL en `datalake`, que será la base consolidada expuesta por PostgREST y alimentada por NiFi.
 
 ## Comandos
 
@@ -18,11 +18,11 @@ kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql -n d
 
 - `helm repo add bitnami`: registra el repo del chart PostgreSQL.
 - `helm upgrade --install`: crea el release `postgresql-datalake`.
-- `--version 18.7.5`: fija la version validada del chart.
+- `--version 18.7.5`: fija la versión validada del chart.
 - `--values`: aplica usuarios, base y persistencia versionados.
 - `kubectl wait`: espera a que PostgreSQL acepte conexiones.
 
-## Verificacion
+## Verificación
 
 ```bash
 kubectl get pods,svc,pvc -n datalake -l app.kubernetes.io/name=postgresql -o wide
@@ -30,5 +30,5 @@ kubectl get pods,svc,pvc -n datalake -l app.kubernetes.io/name=postgresql -o wid
 
 ## Referencias
 
-- [Historico 0-10](historico/estado-fases-0-10.md)
+- [Histórico 0-10](historico/estado-fases-0-10.md)
 - [Valores datalake](../../helm-values/postgresql-datalake-values.yaml)

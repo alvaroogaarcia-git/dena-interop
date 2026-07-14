@@ -39,7 +39,7 @@ kubectl delete pod -n <namespace> <pod>
 
 No borres PVCs salvo que quieras eliminar datos persistentes.
 
-## Portainer Vacio
+## Portainer Vacío
 
 Si al entrar en Portainer no aparece ningún entorno:
 
@@ -51,20 +51,20 @@ El script debe terminar con una salida similar a:
 
 ```text
 Environment Kubernetes local ya existe en Portainer (id=1).
-Portainer ve el cluster: namespaces=11 deployments=16.
+Portainer ve el cluster: namespaces=12 deployments=18.
 ```
 
 En la UI abre `Environments` y selecciona `local`.
 
-## Recuperacion De Passkey
+## Recuperación De Passkey
 
-Si un usuario del realm `piloto` pierde la passkey, usa el operador limitado `recovery-operator` y sigue la guia completa:
+Si un usuario del realm `piloto` pierde la passkey, usa el operador limitado `recovery-operator` y sigue la guía completa:
 
 ```text
 docs/operacion/recuperacion-passkey-keycloak.md
 ```
 
-Resumen minimo:
+Resumen mínimo:
 
 1. Entrar en `http://localhost:30080/admin/piloto/console/`.
 2. Autenticarse con `recovery-operator`.

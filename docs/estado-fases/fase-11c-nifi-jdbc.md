@@ -19,7 +19,7 @@ bash scripts/verify-fase15-nifi.sh
 - `provision-fase15-nifi.sh`: crea o reconcilia el grupo NiFi `Fase 15 - DENA staging incremental`.
 - `verify-fase15-nifi.sh`: comprueba controladores, procesadores, conexiones y estado del flujo.
 
-## Verificacion
+## Verificación
 
 ```bash
 bash scripts/verify-fase15-nifi.sh
@@ -30,4 +30,4 @@ Debe terminar sin procesadores invalidos ni conexiones duplicadas.
 ## Referencias
 
 - [Flujo NiFi JDBC](../guias/fase12-nifi-jdbc.md)
-- [Historico 0-11b](historico/estado-fases-0-11b.md)
+- [Histórico 0-11b](historico/estado-fases-0-11b.md)
