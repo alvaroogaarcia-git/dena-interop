@@ -738,7 +738,7 @@ data:
                   <p>Accesos operativos de la plataforma.</p>
                 </div>
                 <div class="panel-body">
-                  <p><a href="/nifi/" target="_blank" rel="noreferrer">NiFi</a></p>
+                  <p><a href="https://192.168.56.15:30821/nifi/" target="_blank" rel="noreferrer">NiFi</a></p>
                   <p><a href="http://192.168.56.15:31803/login" target="_blank" rel="noreferrer">Grafana</a></p>
                   <p><a href="http://192.168.56.15:30900" target="_blank" rel="noreferrer">Mathesar</a></p>
                   <p><a href="https://192.168.56.15:30779" target="_blank" rel="noreferrer">Portainer</a></p>

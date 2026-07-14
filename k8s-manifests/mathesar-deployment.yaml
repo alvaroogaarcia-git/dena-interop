@@ -56,15 +56,17 @@ spec:
             - name: http
               containerPort: 8000
           readinessProbe:
-            tcpSocket:
-              port: 8000
+            httpGet:
+              path: /
+              port: http
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 24
           livenessProbe:
-            tcpSocket:
-              port: 8000
+            httpGet:
+              path: /
+              port: http
             initialDelaySeconds: 120
             periodSeconds: 20
             timeoutSeconds: 5
