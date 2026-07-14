@@ -27,6 +27,21 @@ data:
             --bad: #a13d3d;
             --blue: #245ca8;
           }
+          :root[data-theme="dark"] {
+            color-scheme: dark;
+            --bg: #101820;
+            --surface: #17212b;
+            --soft: #1e2a35;
+            --ink: #edf4f7;
+            --muted: #a9b8c6;
+            --line: #344352;
+            --brand: #6fb3d2;
+            --brand-soft: #203948;
+            --ok: #74d39a;
+            --warn: #f2c96d;
+            --bad: #f09a9a;
+            --blue: #9ec5ff;
+          }
           * { box-sizing: border-box; }
           body {
             margin: 0;
@@ -40,7 +55,7 @@ data:
             margin: 0 auto;
             padding: 22px 0 34px;
           }
-          .topbar, .brand, .toolbar, .panel-title, .trace-step, .health-row, .actions {
+          .topbar, .brand, .toolbar, .panel-title, .trace-step, .health-row, .actions, .topbar-tools, .panel-controls {
             display: flex;
             align-items: center;
           }
@@ -62,6 +77,17 @@ data:
           }
           h1 { margin: 0; font-size: 1.28rem; line-height: 1.1; }
           .subtitle { margin: 3px 0 0; color: var(--muted); font-size: .9rem; }
+          .topbar-tools { justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+          .locale-select, .theme-toggle {
+            min-height: 38px;
+            width: auto;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: var(--ink);
+            font-size: .86rem;
+          }
+          .theme-toggle { padding: 8px 10px; }
           .status {
             min-height: 38px;
             border: 1px solid var(--line);
@@ -98,11 +124,14 @@ data:
           .panel-head h2 { margin: 0; font-size: 1rem; }
           .panel-head p { margin: 4px 0 0; color: var(--muted); font-size: .86rem; line-height: 1.4; }
           form, .panel-body { padding: 14px 16px 16px; }
-          .panel-toggle {
+          .panel-controls {
             float: right;
+            gap: 6px;
+            margin-left: 10px;
+          }
+          .panel-toggle, .panel-help {
             min-width: 34px;
             min-height: 32px;
-            margin-left: 10px;
             padding: 5px 9px;
             border-color: var(--line);
             background: var(--surface);
@@ -110,7 +139,11 @@ data:
             font-size: .9rem;
             line-height: 1;
           }
-          .panel-toggle:hover { color: var(--ink); border-color: var(--brand); }
+          .panel-help {
+            border-style: dashed;
+            font-weight: 850;
+          }
+          .panel-toggle:hover, .panel-help:hover { color: var(--ink); border-color: var(--brand); }
           .panel-content-collapsed { display: none !important; }
           label {
             display: block;
@@ -127,7 +160,7 @@ data:
             font: inherit;
             padding: 9px 11px;
           }
-          input, select { width: 100%; background: #fff; color: var(--ink); }
+          input, select { width: 100%; background: var(--surface); color: var(--ink); }
           button {
             display: inline-flex;
             align-items: center;
@@ -172,7 +205,7 @@ data:
             text-transform: uppercase;
           }
           tbody tr { cursor: pointer; }
-          tbody tr:hover, tbody tr.selected { background: #fbfdff; }
+          tbody tr:hover, tbody tr.selected { background: var(--soft); }
           tbody tr.selected td:first-child { box-shadow: inset 3px 0 0 var(--brand); }
           .code { font-family: "SFMono-Regular", Consolas, monospace; font-size: .86rem; }
           .muted { color: var(--muted); }
@@ -403,7 +436,7 @@ data:
           .citizen-preview {
             border: 1px solid var(--line);
             border-radius: 8px;
-            background: #fbfdff;
+            background: var(--soft);
             padding: 12px;
             margin-top: 10px;
           }
@@ -443,6 +476,8 @@ data:
           @media (max-width: 760px) {
             main { width: min(100% - 20px, 1440px); padding-top: 14px; }
             .topbar, .toolbar { align-items: stretch; flex-direction: column; }
+            .topbar-tools { justify-content: stretch; }
+            .locale-select, .theme-toggle, .topbar-tools .status { width: 100%; }
             .layout, .side-right, .kpis, .grid2, .detail-grid, .external-grid { grid-template-columns: 1fr; }
             .citizen360-head, .citizen360-controls, .citizen360-summary { grid-template-columns: 1fr; }
             .flow-map, .scenario-buttons { grid-template-columns: 1fr; }
@@ -460,7 +495,15 @@ data:
                 <p class="subtitle">Consola administrativa de interoperabilidad y operación</p>
               </div>
             </div>
-            <div class="status" id="status">Listo para iniciar sesión.</div>
+            <div class="topbar-tools">
+              <select class="locale-select" id="languageSelect" aria-label="Idioma">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+                <option value="eu">Euskara</option>
+              </select>
+              <button class="theme-toggle button-secondary" id="themeToggle" type="button">Oscuro</button>
+              <div class="status" id="status">Listo para iniciar sesión.</div>
+            </div>
           </header>
 
           <section class="layout">
@@ -841,6 +884,176 @@ data:
           const citizen360Tabs = document.getElementById("citizen360Tabs");
           const citizen360Results = document.getElementById("citizen360Results");
           const citizen360ResultLabel = document.getElementById("citizen360ResultLabel");
+          const languageSelect = document.getElementById("languageSelect");
+          const themeToggle = document.getElementById("themeToggle");
+          const translations = {
+            en: {
+              "Centro de Control DENA": "DENA Control Center",
+              "Consola administrativa de interoperabilidad y operación": "Administrative console for interoperability and operations",
+              "Oscuro": "Dark",
+              "Claro": "Light",
+              "Listo para iniciar sesión.": "Ready to sign in.",
+              "Acceso admin": "Admin access",
+              "La sesión se abre en Keycloak con MFA WebAuthn cuando corresponde.": "The session opens in Keycloak with WebAuthn MFA when required.",
+              "Estado": "Status",
+              "Todos": "All",
+              "Abierto": "Open",
+              "En tramitación": "In progress",
+              "Pendiente documentación": "Documentation pending",
+              "Resuelto": "Resolved",
+              "Archivado": "Archived",
+              "Límite": "Limit",
+              "Expediente": "Case file",
+              "Título": "Title",
+              "Iniciar sesión y cargar consola": "Sign in and load console",
+              "Sesión": "Session",
+              "Sin token emitido.": "No token issued.",
+              "Usuario": "User",
+              "Roles": "Roles",
+              "Cerrar sesión": "Sign out",
+              "Modo presentación": "Presentation mode",
+              "Escenarios rápidos para enseñar casos sin preparar filtros a mano.": "Quick scenarios to show cases without preparing filters manually.",
+              "Encontrado": "Found",
+              "Pendiente": "Pending",
+              "Cambio reciente": "Recent change",
+              "Sin resultados": "No results",
+              "Permisos": "Permissions",
+              "Sincronización": "Synchronization",
+              "Carpetas demo": "Demo folders",
+              "Consultas directas sobre la PostgreSQL datos_externos.": "Direct queries against the datos_externos PostgreSQL database.",
+              "Buscar": "Search",
+              "Expedientes": "Case files",
+              "Notificaciones": "Notifications",
+              "Pagos": "Payments",
+              "Citas": "Appointments",
+              "Personas": "People",
+              "Semántica": "Semantics",
+              "Cargar carpeta": "Load folder",
+              "Ficha 360 ciudadano": "Citizen 360 profile",
+              "Abre una vista dedicada con toda la información relacionada.": "Opens a dedicated view with all related information.",
+              "Ciudadano": "Citizen",
+              "Abrir ficha 360": "Open 360 profile",
+              "Importe total": "Total amount",
+              "Incidencias": "Issues",
+              "Última ingesta": "Latest ingestion",
+              "Expedientes administrativos": "Administrative case files",
+              "Carga datos para revisar el estado operativo.": "Load data to review the operational status.",
+              "Filtro rápido en resultados cargados": "Quick filter in loaded results",
+              "Últimos cambios": "Latest changes",
+              "Simular cambio": "Simulate change",
+              "Flujo vivo": "Live flow",
+              "Vista de presentación del recorrido técnico-funcional.": "Presentation view of the technical and functional path.",
+              "Explorador datos externos": "External data explorer",
+              "Selecciona una carpeta para ver su SQL consolidada.": "Select a folder to view its consolidated SQL data.",
+              "Actualizar": "Refresh",
+              "Detalle y trazabilidad": "Detail and traceability",
+              "Origen, ingesta, publicación y seguridad de la fila seleccionada.": "Origin, ingestion, publication and security for the selected row.",
+              "Origen vs datalake": "Source vs datalake",
+              "Comparador funcional con señales de sincronización.": "Functional comparison with synchronization signals.",
+              "Bandeja de incidencias": "Issue inbox",
+              "Casos que requieren revisión operativa.": "Cases that require operational review.",
+              "Notificaciones": "Notifications",
+              "Eventos demo generados a partir de estados y simulaciones.": "Demo events generated from statuses and simulations.",
+              "Estado operativo": "Operational status",
+              "Chequeos ligeros desde la consola, sin abrir herramientas externas.": "Lightweight checks from the console, without opening external tools.",
+              "Revisar": "Check",
+              "Auditoría de consulta": "Query audit",
+              "Última operación ejecutada desde esta consola.": "Last operation executed from this console.",
+              "Herramientas": "Tools",
+              "Accesos operativos de la plataforma.": "Operational platform links.",
+              "Vista consolidada de expedientes, pagos, citas, notificaciones y datos personales.": "Consolidated view of case files, payments, appointments, notifications and personal data.",
+              "Cargar ficha": "Load profile",
+              "Volver": "Back",
+              "Importe": "Amount",
+              "Alertas": "Alerts",
+              "Relación completa": "Complete relationship",
+              "Carga un ciudadano para ver sus datos agrupados.": "Load a citizen to view grouped data.",
+              "Sin ficha cargada.": "No profile loaded."
+            },
+            eu: {
+              "Centro de Control DENA": "DENA kontrol-zentroa",
+              "Consola administrativa de interoperabilidad y operación": "Elkarreragingarritasun eta eragiketetarako administrazio-kontsola",
+              "Oscuro": "Iluna",
+              "Claro": "Argia",
+              "Listo para iniciar sesión.": "Saioa hasteko prest.",
+              "Acceso admin": "Admin sarbidea",
+              "La sesión se abre en Keycloak con MFA WebAuthn cuando corresponde.": "Saioa Keycloak-en irekitzen da, behar denean WebAuthn MFArekin.",
+              "Estado": "Egoera",
+              "Todos": "Guztiak",
+              "Abierto": "Irekita",
+              "En tramitación": "Izapidetzen",
+              "Pendiente documentación": "Dokumentazioa falta da",
+              "Resuelto": "Ebatzita",
+              "Archivado": "Artxibatuta",
+              "Límite": "Muga",
+              "Expediente": "Espedientea",
+              "Título": "Izenburua",
+              "Iniciar sesión y cargar consola": "Saioa hasi eta kontsola kargatu",
+              "Sesión": "Saioa",
+              "Sin token emitido.": "Ez da tokenik jaulki.",
+              "Usuario": "Erabiltzailea",
+              "Roles": "Rolak",
+              "Cerrar sesión": "Saioa itxi",
+              "Modo presentación": "Aurkezpen modua",
+              "Escenarios rápidos para enseñar casos sin preparar filtros a mano.": "Kasuak erakusteko agertoki azkarrak, iragazkiak eskuz prestatu gabe.",
+              "Encontrado": "Aurkitua",
+              "Pendiente": "Zain",
+              "Cambio reciente": "Azken aldaketa",
+              "Sin resultados": "Emaitzarik gabe",
+              "Permisos": "Baimenak",
+              "Sincronización": "Sinkronizazioa",
+              "Carpetas demo": "Demo karpetak",
+              "Consultas directas sobre la PostgreSQL datos_externos.": "Kontsulta zuzenak datos_externos PostgreSQL datu-basean.",
+              "Buscar": "Bilatu",
+              "Expedientes": "Espedienteak",
+              "Notificaciones": "Jakinarazpenak",
+              "Pagos": "Ordainketak",
+              "Citas": "Hitzorduak",
+              "Personas": "Pertsonak",
+              "Semántica": "Semantika",
+              "Cargar carpeta": "Karpeta kargatu",
+              "Ficha 360 ciudadano": "Herritarraren 360 fitxa",
+              "Abre una vista dedicada con toda la información relacionada.": "Lotutako informazio guztia duen ikuspegi bereizia irekitzen du.",
+              "Ciudadano": "Herritarra",
+              "Abrir ficha 360": "360 fitxa ireki",
+              "Importe total": "Zenbateko osoa",
+              "Incidencias": "Gorabeherak",
+              "Última ingesta": "Azken ingestioa",
+              "Expedientes administrativos": "Administrazio-espedienteak",
+              "Carga datos para revisar el estado operativo.": "Kargatu datuak eragiketa-egoera berrikusteko.",
+              "Filtro rápido en resultados cargados": "Iragazki azkarra kargatutako emaitzetan",
+              "Últimos cambios": "Azken aldaketak",
+              "Simular cambio": "Aldaketa simulatu",
+              "Flujo vivo": "Fluxu bizia",
+              "Vista de presentación del recorrido técnico-funcional.": "Ibilbide tekniko-funtzionalaren aurkezpen-ikuspegia.",
+              "Explorador datos externos": "Kanpo-datuen esploratzailea",
+              "Selecciona una carpeta para ver su SQL consolidada.": "Hautatu karpeta bat SQL datu bateratuak ikusteko.",
+              "Actualizar": "Eguneratu",
+              "Detalle y trazabilidad": "Xehetasuna eta trazabilitatea",
+              "Origen, ingesta, publicación y seguridad de la fila seleccionada.": "Hautatutako errenkadaren jatorria, ingestioa, argitalpena eta segurtasuna.",
+              "Origen vs datalake": "Jatorria vs datalake",
+              "Comparador funcional con señales de sincronización.": "Sinkronizazio-seinaleak dituen konparatzaile funtzionala.",
+              "Bandeja de incidencias": "Gorabeheren erretilua",
+              "Casos que requieren revisión operativa.": "Eragiketa-berrikuspena behar duten kasuak.",
+              "Notificaciones": "Jakinarazpenak",
+              "Eventos demo generados a partir de estados y simulaciones.": "Egoeretatik eta simulazioetatik sortutako demo gertaerak.",
+              "Estado operativo": "Eragiketa-egoera",
+              "Chequeos ligeros desde la consola, sin abrir herramientas externas.": "Kontsolatik egindako egiaztapen arinak, kanpoko tresnarik ireki gabe.",
+              "Revisar": "Berrikusi",
+              "Auditoría de consulta": "Kontsultaren auditoria",
+              "Última operación ejecutada desde esta consola.": "Kontsola honetatik exekutatutako azken eragiketa.",
+              "Herramientas": "Tresnak",
+              "Accesos operativos de la plataforma.": "Plataformaren eragiketa-sarbideak.",
+              "Vista consolidada de expedientes, pagos, citas, notificaciones y datos personales.": "Espedienteen, ordainketen, hitzorduen, jakinarazpenen eta datu pertsonalen ikuspegi bateratua.",
+              "Cargar ficha": "Fitxa kargatu",
+              "Volver": "Itzuli",
+              "Importe": "Zenbatekoa",
+              "Alertas": "Alertak",
+              "Relación completa": "Harreman osoa",
+              "Carga un ciudadano para ver sus datos agrupados.": "Kargatu herritar bat bere datuak taldekatuta ikusteko.",
+              "Sin ficha cargada.": "Ez dago fitxarik kargatuta."
+            }
+          };
           const statusLabels = {
             abierto: "Abierto",
             en_tramitacion: "En tramitación",
@@ -885,6 +1098,78 @@ data:
             }[char]));
           }
 
+          function walkTextNodes(root, callback) {
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+              acceptNode(node) {
+                const parent = node.parentElement;
+                if (!parent || ["SCRIPT", "STYLE", "PRE", "CODE"].includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
+                return node.textContent.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+              }
+            });
+            let node = walker.nextNode();
+            while (node) {
+              callback(node);
+              node = walker.nextNode();
+            }
+          }
+
+          function translateText(text, lang) {
+            if (lang === "es") return text;
+            return translations[lang]?.[text] || text;
+          }
+
+          function applyLanguage(lang) {
+            document.documentElement.lang = lang;
+            localStorage.setItem("denaAdminLanguage", lang);
+            walkTextNodes(document.body, (node) => {
+              const source = node.i18nSource || node.textContent.trim();
+              node.i18nSource = source;
+              const translated = translateText(source, lang);
+              node.textContent = node.textContent.replace(node.textContent.trim(), translated);
+            });
+            themeToggle.textContent = document.documentElement.dataset.theme === "dark"
+              ? translateText("Claro", lang)
+              : translateText("Oscuro", lang);
+            updatePanelHelp();
+          }
+
+          function applyTheme(theme) {
+            document.documentElement.dataset.theme = theme;
+            localStorage.setItem("denaAdminTheme", theme);
+            themeToggle.textContent = theme === "dark"
+              ? translateText("Claro", languageSelect.value)
+              : translateText("Oscuro", languageSelect.value);
+          }
+
+          function panelHelpText(panel) {
+            const title = panel.querySelector("h2")?.textContent.trim() || "";
+            const description = panel.querySelector(".panel-head p")?.textContent.trim() || "";
+            const lang = languageSelect.value;
+            if (lang === "en") return description ? `${title}: ${description}` : `Shows or hides ${title}.`;
+            if (lang === "eu") return description ? `${title}: ${description}` : `${title} panela zabaldu edo tolestu.`;
+            return description ? `${title}: ${description}` : `Muestra u oculta el panel ${title}.`;
+          }
+
+          function updatePanelHelp() {
+            document.querySelectorAll(".panel").forEach((panel) => {
+              const help = panel.querySelector(":scope > .panel-head .panel-help");
+              const toggle = panel.querySelector(":scope > .panel-head .panel-toggle");
+              if (help) {
+                help.title = panelHelpText(panel);
+                help.setAttribute("aria-label", help.title);
+              }
+              if (toggle) {
+                const collapsed = panel.classList.contains("collapsed");
+                const lang = languageSelect.value;
+                const label = collapsed
+                  ? lang === "en" ? "Expand panel" : lang === "eu" ? "Panela zabaldu" : "Desplegar panel"
+                  : lang === "en" ? "Collapse panel" : lang === "eu" ? "Panela tolestu" : "Contraer panel";
+                toggle.setAttribute("aria-label", label);
+                toggle.title = label;
+              }
+            });
+          }
+
           function initCollapsiblePanels() {
             document.querySelectorAll(".panel").forEach((panel, index) => {
               const head = panel.querySelector(":scope > .panel-head");
@@ -893,22 +1178,36 @@ data:
               if (!content.length) return;
               const title = normalize(head.querySelector("h2")?.textContent || `panel-${index}`);
               const key = `denaAdminPanelCollapsed:${title}:${index}`;
+              const controls = document.createElement("span");
+              controls.className = "panel-controls";
               const button = document.createElement("button");
               button.type = "button";
               button.className = "panel-toggle";
               button.setAttribute("aria-label", "Contraer panel");
-              head.prepend(button);
+              const help = document.createElement("button");
+              help.type = "button";
+              help.className = "panel-help";
+              help.textContent = "?";
+              controls.append(button, help);
+              head.prepend(controls);
               const setCollapsed = (collapsed) => {
                 panel.classList.toggle("collapsed", collapsed);
                 content.forEach((node) => node.classList.toggle("panel-content-collapsed", collapsed));
                 button.textContent = collapsed ? "+" : "-";
                 button.setAttribute("aria-expanded", String(!collapsed));
-                button.setAttribute("aria-label", collapsed ? "Desplegar panel" : "Contraer panel");
+                const lang = languageSelect.value;
+                const label = collapsed
+                  ? lang === "en" ? "Expand panel" : lang === "eu" ? "Panela zabaldu" : "Desplegar panel"
+                  : lang === "en" ? "Collapse panel" : lang === "eu" ? "Panela tolestu" : "Contraer panel";
+                button.setAttribute("aria-label", label);
+                button.title = label;
                 sessionStorage.setItem(key, collapsed ? "1" : "0");
+                updatePanelHelp();
               };
               setCollapsed(sessionStorage.getItem(key) === "1");
               button.addEventListener("click", () => setCollapsed(!panel.classList.contains("collapsed")));
             });
+            updatePanelHelp();
           }
 
           function normalize(value) {
@@ -1923,7 +2222,14 @@ data:
             });
           });
 
+          languageSelect.value = localStorage.getItem("denaAdminLanguage") || "es";
+          applyTheme(localStorage.getItem("denaAdminTheme") || "light");
           initCollapsiblePanels();
+          applyLanguage(languageSelect.value);
+          languageSelect.addEventListener("change", () => applyLanguage(languageSelect.value));
+          themeToggle.addEventListener("click", () => {
+            applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+          });
           const bootParams = new URLSearchParams(window.location.search);
           if (bootParams.get("view") === "ciudadano360") {
             showCitizen360View();
