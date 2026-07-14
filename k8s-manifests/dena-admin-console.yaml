@@ -333,6 +333,29 @@ data:
             display: grid;
             gap: 9px;
           }
+          .semantic-summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+          }
+          .semantic-score {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+            padding: 10px;
+          }
+          .semantic-score span {
+            display: block;
+            color: var(--muted);
+            font-size: .76rem;
+          }
+          .semantic-score strong {
+            display: block;
+            margin-top: 3px;
+            color: var(--ink);
+            font-size: 1.25rem;
+          }
           .timeline-item, .notification, .compare-row, .permission-card {
             border: 1px solid var(--line);
             border-radius: 8px;
@@ -716,6 +739,16 @@ data:
 
               <section class="panel">
                 <div class="panel-head">
+                  <h2>Validación semántica DENA</h2>
+                  <p>Comprueba LanguageTexts, formatos y reglas básicas del contrato oficial.</p>
+                </div>
+                <div class="panel-body" id="semanticPanel">
+                  <div class="empty">Carga una carpeta o una ficha 360 para validar datos.</div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
                   <h2>Permisos</h2>
                   <p>Comparativa de roles de la demo.</p>
                 </div>
@@ -851,6 +884,7 @@ data:
           const auditPanel = document.getElementById("auditPanel");
           const comparePanel = document.getElementById("comparePanel");
           const incidentPanel = document.getElementById("incidentPanel");
+          const semanticPanel = document.getElementById("semanticPanel");
           const permissionPanel = document.getElementById("permissionPanel");
           const notificationPanel = document.getElementById("notificationPanel");
           const flowPanel = document.getElementById("flowPanel");
@@ -952,6 +986,9 @@ data:
               "Comparador funcional con señales de sincronización.": "Functional comparison with synchronization signals.",
               "Bandeja de incidencias": "Issue inbox",
               "Casos que requieren revisión operativa.": "Cases that require operational review.",
+              "Validación semántica DENA": "DENA semantic validation",
+              "Comprueba LanguageTexts, formatos y reglas básicas del contrato oficial.": "Checks LanguageTexts, formats and basic official contract rules.",
+              "Carga una carpeta o una ficha 360 para validar datos.": "Load a folder or a 360 profile to validate data.",
               "Notificaciones": "Notifications",
               "Eventos demo generados a partir de estados y simulaciones.": "Demo events generated from statuses and simulations.",
               "Estado operativo": "Operational status",
@@ -1035,6 +1072,9 @@ data:
               "Comparador funcional con señales de sincronización.": "Sinkronizazio-seinaleak dituen konparatzaile funtzionala.",
               "Bandeja de incidencias": "Gorabeheren erretilua",
               "Casos que requieren revisión operativa.": "Eragiketa-berrikuspena behar duten kasuak.",
+              "Validación semántica DENA": "DENA baliozkotze semantikoa",
+              "Comprueba LanguageTexts, formatos y reglas básicas del contrato oficial.": "LanguageTexts, formatuak eta kontratu ofizialaren oinarrizko arauak egiaztatzen ditu.",
+              "Carga una carpeta o una ficha 360 para validar datos.": "Kargatu karpeta bat edo 360 fitxa bat datuak baliozkotzeko.",
               "Notificaciones": "Jakinarazpenak",
               "Eventos demo generados a partir de estados y simulaciones.": "Egoeretatik eta simulazioetatik sortutako demo gertaerak.",
               "Estado operativo": "Eragiketa-egoera",
@@ -1283,11 +1323,16 @@ data:
               renderKpis(visibleRows);
               renderTable();
               renderIncidentPanel();
+              renderSemanticValidation();
             }
-            if (externalRows.length) renderExternalTable();
+            if (externalRows.length) {
+              renderExternalTable();
+              renderSemanticValidation();
+            }
             if (citizen360Data) {
               renderCitizen360Summary(citizen360Data);
               renderCitizen360Results();
+              renderSemanticValidation();
             }
           }
 
@@ -1800,6 +1845,120 @@ data:
             `;
           }
 
+          function semanticRows() {
+            const sourceRows = [];
+            externalRows.forEach((row) => sourceRows.push({
+              folder: activeExternalFolder,
+              label: `${externalFolders[activeExternalFolder]?.title || activeExternalFolder}: ${externalDisplayValue(row, ["referencia", "id"], "-")}`,
+              row
+            }));
+            if (citizen360Data) {
+              ["personas", "expedientes", "notificaciones", "pagos", "citas"].forEach((folder) => {
+                (citizen360Data[folder] || []).forEach((row) => sourceRows.push({
+                  folder,
+                  label: `Ficha 360/${folder}: ${externalDisplayValue(row, ["referencia", "id", "persona_id"], "-")}`,
+                  row
+                }));
+              });
+            }
+            return sourceRows;
+          }
+
+          function hasValidDate(value) {
+            if (!value) return true;
+            return !Number.isNaN(new Date(value).getTime());
+          }
+
+          function isPlainObject(value) {
+            return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+          }
+
+          function addSemanticIssue(issues, kind, label, rule, detail) {
+            issues.push({ kind, label, rule, detail });
+          }
+
+          function validateLanguageTexts(issues, label, fieldName, value, required = true) {
+            if (!value) {
+              if (required) addSemanticIssue(issues, "bad", label, `${fieldName}: LanguageTexts ausente`, "El contrato DENA espera textos multiidioma para datos visibles.");
+              return;
+            }
+            if (!isPlainObject(value)) {
+              addSemanticIssue(issues, "bad", label, `${fieldName}: formato inválido`, "Debe ser un objeto con claves SPANISH, BASQUE y opcionalmente ENGLISH.");
+              return;
+            }
+            if (!value.SPANISH) addSemanticIssue(issues, "bad", label, `${fieldName}: falta SPANISH`, "Castellano es obligatorio para mostrar el dato.");
+            if (!value.BASQUE) addSemanticIssue(issues, "bad", label, `${fieldName}: falta BASQUE`, "Euskera es obligatorio en la demo DENA.");
+            if (!value.ENGLISH) addSemanticIssue(issues, "warn", label, `${fieldName}: falta ENGLISH`, "Inglés es opcional en el contrato, pero recomendable para la demo trilingüe.");
+          }
+
+          function validateSemanticRow(item) {
+            const issues = [];
+            const { folder, label, row } = item;
+            if (!row.id && !row.referencia && !row.persona_id) {
+              addSemanticIssue(issues, "bad", label, "Identificador ausente", "La fila debería tener id, referencia o persona_id.");
+            }
+            if (["expedientes", "notificaciones", "pagos", "citas", "personas"].includes(folder)) {
+              validateLanguageTexts(issues, label, "titulo_by_language", row.titulo_by_language);
+            }
+            if (folder === "expedientes") {
+              validateLanguageTexts(issues, label, "servicio_by_language", row.servicio_by_language, false);
+              validateLanguageTexts(issues, label, "procedimiento_by_language", row.procedimiento_by_language, false);
+            }
+            if (folder === "personas") {
+              validateLanguageTexts(issues, label, "unidad_by_language", row.unidad_by_language, false);
+            }
+            ["fecha", "creado_en", "sincronizado_en", "leido_en", "solicitado_en"].forEach((field) => {
+              if (!hasValidDate(row[field])) addSemanticIssue(issues, "bad", label, `${field}: fecha inválida`, "Usa ISO 8601 o una fecha parseable por navegador/API.");
+            });
+            if (row.importe_eur !== undefined && row.importe_eur !== null && Number.isNaN(Number(row.importe_eur))) {
+              addSemanticIssue(issues, "bad", label, "importe_eur no numérico", "Los importes deben viajar como número, no como texto.");
+            }
+            if (row.detalle !== undefined && !isPlainObject(row.detalle)) {
+              addSemanticIssue(issues, "warn", label, "detalle no estructurado", "Conviene exponer detalle como objeto JSON para trazabilidad.");
+            }
+            const rawPayload = row.detalle?.raw_payload;
+            if (rawPayload?.urls !== undefined && !Array.isArray(rawPayload.urls)) {
+              addSemanticIssue(issues, "bad", label, "urls no es array", "DENA espera urls como array, aunque solo haya una URL.");
+            }
+            return issues;
+          }
+
+          function renderSemanticValidation() {
+            const items = semanticRows();
+            if (!items.length) {
+              semanticPanel.innerHTML = '<div class="empty">Carga una carpeta o una ficha 360 para validar datos.</div>';
+              return;
+            }
+            const issues = items.flatMap(validateSemanticRow);
+            const errors = issues.filter((issue) => issue.kind === "bad").length;
+            const warnings = issues.filter((issue) => issue.kind === "warn").length;
+            const okRows = Math.max(0, items.length - new Set(issues.map((issue) => issue.label)).size);
+            const visibleIssues = issues.slice(0, 10);
+            semanticPanel.innerHTML = `
+              <div class="semantic-summary">
+                <div class="semantic-score"><span>Filas</span><strong>${items.length}</strong></div>
+                <div class="semantic-score"><span>Errores</span><strong>${errors}</strong></div>
+                <div class="semantic-score"><span>Avisos</span><strong>${warnings}</strong></div>
+              </div>
+              ${visibleIssues.length ? `
+                <div class="notifications">
+                  ${visibleIssues.map((issue) => `
+                    <div class="notification ${escapeHtml(issue.kind)}">
+                      <strong>${escapeHtml(issue.rule)}</strong>
+                      <span>${escapeHtml(issue.label)}</span>
+                      <span>${escapeHtml(issue.detail)}</span>
+                    </div>
+                  `).join("")}
+                </div>
+              ` : `
+                <div class="notification ok">
+                  <strong>Contrato semántico correcto</strong>
+                  <span>${okRows} filas sin errores ni avisos relevantes.</span>
+                </div>
+              `}
+            `;
+          }
+
           function addNotification(type, title, message) {
             notifications.unshift({ type, title, message, at: new Date().toISOString() });
             notifications = notifications.slice(0, 8);
@@ -1890,6 +2049,7 @@ data:
               renderKpis(visibleRows);
               renderTable();
               renderIncidentPanel();
+              renderSemanticValidation();
               renderHealth(true);
               renderAudit(Math.round(performance.now() - started), body);
               addNotification("ok", "Consulta completada", `${rows.length} expedientes recuperados desde la API DENA.`);
@@ -2106,6 +2266,7 @@ data:
               citizen360Label.textContent = `Vista consolidada de ${personaId}.`;
               renderCitizen360Summary(citizen360Data);
               renderCitizen360Results();
+              renderSemanticValidation();
               addNotification("ok", "Ficha 360 cargada", `${personaId}: ${expedientes.length} expedientes relacionados.`);
               setStatus(`Ficha 360 cargada: ${personaId}.`, "ok");
             } catch (error) {
@@ -2124,6 +2285,7 @@ data:
               return normalize(Object.values(row).map((value) => typeof value === "object" ? JSON.stringify(value) : value).join(" ")).includes(query);
             });
             renderExternalTable();
+            renderSemanticValidation();
           }
 
           function renderExternalTable() {

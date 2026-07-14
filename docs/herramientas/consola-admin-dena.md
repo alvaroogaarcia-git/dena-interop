@@ -63,7 +63,15 @@ La consola contiene:
 - Detalle del expediente seleccionado.
 - Botón `Abrir ficha 360` para abrir una pestaña dedicada por ciudadano, por ejemplo `CIT-10001`.
 - Ficha 360 con identidad, expedientes, notificaciones, pagos, citas y alertas funcionales agrupadas por `persona_id`.
+- Render multiidioma de datos funcionales mediante campos `LanguageTexts`, por ejemplo `titulo_by_language`, `servicio_by_language`, `procedimiento_by_language` y `unidad_by_language`.
 - Trazabilidad funcional: origen vertical, NiFi, datalake y API protegida.
+- Panel `Validación semántica DENA`, que revisa calidad de datos frente a reglas básicas del contrato oficial:
+  - `LanguageTexts` presente y con claves `SPANISH` y `BASQUE`.
+  - `ENGLISH` recomendado para la demo trilingüe.
+  - Fechas parseables.
+  - Importes numéricos.
+  - `detalle` como JSON estructurado.
+  - `raw_payload.urls` como array cuando exista.
 - Panel `Estado operativo` con revisión manual y automática de Keycloak, APISIX, API DENA, datos externos y sesión.
 - Auditoría de la última consulta: usuario, endpoint, filtros, filas y duración.
 - Exportación CSV y JSON de los resultados visibles.
@@ -89,11 +97,30 @@ La función SQL `public.dena_data_retrieve` acepta:
 
 También devuelve `ingested_at` para enseñar la diferencia entre la actualización en origen y la ingesta en el datalake.
 
+Además, el explorador de `datos_externos` consume las vistas públicas definidas en `sql/datos-externos/005_demo_explorer.sql`. Estas vistas mantienen campos planos para listar rápido (`titulo`, `estado`, `servicio`) y campos multiidioma alineados con DENA (`*_by_language`) para que la consola pinte el contenido según el idioma activo.
+
 ## Cómo Verificarlo
 
 ```bash
 kubectl rollout status deployment/dena-admin-console -n app
 curl -H 'Host: localhost:30080' -i http://192.168.56.15:30080/dena/admin-console
+```
+
+Comprobación específica de la validación semántica:
+
+```bash
+kubectl exec -n app deploy/dena-admin-console -- \
+  wget -qO- http://127.0.0.1 | rg 'semanticPanel|renderSemanticValidation'
+```
+
+Comprobación específica de `LanguageTexts` en datos externos:
+
+```bash
+PGPASSWORD="$(kubectl get secret -n datos-externos datos-externos-postgresql -o jsonpath='{.data.postgres-password}' | base64 -d)"
+kubectl exec -i -n datos-externos datos-externos-postgresql-0 -- \
+  env PGPASSWORD="$PGPASSWORD" \
+  psql -U postgres -d datos_externos -Atc \
+  "select titulo_by_language::text from public.dena_external_expedientes limit 1;"
 ```
 
 Validación esperada:

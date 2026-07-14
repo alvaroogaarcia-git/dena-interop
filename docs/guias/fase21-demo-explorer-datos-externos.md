@@ -32,6 +32,8 @@ Esta fase añade una vista navegable en la consola admin para consultar la Postg
   - Panel lateral `Carpetas demo`
   - Panel central `Explorador datos externos`
   - Filtro por texto, limite, tabla de resultados y detalle JSON.
+  - Panel derecho `Validación semántica DENA`, que revisa las filas cargadas desde el explorador o desde Ficha 360.
+  - Ficha 360 por ciudadano con identidad, expedientes, notificaciones, pagos, citas y alertas funcionales.
 - Demo cliente:
   - Campo `Identificador ciudadano`.
   - Panel `Mis carpetas`.
@@ -39,6 +41,34 @@ Esta fase añade una vista navegable en la consola admin para consultar la Postg
   - Panel `Requiere mi atención` con avisos prioritarios.
   - Panel `Línea de vida` con actividad consolidada.
   - Carpetas filtradas por ciudadano: expedientes, notificaciones, pagos, citas y datos personales.
+
+## Campos multiidioma
+
+Las vistas públicas mantienen columnas planas para lectura rápida y columnas `LanguageTexts` para pintar contenido funcional con el idioma activo de la UI.
+
+Ejemplos:
+
+- `dena_external_expedientes.titulo` y `dena_external_expedientes.titulo_by_language`.
+- `dena_external_expedientes.servicio` y `dena_external_expedientes.servicio_by_language`.
+- `dena_external_expedientes.procedimiento` y `dena_external_expedientes.procedimiento_by_language`.
+- `dena_external_notificaciones.titulo_by_language`.
+- `dena_external_pagos.titulo_by_language`.
+- `dena_external_citas.titulo_by_language`.
+- `dena_external_personas.unidad_by_language`.
+
+La consola admin y la SPA cliente seleccionan `SPANISH`, `BASQUE` o `ENGLISH` según el selector de idioma. Si falta una clave, usan una caída controlada para mantener visible el dato.
+
+## Validación semántica DENA
+
+El panel `Validación semántica DENA` comprueba sobre las filas cargadas:
+
+- Presencia de `LanguageTexts` en campos visibles.
+- Claves `SPANISH` y `BASQUE`, obligatorias en la demo.
+- Clave `ENGLISH`, marcada como aviso recomendado.
+- Fechas parseables en columnas como `fecha`, `creado_en`, `sincronizado_en`, `leido_en` y `solicitado_en`.
+- Importes numéricos en `importe_eur`.
+- `detalle` como objeto JSON.
+- `raw_payload.urls` como array cuando esté presente.
 
 ## Despliegue
 

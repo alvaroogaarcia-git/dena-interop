@@ -70,6 +70,14 @@ La `Línea de vida` combina todos los registros del ciudadano y los ordena por f
 
 Los paneles `Requiere mi atención`, `Línea de vida`, `Expedientes` y `Mis datos conectados` tienen botón de plegar/desplegar para poder compactar la pantalla durante una demo.
 
+La demo mantiene traducciones de interfaz para botones, etiquetas y ayudas, pero los textos funcionales procedentes de `datos_externos` se renderizan con el modelo DENA `LanguageTexts`. Cuando una fila incluye campos como `titulo_by_language` o `servicio_by_language`, la SPA elige:
+
+- `SPANISH` si el idioma activo es castellano.
+- `BASQUE` si el idioma activo es euskera.
+- `ENGLISH` si el idioma activo es inglés.
+
+Si falta una clave, la SPA usa una caída controlada a otro idioma disponible para no dejar la tarjeta vacía.
+
 ## Qué Contiene En Este Caso
 
 Contiene una página HTML/JS estática en un ConfigMap. No es la SPA definitiva de producción; es una demo funcional para probar OIDC con PKCE, API DENA desde navegador y el explorador ciudadano de `datos_externos`.
@@ -85,7 +93,7 @@ Comprobaciones adicionales de las carpetas ciudadanas:
 
 ```bash
 curl -H "Authorization: Bearer $TOKEN" \
-  "http://192.168.56.15:30080/dena/external/dena_external_expedientes?select=id,titulo,estado&persona_id=eq.CIT-10001&limit=2"
+  "http://192.168.56.15:30080/dena/external/dena_external_expedientes?select=id,titulo,titulo_by_language,estado,servicio_by_language&persona_id=eq.CIT-10001&limit=2"
 ```
 
 Para `CIT-10001`, la demo debe mostrar:
