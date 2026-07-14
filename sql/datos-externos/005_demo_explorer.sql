@@ -10,20 +10,32 @@ begin
 end
 $$;
 
+drop view if exists public.dena_external_folders;
+drop view if exists public.dena_external_semantica;
+drop view if exists public.dena_external_personas;
+drop view if exists public.dena_external_citas;
+drop view if exists public.dena_external_pagos;
+drop view if exists public.dena_external_notificaciones;
+drop view if exists public.dena_external_expedientes;
+
 create or replace view public.dena_external_expedientes as
 select
     bo.external_id as id,
     bo.external_oid as oid,
     e.reg_number as referencia,
     coalesce(e.description_by_language ->> 'SPANISH', bo.external_id) as titulo,
+    e.description_by_language as titulo_by_language,
     e.state_code as estado,
+    e.state_description_by_language as estado_by_language,
     coalesce(e.last_updated_at_ts, e.created_at_ts) as fecha,
     e.created_at_ts as creado_en,
     e.application_at_ts as solicitado_en,
     e.interested_party_id as persona_id,
     e.interested_party_name as persona_nombre,
     coalesce(s.service_name_by_language ->> 'SPANISH', s.origin_ref_id) as servicio,
+    s.service_name_by_language as servicio_by_language,
     coalesce(p.procedure_name_by_language ->> 'SPANISH', p.origin_ref_id) as procedimiento,
+    p.procedure_name_by_language as procedimiento_by_language,
     a.display_name as administracion,
     bo.updated_at as sincronizado_en,
     jsonb_build_object(
@@ -44,6 +56,7 @@ select
     exp_bo.external_id as expediente_id,
     n.notice_kind as tipo,
     coalesce(n.act_subject_by_language ->> 'SPANISH', bo.external_id) as titulo,
+    n.act_subject_by_language as titulo_by_language,
     n.state_code as estado,
     n.issued_at_ts as fecha,
     n.read_at_ts as leido_en,
@@ -69,6 +82,7 @@ select
     exp_bo.external_id as expediente_id,
     p.payment_type as tipo,
     coalesce(p.payment_subject_by_language ->> 'SPANISH', bo.external_id) as titulo,
+    p.payment_subject_by_language as titulo_by_language,
     coalesce(p.one_off_status, p.dd_status) as estado,
     coalesce(p.one_off_status_at, p.next_charge_at::timestamptz, p.dd_start_date::timestamptz) as fecha,
     coalesce(p.one_off_amount, p.next_charge_amount_eur) as importe_eur,
@@ -100,6 +114,7 @@ select
     dp.external_id as persona_id,
     c.priority_code as prioridad,
     coalesce(c.subject_by_language ->> 'SPANISH', bo.external_id) as titulo,
+    c.subject_by_language as titulo_by_language,
     c.priority_code as estado,
     make_timestamptz(c.year_num, c.month_of_year, c.day_of_month, c.hour_of_day, c.minute_of_hour, 0) as fecha,
     c.duration_minutes as duracion_minutos,
@@ -120,12 +135,18 @@ select
     bo.external_id as id,
     pd.party_id as persona_id,
     concat_ws(' ', pd.party_name, pd.party_surname) as titulo,
+    jsonb_build_object(
+        'SPANISH', concat_ws(' ', pd.party_name, pd.party_surname),
+        'BASQUE', concat_ws(' ', pd.party_name, pd.party_surname),
+        'ENGLISH', concat_ws(' ', pd.party_name, pd.party_surname)
+    ) as titulo_by_language,
     pd.contact_mode as estado,
     pd.birth_date_ts as fecha,
     pd.email,
     pd.phone_1 as telefono,
     pd.contact_language as idioma,
     ou.display_name_by_language ->> 'SPANISH' as unidad,
+    ou.display_name_by_language as unidad_by_language,
     bo.updated_at as sincronizado_en,
     jsonb_build_object(
         'tabla', 'dena_person_data',

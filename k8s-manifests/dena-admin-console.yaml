@@ -1061,6 +1061,25 @@ data:
             resuelto: "Resuelto",
             archivado: "Archivado"
           };
+          const statusLanguageTexts = {
+            abierto: { SPANISH: "Abierto", BASQUE: "Irekita", ENGLISH: "Open" },
+            en_tramitacion: { SPANISH: "En tramitación", BASQUE: "Izapidetzen", ENGLISH: "In progress" },
+            pendiente_documentacion: { SPANISH: "Pendiente documentación", BASQUE: "Dokumentazioaren zain", ENGLISH: "Waiting for documents" },
+            resuelto: { SPANISH: "Resuelto", BASQUE: "Ebazita", ENGLISH: "Resolved" },
+            archivado: { SPANISH: "Archivado", BASQUE: "Artxibatuta", ENGLISH: "Archived" },
+            REGISTERED_PENDING_TO_BE_OPENED: { SPANISH: "Registrado pendiente de apertura", BASQUE: "Irekitzeko zain erregistratuta", ENGLISH: "Registered pending opening" },
+            OPENED: { SPANISH: "Abierto", BASQUE: "Irekita", ENGLISH: "Open" },
+            IN_PROGRESS: { SPANISH: "En tramitación", BASQUE: "Izapidetzen", ENGLISH: "In progress" },
+            WAITING_FOR_INTERESTED_PARTY_RESPONSE: { SPANISH: "Pendiente de respuesta", BASQUE: "Erantzunaren zain", ENGLISH: "Waiting for response" },
+            WAITING_FOR_OTHER_ORG_WORK: { SPANISH: "Pendiente de otra administración", BASQUE: "Beste administrazio baten zain", ENGLISH: "Waiting for another administration" },
+            CLOSED: { SPANISH: "Cerrado", BASQUE: "Itxita", ENGLISH: "Closed" },
+            PENDING_TO_BE_READED_BY_DESTINATION: { SPANISH: "Pendiente de lectura", BASQUE: "Irakurtzeko zain", ENGLISH: "Unread" },
+            PENDING: { SPANISH: "Pendiente", BASQUE: "Zain", ENGLISH: "Pending" },
+            REJECTED_BY_PAYMENT_PROCESSOR: { SPANISH: "Pago rechazado", BASQUE: "Ordainketa baztertuta", ENGLISH: "Payment rejected" },
+            ERROR_WHEN_PROCESSING_PAYMENT: { SPANISH: "Error de pago", BASQUE: "Ordainketa-errorea", ENGLISH: "Payment error" },
+            HIGH: { SPANISH: "Alta", BASQUE: "Handia", ENGLISH: "High" },
+            NORMAL: { SPANISH: "Normal", BASQUE: "Normala", ENGLISH: "Normal" }
+          };
           const currency = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
           const dateTime = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" });
           const oidcOrigin = "http://localhost:30080";
@@ -1131,6 +1150,7 @@ data:
               ? translateText("Claro", lang)
               : translateText("Oscuro", lang);
             updatePanelHelp();
+            rerenderLanguageSensitiveData();
           }
 
           function applyTheme(theme) {
@@ -1226,7 +1246,49 @@ data:
           }
 
           function badge(status) {
-            return `<span class="badge ${escapeHtml(status || "")}">${escapeHtml(statusLabels[status] || status || "-")}</span>`;
+            return `<span class="badge ${escapeHtml(status || "")}">${escapeHtml(statusLabel(status))}</span>`;
+          }
+
+          function denaLanguageKey(lang = languageSelect.value) {
+            if (lang === "eu") return "BASQUE";
+            if (lang === "en") return "ENGLISH";
+            return "SPANISH";
+          }
+
+          function languageText(value, fallback = "-") {
+            if (value && typeof value === "object" && !Array.isArray(value)) {
+              const key = denaLanguageKey();
+              return value[key] || value.SPANISH || value.BASQUE || value.ENGLISH || fallback;
+            }
+            return value ?? fallback;
+          }
+
+          function languageTextFrom(row, textKey, fallbackKeys = []) {
+            const byLanguage = row?.[`${textKey}_by_language`];
+            if (byLanguage) return languageText(byLanguage, row?.[textKey] || "-");
+            return externalDisplayValue(row || {}, [textKey].concat(fallbackKeys), "-");
+          }
+
+          function statusLabel(value) {
+            return statusOrValue(value);
+          }
+
+          function statusOrValue(value, fallback = "-") {
+            if (!value || value === "-") return fallback;
+            return languageText(statusLanguageTexts[value], statusLabels[value] || value);
+          }
+
+          function rerenderLanguageSensitiveData() {
+            if (rows.length) {
+              renderKpis(visibleRows);
+              renderTable();
+              renderIncidentPanel();
+            }
+            if (externalRows.length) renderExternalTable();
+            if (citizen360Data) {
+              renderCitizen360Summary(citizen360Data);
+              renderCitizen360Results();
+            }
           }
 
           function decodeJwt(token) {
@@ -1658,7 +1720,7 @@ data:
             detailPanel.innerHTML = `
               <div class="detail-grid">
                 <div class="item"><span>Expediente</span><strong>${escapeHtml(row.expediente_code || row.id)}</strong></div>
-                <div class="item"><span>Estado</span><strong>${escapeHtml(statusLabels[row.status] || row.status || "-")}</strong></div>
+                <div class="item"><span>Estado</span><strong>${escapeHtml(statusLabel(row.status))}</strong></div>
                 <div class="item"><span>Ciudadano</span><strong>${escapeHtml(row.citizen_id || "-")}</strong></div>
                 <div class="item"><span>Importe</span><strong>${currency.format(Number(row.amount_eur || 0))}</strong></div>
               </div>
@@ -1730,7 +1792,7 @@ data:
               <div class="notifications">
                 ${items.map(({ row, issues }) => `
                   <div class="notification warn">
-                    <strong>${escapeHtml(row.expediente_code)} · ${escapeHtml(statusLabels[row.status] || row.status)}</strong>
+                    <strong>${escapeHtml(row.expediente_code)} · ${escapeHtml(statusLabel(row.status))}</strong>
                     <span>${escapeHtml(issues.join(" · "))}</span>
                   </div>
                 `).join("")}
@@ -1962,9 +2024,9 @@ data:
               <div class="notifications">
                 ${rows.map((row) => `
                   <div class="notification ok">
-                    <strong>${escapeHtml(externalDisplayValue(row, ["referencia", "id", "titulo"]))}</strong>
-                    <span>${escapeHtml(externalDisplayValue(row, ["titulo", "tipo", "estado", "prioridad"]))}</span>
-                    <span>${escapeHtml(externalDisplayValue(row, ["estado", "servicio", "administracion", "ubicacion"]))} · ${formatDate(externalDisplayValue(row, ["fecha", "sincronizado_en"], ""))}</span>
+                    <strong>${escapeHtml(externalDisplayValue(row, ["referencia", "id"]))}</strong>
+                    <span>${escapeHtml(languageTextFrom(row, "titulo", ["tipo"]))}</span>
+                    <span>${escapeHtml(statusOrValue(externalDisplayValue(row, ["estado", "prioridad"]), languageTextFrom(row, "servicio", ["administracion", "ubicacion"])))} · ${formatDate(externalDisplayValue(row, ["fecha", "sincronizado_en"], ""))}</span>
                   </div>
                 `).join("")}
               </div>
@@ -1974,13 +2036,13 @@ data:
           function renderCitizen360Alerts(data) {
             const alerts = [];
             data.expedientes.forEach((row) => {
-              if (/WAITING|PENDING/i.test(row.estado || "")) alerts.push(["warn", row.referencia || row.id, "Expediente con actuación pendiente."]);
+              if (/WAITING|PENDING/i.test(row.estado || "")) alerts.push(["warn", row.referencia || row.id, `${languageTextFrom(row, "titulo")} · ${statusLabel(row.estado)}`]);
             });
             data.notificaciones.forEach((row) => {
               if (!row.leido_en) alerts.push(["warn", row.id, "Notificación sin lectura registrada."]);
             });
             data.pagos.forEach((row) => {
-              if (/PENDING|REJECTED|ERROR/i.test(row.estado || "")) alerts.push(["bad", row.id, `Pago en estado ${row.estado || "pendiente"}.`]);
+              if (/PENDING|REJECTED|ERROR/i.test(row.estado || "")) alerts.push(["bad", row.id, `${languageTextFrom(row, "titulo")} · ${statusLabel(row.estado)}.`]);
             });
             data.citas.forEach((row) => {
               if (new Date(row.fecha).getTime() > Date.now()) alerts.push(["ok", row.id, `Cita próxima: ${formatDate(row.fecha)}.`]);
@@ -2011,11 +2073,11 @@ data:
               citizen360Results.innerHTML = `
                 <div class="detail-grid">
                   <div class="item"><span>Ciudadano</span><strong>${escapeHtml(data.personaId)}</strong></div>
-                  <div class="item"><span>Nombre</span><strong>${escapeHtml(person.titulo || data.expedientes[0]?.persona_nombre || "-")}</strong></div>
+                  <div class="item"><span>Nombre</span><strong>${escapeHtml(languageTextFrom(person, "titulo", []) || data.expedientes[0]?.persona_nombre || "-")}</strong></div>
                   <div class="item"><span>Email</span><strong>${escapeHtml(person.email || "-")}</strong></div>
                   <div class="item"><span>Teléfono</span><strong>${escapeHtml(person.telefono || "-")}</strong></div>
                   <div class="item"><span>Idioma</span><strong>${escapeHtml(person.idioma || "-")}</strong></div>
-                  <div class="item"><span>Unidad</span><strong>${escapeHtml(person.unidad || "-")}</strong></div>
+                  <div class="item"><span>Unidad</span><strong>${escapeHtml(languageTextFrom(person, "unidad", []))}</strong></div>
                 </div>
               `;
               return;
@@ -2083,8 +2145,8 @@ data:
                   ${visibleExternalRows.map((row, index) => `
                     <tr data-external-index="${index}" class="${index === 0 ? "selected" : ""}">
                       <td class="code">${escapeHtml(externalDisplayValue(row, ["id", "referencia"]))}</td>
-                      <td>${escapeHtml(externalDisplayValue(row, ["titulo", "servicio", "tabla_sugerida"]))}</td>
-                      <td>${escapeHtml(externalDisplayValue(row, ["estado", "tipo", "prioridad", "grupo", "version"]))}</td>
+                      <td>${escapeHtml(languageTextFrom(row, "titulo", ["servicio", "tabla_sugerida"]))}</td>
+                      <td>${escapeHtml(statusOrValue(externalDisplayValue(row, ["estado", "prioridad"]), externalDisplayValue(row, ["tipo", "grupo", "version"])))}</td>
                       <td>${escapeHtml(externalDisplayValue(row, ["expediente_id", "persona_id", "administracion", "unidad"]))}</td>
                       <td>${formatDate(externalDisplayValue(row, ["fecha", "sincronizado_en", "creado_en"], ""))}</td>
                     </tr>
