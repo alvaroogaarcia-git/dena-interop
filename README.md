@@ -27,13 +27,15 @@ Este repositorio desarrolla un componente base de infraestructura que actúa com
 ## 🏗️ Arquitectura y Flujo de Datos
 
 El módulo actúa como una capa intermedia entre los sistemas backend de la entidad emisora (Base de datos / ERP municipal) y el nodo de interoperabilidad de DENA.
+
+```text
 +------------------------+      +----------------------------+      +--------------------------+
 |  Sistema Origen / ERP  | ---> |   dena-interop (Middleware)| ---> |   Plataforma DENA        |
 |  (Entidad Emisora)     | <--- |   - Mapeo de esquema       | <--- |   (Carpeta Ciudadana EJ) |
 +------------------------+      |   - Autenticación/Firma    |      +--------------------------+
                                 |   - Trazabilidad y Logs    |
                                 +----------------------------+
-
+```
 
 ### Principales Funcionalidades del Middleware:
 1. **Transformación y Mapeo:** Modela los datos de los expedientes/trámites locales al estándar JSON/XML requerido por las especificaciones de DENA Interop.
