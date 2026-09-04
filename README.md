@@ -10,7 +10,7 @@
 
 ## 📌 Introducción y Objetivo del Proyecto
 
-El proyecto **DENA Interop** nace con el objetivo de proporcionar la **base técnica e infraestructura de integración** necesaria para conectar las aplicaciones y sistemas de las administraciones públicas con **DENA Interop**, la plataforma de **Carpeta Ciudadana del Gobierno Vasco**.
+El proyecto **DENA Interop** nace con el objetivo de proporcionar la **base técnica e infraestructura de integración** necesaria para conectar las aplicaciones y sistemas de las administraciones públicas con **DENA Interop**, la plataforma de **Carpeta Ciudadana del Gobierno Vasco**. https://dena-euskadi.github.io/#que-es-dena 
 
 La iniciativa **DENA** busca unificar y simplificar la relación entre la ciudadanía y las distintas administraciones de la Comunidad Autónoma del País Vasco. A través de su Carpeta Ciudadana, las personas pueden consultar de manera centralizada sus datos, expedientes, certificados, notificaciones y trámites administrativos.
 
