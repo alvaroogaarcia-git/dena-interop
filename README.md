@@ -1,5 +1,46 @@
-# dena-interop
+# DENA Interop — Infraestructura de Interoperabilidad para Carpeta Ciudadana
 
+> ⚠️ **Nota / Descargo de responsabilidad (Disclaimer)**
+> 
+> Este proyecto ha sido desarrollado como una **Prueba de Concepto (PoC)** y base de infraestructura durante un periodo de prácticas de empresa (estudiante de 3.º del Grado en Ingeniería Informática, con una duración aproximada de 1,5 meses).
+> 
+> El objetivo principal del repositorio es servir como prototipo inicial y punto de partida funcional para la integración con DENA Interop. Por ello:
+> - **Entorno de producción:** Requiere auditoría de seguridad, refactorización y adaptación a estándares de producción antes de su despliegue real.
+> - **Contribuciones:** La comunidad y los colaboradores son bienvenid@s a revisar, corregir, ampliar o reestructurar el código existente.
+
+## 📌 Introducción y Objetivo del Proyecto
+
+El proyecto **DENA Interop** nace con el objetivo de proporcionar la **base técnica e infraestructura de integración** necesaria para conectar las aplicaciones y sistemas de las administraciones públicas con **DENA Interop**, la plataforma de **Carpeta Ciudadana del Gobierno Vasco**.
+
+La iniciativa **DENA** busca unificar y simplificar la relación entre la ciudadanía y las distintas administraciones de la Comunidad Autónoma del País Vasco. A través de su Carpeta Ciudadana, las personas pueden consultar de manera centralizada sus datos, expedientes, certificados, notificaciones y trámites administrativos.
+
+### 🎯 Propósito de esta solución
+
+Para que la Carpeta Ciudadana funcione de forma eficaz, las administraciones emisoras de información deben exponer sus datos garantizando altos estándares de disponibilidad, seguridad e interoperabilidad. 
+
+Este repositorio desarrolla un componente base de infraestructura que actúa como **módulo de enlace / middleware**, simplificando:
+
+- **La integración de datos:** Estandarización de las respuestas y modelos de datos requeridos por las especificaciones de DENA Interop.
+- **La comunicación segura:** Facilitar el intercambio de información entre los sistemas origen de las administraciones públicas y el bus de interoperabilidad del Gobierno Vasco.
+- **La escalabilidad:** Ofrecer una arquitectura reutilizable que reduzca la complejidad técnica y el tiempo de despliegue para los organismos que necesiten compartir información con la plataforma.
+
+## 🏗️ Arquitectura y Flujo de Datos
+
+El módulo actúa como una capa intermedia entre los sistemas backend de la entidad emisora (Base de datos / ERP municipal) y el nodo de interoperabilidad de DENA.
++------------------------+      +----------------------------+      +--------------------------+
+|  Sistema Origen / ERP  | ---> |   dena-interop (Middleware)| ---> |   Plataforma DENA        |
+|  (Entidad Emisora)     | <--- |   - Mapeo de esquema       | <--- |   (Carpeta Ciudadana EJ) |
++------------------------+      |   - Autenticación/Firma    |      +--------------------------+
+                                |   - Trazabilidad y Logs    |
+                                +----------------------------+
+
+
+### Principales Funcionalidades del Middleware:
+1. **Transformación y Mapeo:** Modela los datos de los expedientes/trámites locales al estándar JSON/XML requerido por las especificaciones de DENA Interop.
+2. **Seguridad y Cifrado:** Gestiona la autenticación de la entidad emisora mediante certificados digitales / tokens OAuth2 según los criterios de seguridad del Gobierno Vasco.
+3. **Auditoría y Trazabilidad:** Garantiza el registro de peticiones para dar cumplimiento a los requerimientos de auditoría en la transmisión de datos ciudadanos.
+
+* ---
 Stack local de interoperabilidad desplegado sobre un nodo único DietPi x86_64 con k3s, Helm y configuración como código.
 
 ## Estado actual
